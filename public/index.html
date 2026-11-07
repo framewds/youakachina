@@ -367,7 +367,7 @@
             </div>
 
             <div class="space-y-4 bento-card p-6">
-                <div class="hidden">
+                <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-2">КТО ВЫ?</label>
                     <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-[#0a0a0d] border border-[#24242f]">
                         <button type="button" id="reg-mode-guest" onclick="setRegMode('GUEST')" class="py-2.5 px-3 rounded-lg bg-white text-black text-[11px] font-heavy transition-all">
@@ -483,7 +483,6 @@
                     <button onclick="navigateTo('senior-logs')" data-nav="senior-logs" class="nav-btn"><span>Логи действий</span></button>
                     <button id="nav-btn-db" onclick="navigateTo('senior-db')" data-nav="senior-db" class="nav-btn hidden justify-between">
                         <span>База данных</span>
-                        <span class="px-1.5 py-0.5 rounded bg-white text-black text-[8px] font-heavy">@krystalovb</span>
                     </button>
                 </div>
             </div>
@@ -1737,7 +1736,7 @@
                 var staticInput = document.getElementById('auth-static-input');
                 var nick = nickInput ? nickInput.value.trim() : '';
                 var stat = staticInput ? staticInput.value.trim() : '';
-                fetch('/api/auth/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick: nick, staticId: stat }) })
+                fetch('/api/auth/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick: nick, staticId: stat, mode: selectedRegMode }) })
                     .then(function(r) { return r.json(); })
                     .then(function(j) {
                         if (!j.code) { showToast(j.error || 'Не удалось начать вход'); return; }

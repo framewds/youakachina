@@ -20,6 +20,7 @@ const OWNER_TG = process.env.OWNER_TG || '@krystalovb';
 const OWNER_L = OWNER_TG.toLowerCase();
 const TG_API = process.env.TELEGRAM_API || 'https://api.telegram.org';
 const TZ_NAME = process.env.TZ_NAME || 'Europe/Moscow';
+const AUTO_JOIN = process.env.AUTO_JOIN !== '0'; // «Уже игрок семьи» сразу добавляет в состав как 1. Контракт
 const EXTRA_CHATS = (process.env.NOTIFY_CHAT_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
 const DATA_DIR = process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -547,7 +548,12 @@ async function finalizeLogin(code, from) {
   const av = await Promise.race([fetchAvatar(from.id), new Promise(r => setTimeout(() => r(null), 4000))]);
   if (av) users[uid].avatar = av;
   // аватар и актуальный ник/static в составе
-  const entry = findRoster(state, handle);
+  let entry = findRoster(state, handle);
+  if (!entry && L.mode === 'MEMBER' && AUTO_JOIN && !sameTg(handle, OWNER_TG)) {
+    entry = { id: nextId(new Set(state.roster.map(r => r.id))), nick: users[uid].nick, staticId: users[uid].staticId, tg: handle, rank: '1. Контракт', avatar: av || PLACEHOLDER };
+    state.roster.push(entry); state.rev += 1; markDirty('state.json');
+    leaderChats().forEach(c => send(c, '👤 <b>Новый участник вошёл как игрок семьи</b>\n' + esc(entry.nick) + ' (' + esc(entry.staticId) + ', ' + esc(handle) + ') — 1. Контракт'));
+  }
   if (entry && av && entry.avatar !== av) { entry.avatar = av; state.rev += 1; markDirty('state.json'); }
   if (sameTg(handle, OWNER_TG)) { ensureOwner(state); markDirty('state.json'); }
   const token = crypto.randomBytes(32).toString('hex');
@@ -673,7 +679,7 @@ async function handleApi(req, res, url) {
     if (Object.keys(logins).length > 500) throw new HttpError(429, 'Слишком много попыток входа, подождите');
     const code = 'auth_' + crypto.randomBytes(8).toString('hex');
     let sid = cleanStr(b.staticId, 12).replace(/[^\d]/g, '');
-    logins[code] = { created: Date.now(), status: 'pending', nick: cleanStr(b.nick, 32), staticId: sid ? '#' + sid : '' };
+    logins[code] = { created: Date.now(), status: 'pending', nick: cleanStr(b.nick, 32), staticId: sid ? '#' + sid : '', mode: b.mode === 'MEMBER' ? 'MEMBER' : 'GUEST' };
     return json(res, 200, { code: code, link: 'https://t.me/' + BOT_USERNAME + '?start=' + code });
   }
   if (p === '/api/auth/status' && req.method === 'GET') {
