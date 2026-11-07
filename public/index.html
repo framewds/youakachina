@@ -863,11 +863,12 @@
                 <section id="sec-join-family" class="page-sec hidden space-y-6">
                     <div class="bento-card p-6 sm:p-8 space-y-2">
                         <h2 class="text-2xl sm:text-3xl font-heavy text-white">Добро пожаловать в DRUGHILL</h2>
-                        <p class="text-xs text-zinc-400">Вы вошли как гость. Выберите, что вам нужно. Ваш игровой Никнейм, Static ID, аватарка и @юз берутся из профиля автоматически.</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
-                            <button type="button" onclick="claimFamilyMember()" class="py-3.5 px-4 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Уже игрок семьи</button>
-                            <button type="button" onclick="showJoinForm()" class="py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] hover:border-white text-white text-xs font-heavy transition-all">Подать заявление в семью</button>
+                        <p class="text-xs text-zinc-400">Вы вошли через Telegram. Выберите, что вам нужно: после этого Лидер или Старший состав должны одобрить ваш доступ. Ваш игровой Никнейм, Static ID, аватарка и @юз берутся из профиля автоматически.</p>
+                        <div id="join-choice-btns" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
+                            <button type="button" onclick="claimFamilyMember()" class="py-3.5 px-4 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Игрок семьи</button>
+                            <button type="button" onclick="showJoinForm()" class="py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] hover:border-white text-white text-xs font-heavy transition-all">Подать заявку в семью</button>
                         </div>
+                        <div id="join-wait" class="hidden p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed"></div>
                     </div>
 
                     <div id="join-form-card" class="hidden bento-card p-6 sm:p-8 space-y-6">
@@ -1741,18 +1742,43 @@
             };
 
             window.claimFamilyMember = function() {
-                if (!window.confirm('Вы уже состоите в семье DRUGHILL? Вас добавят в состав как 1. Контракт, Лидер и Зам получат уведомление.')) return;
-                api('POST', '/api/claim-member', {}).then(function(res) {
-                    if (res.state) { applyServerState(res, false); navigateTo('home'); showToast('Вы в составе семьи: ' + db.currentUser.rankTitle); }
-                    else showToast(res.error || 'Не удалось');
-                });
+                if (!window.confirm('Вы уже состоите в семье DRUGHILL? Заявка уйдёт Лидеру и Старшему составу, доступ откроется после одобрения.')) return;
+                var u = db.currentUser;
+                db.applications.unshift({ id: Date.now(), kind: 'Уже игрок семьи', nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, age: '—', prime: '—', exp: '—', rolls: '—', status: 'PENDING' });
+                addLog('AUTH', 'Запрос доступа: уже игрок семьи (' + u.nick + ')');
+                saveDb();
+                renderJoinState();
+                showToast('Запрос отправлен. Ожидайте одобрения.');
             };
+
+            function renderJoinState() {
+                var btns = document.getElementById('join-choice-btns');
+                var wait = document.getElementById('join-wait');
+                var form = document.getElementById('join-form-card');
+                if (!btns || !wait) return;
+                var mine = (db.applications || []).filter(function(a) { return a.tg && db.currentUser.tg && a.tg.toLowerCase() === db.currentUser.tg.toLowerCase(); });
+                var last = mine[0];
+                if (last && last.status === 'PENDING') {
+                    btns.classList.add('hidden');
+                    if (form) form.classList.add('hidden');
+                    wait.classList.remove('hidden');
+                    wait.textContent = (last.kind === 'Уже игрок семьи' ? 'Ваш запрос «Игрок семьи» отправлен.' : 'Ваша заявка в семью отправлена.') + ' Ожидайте одобрения Лидера или Старшего состава. Страница обновится сама, как только вас примут.';
+                } else {
+                    btns.classList.remove('hidden');
+                    if (last && last.status === 'REJECTED') {
+                        wait.classList.remove('hidden');
+                        wait.textContent = 'Ваша прошлая заявка отклонена. Вы можете отправить новую.';
+                    } else wait.classList.add('hidden');
+                }
+            }
 
             window.startTelegramAuth = function() {
                 var nickInput = document.getElementById('auth-nick-input');
                 var staticInput = document.getElementById('auth-static-input');
                 var nick = nickInput ? nickInput.value.trim() : '';
                 var stat = staticInput ? staticInput.value.trim() : '';
+                if (nick.length < 2) { showToast('Укажите игровой никнейм'); return; }
+                if (!/\d/.test(stat)) { showToast('Укажите Static ID (цифры)'); return; }
                 fetch('/api/auth/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick: nick, staticId: stat }) })
                     .then(function(r) { return r.json(); })
                     .then(function(j) {
@@ -2236,6 +2262,7 @@
 
                 db.applications.unshift({
                     id: Date.now(),
+                    kind: 'Заявка в семью',
                     nick: u.nick,
                     staticId: u.staticId,
                     tg: u.tg,
@@ -2250,7 +2277,8 @@
                 saveDb();
                 renderUserBar();
                 renderSeniorPanels();
-                showToast('Заявка отправлена Старшему составу!');
+                renderJoinState();
+                showToast('Заявка отправлена Старшему составу! Ожидайте одобрения.');
             };
 
             window.renderPayoutRates = function() {
@@ -2597,7 +2625,7 @@
                                             '<span class="text-zinc-300">' + (a.tg || '@drughill') + '</span>' +
                                             '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">' + a.staticId + '</span>' +
                                         '</div>' +
-                                        '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + a.age + ' · Прайм: ' + a.prime + ' · Опыт: ' + a.exp + '</div>' +
+                                        (a.kind === 'Уже игрок семьи' ? '<div class="text-[11px] text-amber-300 mt-1 font-heavy">Утверждает, что уже игрок семьи. Проверьте и примите.</div>' : '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + a.age + ' · Прайм: ' + a.prime + ' · Опыт: ' + a.exp + '</div>') +
                                     '</div>' +
                                 '</div>' +
                                 '<div class="flex items-center gap-2 shrink-0">' +
@@ -2621,7 +2649,7 @@
                                         '<span class="text-zinc-300">' + (a.tg || '@drughill') + '</span>' +
                                         '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">' + a.staticId + '</span>' +
                                     '</div>' +
-                                    '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + a.age + ' · Прайм: ' + a.prime + ' · Опыт: ' + a.exp + '</div>' +
+                                    (a.kind === 'Уже игрок семьи' ? '<div class="text-[11px] text-amber-300 mt-1 font-heavy">Утверждает, что уже игрок семьи. Проверьте и примите.</div>' : '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + a.age + ' · Прайм: ' + a.prime + ' · Опыт: ' + a.exp + '</div>') +
                                 '</div>' +
                             '</div>' +
                             '<div class="flex items-center gap-2 shrink-0">' +
@@ -2943,6 +2971,7 @@
                 }
                 window.updateVacationDaysPreview();
                 renderUserBar();
+                renderJoinState();
                 renderContentSections();
                 renderAcademyAndTests();
                 renderPayoutRates();

@@ -20,7 +20,6 @@ const OWNER_TG = process.env.OWNER_TG || '@krystalovb';
 const OWNER_L = OWNER_TG.toLowerCase();
 const TG_API = process.env.TELEGRAM_API || 'https://api.telegram.org';
 const TZ_NAME = process.env.TZ_NAME || 'Europe/Moscow';
-const AUTO_JOIN = process.env.AUTO_JOIN !== '0'; // «Уже игрок семьи» сразу добавляет в состав как 1. Контракт
 const EXTRA_CHATS = (process.env.NOTIFY_CHAT_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
 const DATA_DIR = process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -37,7 +36,7 @@ const PLACEHOLDER = 'https://placehold.co/100x100/1c1c24/ffffff?text=DH';
 
 const SPEC = {
   roster: ['id', 'nick', 'staticId', 'tg', 'rank', 'avatar'],
-  applications: ['id', 'nick', 'staticId', 'tg', 'avatar', 'age', 'prime', 'exp', 'rolls', 'status', 'createdAt'],
+  applications: ['id', 'nick', 'staticId', 'tg', 'avatar', 'age', 'prime', 'exp', 'rolls', 'kind', 'status', 'createdAt'],
   promoReports: ['id', 'nick', 'staticId', 'tg', 'avatar', 'fromRank', 'toRank', 'tasks', 'proofs', 'status', 'createdAt'],
   payoutReports: ['id', 'nick', 'staticId', 'tg', 'avatar', 'total', 'items', 'proofs', 'status', 'createdAt'],
   vacations: ['id', 'nick', 'staticId', 'tg', 'avatar', 'rank', 'startDate', 'endDate', 'daysCount', 'reason', 'status', 'createdAt'],
@@ -246,7 +245,7 @@ function timeNow() {
 }
 
 const SUBS = {
-  applications: { min: LEVELS.GUEST, fields: ['age', 'prime', 'exp', 'rolls'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
+  applications: { min: LEVELS.GUEST, fields: ['age', 'prime', 'exp', 'rolls', 'kind'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
   promoReports: { min: LEVELS.MEMBER, fields: ['toRank', 'tasks', 'proofs'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
   payoutReports: { min: LEVELS.MEMBER, fields: ['items', 'proofs'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
   vacations: { min: LEVELS.MEMBER, fields: ['startDate', 'endDate', 'reason'], del: LEVELS.SENIOR, decide: LEVELS.SENIOR },
@@ -262,7 +261,8 @@ function buildSubmission(coll, me, rec, W) {
   };
   cfg.fields.forEach(f => { if (clean[f] !== undefined) out[f] = clean[f]; });
   if (coll === 'applications') {
-    ['age', 'prime', 'exp', 'rolls'].forEach(f => { out[f] = cleanStr(out[f] || '', 300); });
+    ['age', 'prime', 'exp', 'rolls'].forEach(f => { out[f] = cleanStr(out[f] || '—', 300); });
+    out.kind = out.kind === 'Уже игрок семьи' ? 'Уже игрок семьи' : 'Заявка в семью';
   }
   if (coll === 'promoReports') {
     out.fromRank = me.rank;
@@ -486,7 +486,8 @@ function eventText(ev, site) {
   const it = ev.item;
   const who = '<b>' + esc(it.nick) + '</b> (' + esc(it.staticId) + ', ' + esc(it.tg) + ')';
   let body = '';
-  if (ev.coll === 'applications') body = '📝 <b>Новая заявка в семью</b>\n' + who + '\nВозраст: ' + esc(it.age) + '\nПрайм: ' + esc(it.prime) + '\nОпыт: ' + esc(it.exp) + '\nОткаты: ' + esc(it.rolls);
+  if (ev.coll === 'applications' && it.kind === 'Уже игрок семьи') body = '👤 <b>Запрос доступа: «Игрок семьи»</b>\n' + who + '\nПроверьте и примите в состав.';
+  else if (ev.coll === 'applications') body = '📝 <b>Новая заявка в семью</b>\n' + who + '\nВозраст: ' + esc(it.age) + '\nПрайм: ' + esc(it.prime) + '\nОпыт: ' + esc(it.exp) + '\nОткаты: ' + esc(it.rolls);
   else if (ev.coll === 'vacations') body = '🏖 <b>Заявка на отпуск</b>\n' + who + ' · ' + esc(it.rank) + '\n' + esc(it.startDate) + ' — ' + esc(it.endDate) + ' (' + it.daysCount + ' дн.)\nПричина: ' + esc(it.reason);
   else if (ev.coll === 'promoReports') body = '⬆️ <b>Рапорт на повышение</b>\n' + who + '\n' + esc(it.fromRank) + ' → ' + esc(it.toRank) + '\nВыполнено: ' + esc(it.tasks) + '\nДок-ва: ' + esc(it.proofs);
   else if (ev.coll === 'payoutReports') body = '💰 <b>Заявка на премию</b>\n' + who + '\nСумма: $' + Number(it.total).toLocaleString('en-US') + '\n' + (it.items || []).map(l => esc(l.name) + ' × ' + l.qty).join(', ') + (it.proofs ? '\nДок-ва: ' + esc(it.proofs) : '');
@@ -674,6 +675,7 @@ async function handleApi(req, res, url) {
     if (Object.keys(logins).length > 500) throw new HttpError(429, 'Слишком много попыток входа, подождите');
     const code = 'auth_' + crypto.randomBytes(8).toString('hex');
     let sid = cleanStr(b.staticId, 12).replace(/[^\d]/g, '');
+    if (cleanStr(b.nick, 32).length < 2 || !sid) throw new HttpError(400, 'Укажите игровой ник и Static ID');
     logins[code] = { created: Date.now(), status: 'pending', nick: cleanStr(b.nick, 32), staticId: sid ? '#' + sid : '' };
     return json(res, 200, { code: code, link: 'https://t.me/' + BOT_USERNAME + '?start=' + code });
   }
@@ -714,16 +716,6 @@ async function handleApi(req, res, url) {
       }
       throw e;
     }
-  }
-
-  if (p === '/api/claim-member' && req.method === 'POST') {
-    if (me.level >= LEVELS.MEMBER) return json(res, 200, stateResponse(me, true));
-    if (!AUTO_JOIN) throw new HttpError(403, 'Вступление только по заявлению: нажмите «Подать заявление в семью»');
-    const u = users[me.uid];
-    const entry = { id: nextId(new Set(state.roster.map(r => r.id))), nick: u.nick, staticId: u.staticId, tg: u.tg, rank: '1. Контракт', avatar: u.avatar || PLACEHOLDER };
-    state.roster.push(entry); state.rev += 1; markDirty('state.json');
-    leaderChats().forEach(c => send(c, '👤 <b>Новый участник: «Уже игрок семьи»</b>\n' + esc(entry.nick) + ' (' + esc(entry.staticId) + ', ' + esc(entry.tg) + ') — 1. Контракт'));
-    return json(res, 200, stateResponse(resolveMe(me.uid), true));
   }
 
   if (p === '/api/profile' && req.method === 'POST') {
