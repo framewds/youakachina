@@ -64,7 +64,7 @@
   ],
   "rules": [
     {
-      "badge": "1.1 УСТАВ",
+      "badge": "1.1 ПРАВИЛА",
       "title": "Безусловное соблюдение кодекса DRUGHILL",
       "desc": "Каждый участник обязан знать правила сервера."
     }
@@ -114,5 +114,29 @@
   "promoReports": [],
   "payoutReports": [],
   "vacations": [],
-  "logs": []
+  "logs": [],
+  "promoRequirements": [
+    {
+      "id": "rq1",
+      "rank": "all",
+      "text": "Сданы правила семьи DRUGHILL"
+    },
+    {
+      "id": "rq2",
+      "rank": "all",
+      "text": "Выполнены семейные контракты"
+    },
+    {
+      "id": "rq3",
+      "rank": "all",
+      "text": "Пополнен склад / общак"
+    },
+    {
+      "id": "rq4",
+      "rank": "all",
+      "text": "Участие в строях / бизварах"
+    }
+  ],
+  "rollbacks": [],
+  "promoCodes": []
 }

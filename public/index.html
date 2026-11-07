@@ -334,6 +334,9 @@
             background: #272730;
             border-radius: 999px;
         }
+        /* Гость видит только выбор (без меню и разделов) */
+        #portal-shell.guest-mode #sidebar,
+        #portal-shell.guest-mode #mobile-menu-btn { display: none !important; }
     </style>
 </head>
 <body class="bg-dot-matrix min-h-screen text-white relative">
@@ -447,7 +450,7 @@
                     <button onclick="navigateTo('home')" data-nav="home" class="nav-btn active"><span>Главная</span></button>
                     <button onclick="navigateTo('profile')" data-nav="profile" class="nav-btn"><span>Профиль</span></button>
                     <button onclick="navigateTo('news')" data-nav="news" class="nav-btn"><span>Новости семьи</span></button>
-                    <button onclick="navigateTo('rules')" data-nav="rules" class="nav-btn"><span>Устав семьи</span></button>
+                    <button onclick="navigateTo('rules')" data-nav="rules" class="nav-btn"><span>Правила семьи</span></button>
                     <button onclick="navigateTo('ranks')" data-nav="ranks" class="nav-btn"><span>Система повышения</span></button>
                     <button onclick="navigateTo('diplomacy')" data-nav="diplomacy" class="nav-btn"><span>Дипломатия и Война</span></button>
                     <button onclick="navigateTo('fleet')" data-nav="fleet" class="nav-btn"><span>Автопарк</span></button>
@@ -458,7 +461,6 @@
                 <!-- REPORTS & APPLICATIONS -->
                 <div id="nav-group-reports" class="space-y-1 pt-2">
                     <div class="px-3 py-1.5 text-[10px] font-heavy text-zinc-500 uppercase tracking-wider">ОТЧЁТЫ И ЗАЯВКИ</div>
-                    <button onclick="navigateTo('join-family')" data-nav="join-family" class="nav-btn"><span>Подать заявку в семью</span></button>
                     <button onclick="navigateTo('report-promo')" data-nav="report-promo" class="nav-btn"><span>Отчёт на повышение</span></button>
                     <button onclick="navigateTo('report-payout')" data-nav="report-payout" class="nav-btn"><span>Отчёт на премию</span></button>
                     <button onclick="navigateTo('vacations')" data-nav="vacations" class="nav-btn"><span>Система отпуска</span></button>
@@ -476,6 +478,11 @@
                         <span id="sidebar-pending-badge" class="px-2 py-0.5 rounded-full bg-white text-black text-[10px] font-heavy">0</span>
                     </button>
                     <button onclick="navigateTo('senior-test-results')" data-nav="senior-test-results" class="nav-btn"><span>Итоги тестов</span></button>
+                    <button onclick="navigateTo('senior-rollbacks')" data-nav="senior-rollbacks" class="nav-btn justify-between">
+                        <span>Откаты и видео</span>
+                        <span id="sidebar-rollbacks-badge" class="px-2 py-0.5 rounded-full bg-[#24242f] text-white text-[10px] font-heavy">0</span>
+                    </button>
+                    <button onclick="navigateTo('senior-promocodes')" data-nav="senior-promocodes" class="nav-btn"><span>Промокоды</span></button>
                     <button onclick="navigateTo('senior-vacations')" data-nav="senior-vacations" class="nav-btn justify-between">
                         <span>Контроль отпусков</span>
                         <span id="sidebar-vacations-badge" class="px-2 py-0.5 rounded-full bg-[#24242f] text-white text-[10px] font-heavy">0</span>
@@ -540,7 +547,7 @@
         <div class="flex-1 flex flex-col min-w-0">
             <header class="h-16 border-b border-[#1e1e26] bg-[#09090b]/90 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between gap-4">
                 <div class="flex items-center gap-3 min-w-0">
-                    <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl bg-[#14141b] border border-[#252530] text-white">☰</button>
+                    <button id="mobile-menu-btn" onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl bg-[#14141b] border border-[#252530] text-white">☰</button>
                     <div class="flex items-center gap-2 text-xs truncate">
                         <span class="text-zinc-500 font-heavy">DRUGHILL</span>
                         <span class="text-zinc-600">·</span>
@@ -549,7 +556,7 @@
                 </div>
 
                 <div class="flex items-center gap-2.5 shrink-0">
-                    <button onclick="navigateTo('join-family')" class="px-4 py-2 rounded-xl bg-white text-black hover:bg-zinc-200 text-[11px] font-heavy transition-all">Подать заявку в семью</button>
+                    <button id="header-logout-btn" onclick="logoutToAuthGate()" class="hidden px-4 py-2 rounded-xl bg-[#14141b] border border-[#272733] hover:border-red-400/60 text-[11px] font-heavy text-red-300 transition-all">Выйти</button>
                     <a href="https://discord.gg/sEJkFaNDJ" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-[#14141b] border border-[#272733] hover:border-white/40 text-[11px] font-heavy text-white transition-all">Discord</a>
                 </div>
             </header>
@@ -563,7 +570,7 @@
                             Всё о жизни в <span class="underline decoration-[#ef232a] underline-offset-8">DRUGHILL</span>
                         </h1>
                         <p class="text-xs sm:text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-                            Внутренний портал синдиката на проекте Region RP. Отчёты на повышение, устав, новости, автопарк и академия в одном месте.
+                            Внутренний портал синдиката на проекте Region RP. Отчёты на повышение, правила, новости, автопарк и академия в одном месте.
                         </p>
                     </div>
 
@@ -576,7 +583,7 @@
                                 <span class="px-2.5 py-1 rounded-lg bg-[#181822] border border-[#2b2b38] text-[10px] font-heavy text-zinc-400">КОДЕКС</span>
                             </div>
                             <div class="pt-6">
-                                <h3 class="text-lg font-heavy text-white">Устав семьи</h3>
+                                <h3 class="text-lg font-heavy text-white">Правила семьи</h3>
                                 <p class="text-xs text-zinc-400 mt-1">Кодекс чести, дисциплина и правила синдиката DRUGHILL</p>
                             </div>
                         </div>
@@ -669,7 +676,7 @@
                             </div>
                             <div class="pt-4">
                                 <h3 class="text-lg font-heavy text-white">Академия</h3>
-                                <p class="text-xs text-zinc-400 mt-1">Проверка знаний устава и аттестация на переход в Мейн состав</p>
+                                <p class="text-xs text-zinc-400 mt-1">Проверка знаний правил и аттестация на переход в Мейн состав</p>
                             </div>
                         </div>
                     </div>
@@ -733,6 +740,15 @@
 
                         <div id="prof-test-answers-box" class="space-y-3 pt-2"></div>
                     </div>
+
+                    <div class="bento-card p-6 sm:p-8 space-y-3">
+                        <h3 class="text-base font-heavy text-white">Промокод</h3>
+                        <p class="text-xs text-zinc-400">Введите промокод, выданный Старшим составом. Каждый код можно активировать один раз на аккаунт, пока не кончился лимит.</p>
+                        <div class="flex flex-col sm:flex-row gap-2.5">
+                            <input id="prof-promo-input" type="text" maxlength="30" placeholder="DH-A1B2C3" oninput="this.value = this.value.toUpperCase()" onkeydown="if (event.key === 'Enter') redeemPromo('prof-promo-input')" class="flex-1 px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white tracking-widest focus:outline-none">
+                            <button type="button" onclick="redeemPromo('prof-promo-input')" class="px-6 py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Активировать</button>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- 3. GUEST WAITING STATUS -->
@@ -755,7 +771,7 @@
                         <div class="space-y-1.5">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-white text-[10px] font-heavy uppercase">АКАДЕМИЯ</span>
                             <h2 class="text-2xl sm:text-3xl font-heavy text-white">Выберите тест</h2>
-                            <p id="academy-count-sub" class="text-xs text-zinc-400">0 тестов · проверьте знания правил проекта и устава семьи</p>
+                            <p id="academy-count-sub" class="text-xs text-zinc-400">0 тестов · проверьте знания правил проекта и семьи</p>
                         </div>
                         <div class="senior-only hidden">
                             <button onclick="openCreateTestModal()" class="px-5 py-2.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-heavy">+ Создать тест</button>
@@ -785,6 +801,37 @@
 
                     <div id="academy-list-view" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     <div id="academy-runner-view" class="hidden bento-card p-6 sm:p-8 space-y-6"></div>
+
+                    <!-- ОТКАТЫ И ВИДЕО-АТТЕСТАЦИЯ -->
+                    <div id="academy-rollbacks-card" class="bento-card p-6 sm:p-8 space-y-5">
+                        <div class="space-y-1">
+                            <h3 class="text-lg font-heavy text-white">Откаты и видео для аттестации</h3>
+                            <p class="text-xs text-zinc-400 leading-relaxed">Добавьте ссылку на видео (YouTube, Rutube, Google Drive и т.п.). Старший состав откроет её кнопкой и примет или отклонит.</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" id="rb-kind-0" onclick="selectRollbackKind('Откат')" class="py-3 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all">Откат</button>
+                            <button type="button" id="rb-kind-1" onclick="selectRollbackKind('Аттестация')" class="py-3 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all">Видео для аттестации</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Ссылка на видео</label>
+                                <input id="rb-link" type="text" placeholder="https://youtu.be/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+                            <div id="rb-test-wrap" class="hidden">
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Для какого теста / аттестации</label>
+                                <select id="rb-test" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none"></select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Комментарий (необязательно)</label>
+                                <input id="rb-comment" type="text" maxlength="300" placeholder="Что на видео: стрельба на капте, 5 минут и т.п." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+                        </div>
+                        <button onclick="submitRollback()" class="w-full py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Отправить Старшему составу</button>
+                        <div class="space-y-2 pt-2">
+                            <div class="text-[10px] text-zinc-500 uppercase">Мои отправки</div>
+                            <div id="my-rollbacks-list" class="space-y-2.5"></div>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- 5. NEWS -->
@@ -803,7 +850,7 @@
                 <section id="sec-rules" class="page-sec hidden space-y-6">
                     <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Устав семьи</h2>
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Правила семьи</h2>
                             <p class="text-xs text-zinc-400 mt-1">Строгие правила синдиката DRUGHILL на проекте Region RP</p>
                         </div>
                         <button onclick="openAddContentModal('rules')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Добавить правило</button>
@@ -871,6 +918,15 @@
                         <div id="join-wait" class="hidden p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed"></div>
                     </div>
 
+                    <div class="bento-card p-6 sm:p-8 space-y-3">
+                        <h3 class="text-base font-heavy text-white">Есть промокод?</h3>
+                        <p class="text-xs text-zinc-400">Промокод выдаёт Старший состав. Количество активаций ограничено: когда лимит закончится, код перестанет работать.</p>
+                        <div class="flex flex-col sm:flex-row gap-2.5">
+                            <input id="join-promo-input" type="text" maxlength="30" placeholder="DH-A1B2C3" oninput="this.value = this.value.toUpperCase()" onkeydown="if (event.key === 'Enter') redeemPromo('join-promo-input')" class="flex-1 px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white tracking-widest focus:outline-none">
+                            <button type="button" onclick="redeemPromo('join-promo-input')" class="px-6 py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Активировать</button>
+                        </div>
+                    </div>
+
                     <div id="join-form-card" class="hidden bento-card p-6 sm:p-8 space-y-6">
                         <div class="p-4 rounded-2xl topo-bg border border-[#2b2b38] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-3.5">
@@ -915,9 +971,12 @@
 
                 <!-- 12. PROMOTION REPORT -->
                 <section id="sec-report-promo" class="page-sec hidden space-y-6">
-                    <div class="bento-card p-6 sm:p-8 space-y-2">
-                        <h2 class="text-2xl sm:text-3xl font-heavy text-white">Отчёт на повышение</h2>
-                        <p class="text-xs text-zinc-400">Рассмотрение рапортов на повышение (1. Контракт → 2. Академ → 3. Мейн) внутри сайта</p>
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="space-y-2">
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Отчёт на повышение</h2>
+                            <p class="text-xs text-zinc-400">Рассмотрение рапортов на повышение (1. Контракт → 2. Академ → 3. Мейн) внутри сайта. Список требований настраивает Старший состав</p>
+                        </div>
+                        <button onclick="openEditRequirementsModal()" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy shrink-0">Изменить требования</button>
                     </div>
 
                     <div class="bento-card p-6 sm:p-8 space-y-5">
@@ -942,31 +1001,14 @@
                         <div>
                             <label class="block text-[10px] text-zinc-400 uppercase mb-2">Повышение на ранг (Максимум до 3 ранга)</label>
                             <div class="grid grid-cols-2 gap-3">
-                                <button type="button" onclick="selectPromoTarget('2 ранг — Академ')" id="promo-btn-2" class="py-3.5 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all">2 ранг — Академ</button>
-                                <button type="button" onclick="selectPromoTarget('3 ранг — Мейн')" id="promo-btn-3" class="py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all">3 ранг — Мейн</button>
+                                <button type="button" onclick="selectPromoTarget('2. Академ')" id="promo-btn-2" class="py-3.5 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all">2 ранг — Академ</button>
+                                <button type="button" onclick="selectPromoTarget('3. Мейн')" id="promo-btn-3" class="py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all">3 ранг — Мейн</button>
                             </div>
                         </div>
 
                         <div class="space-y-2.5">
-                            <label class="block text-xs font-heavy text-zinc-200">Выполненные нормативы (отметьте нужное)</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div onclick="toggleCustomCheck(this)" data-label="Сдан устав семьи DRUGHILL" class="custom-check-card checked">
-                                    <div class="custom-check-box"><svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-                                    <span class="text-xs font-heavy text-white">Сдан устав семьи DRUGHILL</span>
-                                </div>
-                                <div onclick="toggleCustomCheck(this)" data-label="Выполнены семейные контракты" class="custom-check-card checked">
-                                    <div class="custom-check-box"><svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-                                    <span class="text-xs font-heavy text-white">Выполнены семейные контракты</span>
-                                </div>
-                                <div onclick="toggleCustomCheck(this)" data-label="Пополнен склад / общак" class="custom-check-card">
-                                    <div class="custom-check-box"><svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-                                    <span class="text-xs font-heavy text-white">Пополнен склад / общак</span>
-                                </div>
-                                <div onclick="toggleCustomCheck(this)" data-label="Участие в строях / бизварах" class="custom-check-card">
-                                    <div class="custom-check-box"><svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-                                    <span class="text-xs font-heavy text-white">Участие в строях / бизварах</span>
-                                </div>
-                            </div>
+                            <label class="block text-xs font-heavy text-zinc-200">Выполненные требования (отметьте нужное)</label>
+                            <div id="promo-req-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
                         </div>
 
                         <div>
@@ -1167,6 +1209,57 @@
                         </div>
                     </div>
                     <div id="logs-list-container" class="space-y-2.5"></div>
+                </section>
+
+                <!-- 19a. SENIOR STAFF: ROLLBACKS / VIDEO -->
+                <section id="sec-senior-rollbacks" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8">
+                        <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
+                        <h2 class="text-2xl font-heavy text-white mt-2">Откаты и видео для аттестации</h2>
+                        <p class="text-xs text-zinc-400 mt-1">Откройте видео кнопкой и примите или отклоните</p>
+                    </div>
+                    <div class="bento-card p-6 space-y-4">
+                        <h3 class="text-base font-heavy text-white">На проверке</h3>
+                        <div id="admin-rollbacks-pending" class="space-y-3"></div>
+                    </div>
+                    <div class="bento-card p-6 space-y-4">
+                        <h3 class="text-base font-heavy text-white">Обработанные</h3>
+                        <div id="admin-rollbacks-done" class="space-y-2.5"></div>
+                    </div>
+                </section>
+
+                <!-- 19b. SENIOR STAFF: PROMO CODES -->
+                <section id="sec-senior-promocodes" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8">
+                        <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
+                        <h2 class="text-2xl font-heavy text-white mt-2">Промокоды</h2>
+                        <p class="text-xs text-zinc-400 mt-1">Каждый код работает ограниченное число раз («по счёту»). Активировать код может гость и участник, по одному разу на аккаунт.</p>
+                    </div>
+                    <div class="bento-card p-6 space-y-4">
+                        <h3 class="text-base font-heavy text-white">Создать промокод</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" id="pc-type-0" onclick="selectPromoType('invite')" class="py-3 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all">Приглашение (гость → 1. Контракт)</button>
+                            <button type="button" id="pc-type-1" onclick="selectPromoType('bonus')" class="py-3 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all">Бонус (только уведомление)</button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Код (пусто = случайный)</label>
+                                <input id="pc-code" type="text" maxlength="24" placeholder="DRUG2026" oninput="this.value = this.value.toUpperCase()" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white tracking-widest focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Сколько активаций (1–100)</label>
+                                <input id="pc-uses" type="text" inputmode="numeric" value="5" oninput="sanitizeNumericInput(this)" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Награда / заметка</label>
+                                <input id="pc-reward" type="text" maxlength="100" placeholder="Например: $50 000" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+                        </div>
+                        <button onclick="createPromoCode()" class="w-full py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Создать промокод</button>
+                    </div>
+                    <div id="promo-codes-list" class="space-y-3"></div>
+                </section>
+
                 <!-- 20. SENIOR STAFF: DB (ONLY FOR @krystalovb / LEADER & DEPUTY) -->
                 <section id="sec-senior-db" class="page-sec hidden space-y-6">
                     <div class="bento-card p-6 sm:p-8 space-y-3">
@@ -1175,7 +1268,7 @@
                             <span class="px-2.5 py-1 rounded bg-[#181822] border border-[#2c2c3a] text-zinc-200 text-[10px] font-heavy">@krystalovb</span>
                         </div>
                         <h2 class="text-2xl font-heavy text-white">База данных семьи</h2>
-                        <p class="text-xs text-zinc-400">Сейчас на сайте: состав, заявки, отчёты, премии, отпуска, тесты, новости, устав и всё остальное. Раздел виден только Лидеру и Заместителям.</p>
+                        <p class="text-xs text-zinc-400">Сейчас на сайте: состав, заявки, отчёты, премии, отпуска, тесты, новости, правила и всё остальное. Раздел виден только Лидеру и Заместителям.</p>
                         <div id="db-stats" class="flex flex-wrap gap-2 pt-1"></div>
                     </div>
 
@@ -1290,6 +1383,20 @@
         </div>
     </div>
 
+    <!-- MODAL: EDIT PROMO REQUIREMENTS -->
+    <div id="modal-edit-requirements" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bento-card max-w-xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-heavy text-white">Требования для повышения</h3>
+                <button onclick="closeModal('modal-edit-requirements')" class="text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <p class="text-[10px] text-zinc-400">Меняйте текст требования и выбирайте, для какого повышения оно нужно. Можно добавлять новые и удалять ненужные.</p>
+            <div id="req-editor-list" class="space-y-2.5"></div>
+            <button type="button" onclick="addRequirementRow()" class="w-full py-3 rounded-xl bg-[#181822] border border-dashed border-[#3a3a4a] hover:border-white text-xs font-heavy text-white transition-all">+ Добавить требование</button>
+            <button onclick="saveEditedRequirements()" class="w-full py-3.5 rounded-xl bg-white text-black font-heavy text-xs">Сохранить</button>
+        </div>
+    </div>
+
     <!-- MODAL: EDIT RATES (редактор пунктов премии) -->
     <div id="modal-edit-rates" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bento-card max-w-xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -1332,7 +1439,11 @@
             var TG_BOT_USERNAME = 'drughillsite_bot';
             var OWNER_TG_HANDLE = '@krystalovb';
             var pollTimer = null;
-            var currentPromoTarget = '2 ранг — Академ';
+            var currentPromoTarget = '2. Академ';
+            var promoChecked = {};
+            var currentRollbackKind = 'Откат';
+            var currentPromoType = 'invite';
+            var tempReqs = [];
             var currentLogFilter = 'ALL';
             var tempBuilderQuestions = [];
             var activeRunnerTest = null;
@@ -1352,11 +1463,14 @@
                 payoutItems: makeDefaultPayoutItems(),
                 tests: [],
                 testSubmissions: [],
+                rollbacks: [],
+                promoCodes: [],
+                promoRequirements: makeDefaultRequirements(),
                 news: [
                     { badge: 'ВАЖНО', date: 'Сегодня', title: 'Полная доминация DRUGHILL на бизварах Region RP', desc: 'Синдикат удерживает ключевые предприятия штата.', image: 'https://placehold.co/800x420/121217/ffffff?text=DRUGHILL' }
                 ],
                 rules: [
-                    { badge: '1.1 УСТАВ', title: 'Безусловное соблюдение кодекса DRUGHILL', desc: 'Каждый участник обязан знать правила сервера.' }
+                    { badge: '1.1 ПРАВИЛА', title: 'Безусловное соблюдение кодекса DRUGHILL', desc: 'Каждый участник обязан знать правила сервера.' }
                 ],
                 diplomacy: [
                     { badge: 'СОЮЗ', title: 'CARTEL SYNDICATE', desc: 'Совместный контроль трассы и цехов.' }
@@ -1406,6 +1520,15 @@
                     { id: 'recruit', name: 'Приглашение нового участника', rate: 10000 },
                     { id: 'stroy', name: 'Участие в семейном строе', rate: 5000 },
                     { id: 'duty', name: 'Дежурство на территории', rate: 8000 }
+                ];
+            }
+
+            function makeDefaultRequirements() {
+                return [
+                    { id: 'rq1', rank: 'all', text: 'Сданы правила семьи DRUGHILL' },
+                    { id: 'rq2', rank: 'all', text: 'Выполнены семейные контракты' },
+                    { id: 'rq3', rank: 'all', text: 'Пополнен склад / общак' },
+                    { id: 'rq4', rank: 'all', text: 'Участие в строях / бизварах' }
                 ];
             }
 
@@ -1607,9 +1730,9 @@
             var TOKEN_KEY = 'drughill_session';
             var apiToken = null;
             try { apiToken = localStorage.getItem(TOKEN_KEY); } catch (e) {}
-            var ID_KEYS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests'];
-            var SET_KEYS = ['news', 'rules', 'diplomacy', 'fleet', 'estates', 'payoutItems'];
-            var ALL_KEYS = ID_KEYS.concat(SET_KEYS, ['logs']);
+            var ID_KEYS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests', 'rollbacks'];
+            var SET_KEYS = ['news', 'rules', 'diplomacy', 'fleet', 'estates', 'payoutItems', 'promoRequirements'];
+            var ALL_KEYS = ID_KEYS.concat(SET_KEYS, ['promoCodes', 'logs']);
             var snap = {}, syncRev = 0, lastVsig = '', pushTimer = null, pushing = false, pushAgain = false;
             var loginCode = null;
 
@@ -1648,7 +1771,7 @@
 
             function pendingCount() {
                 function n(a) { return (a || []).filter(function(x) { return x.status === 'PENDING'; }).length; }
-                return n(db.applications) + n(db.promoReports) + n(db.payoutReports) + n(db.vacations);
+                return n(db.applications) + n(db.promoReports) + n(db.payoutReports) + n(db.vacations) + n(db.rollbacks);
             }
 
             function applyServerState(res, fromPoll) {
@@ -1663,6 +1786,7 @@
                 if (res.me) db.currentUser = JSON.parse(JSON.stringify(res.me));
                 takeSnap();
                 renderAll();
+                if (db.currentUser.loggedIn && db.currentUser.role === 'GUEST') navigateTo('join-family');
                 if (wasIn && prevRole === 'GUEST' && db.currentUser.role !== 'GUEST') {
                     navigateTo('home');
                     showToast('Вас приняли в семью: ' + db.currentUser.rankTitle);
@@ -1853,18 +1977,16 @@
 
             var sectionTitles = {
                 'home': 'Главная', 'profile': 'Профиль', 'guest-status': 'Ожидание роли', 'news': 'Новости семьи',
-                'rules': 'Устав семьи', 'ranks': 'Система повышения', 'diplomacy': 'Дипломатия и Война', 'fleet': 'Автопарк',
+                'rules': 'Правила семьи', 'ranks': 'Система повышения', 'diplomacy': 'Дипломатия и Война', 'fleet': 'Автопарк',
                 'estates': 'Недвижимость', 'academy': 'Академия', 'join-family': 'Подать заявку в семью', 'report-promo': 'Отчёт на повышение',
-                'report-payout': 'Отчёт на премию', 'vacations': 'Система отпуска', 'senior-roster': 'Управление составом',
+                'report-payout': 'Отчёт на премию', 'vacations': 'Система отпуска', 'senior-roster': 'Управление составом', 'senior-rollbacks': 'Откаты и видео', 'senior-promocodes': 'Промокоды',
                 'senior-reviews': 'Проверка отчётов', 'senior-test-results': 'Итоги тестов', 'senior-vacations': 'Контроль отпусков',
                 'senior-logs': 'Логи действий', 'senior-db': 'База данных'
             };
 
             window.navigateTo = function(secId) {
                 var role = db.currentUser.role;
-                if (role === 'GUEST' && secId !== 'join-family' && secId !== 'guest-status' && secId !== 'profile') {
-                    secId = 'join-family';
-                }
+                if (role === 'GUEST') secId = 'join-family';
                 if (secId === 'senior-db' && !isDatabaseAccessAllowed(db.currentUser)) {
                     showToast('База данных доступна только Лидеру @krystalovb и Заместителям!');
                     return;
@@ -1904,6 +2026,9 @@
                 }
                 gate.classList.add('hidden');
                 shell.classList.remove('hidden');
+                shell.classList.toggle('guest-mode', db.currentUser.role === 'GUEST');
+                var hdrLogout = document.getElementById('header-logout-btn');
+                if (hdrLogout) hdrLogout.classList.toggle('hidden', db.currentUser.role !== 'GUEST');
 
                 var u = db.currentUser;
                 var role = u.role;
@@ -2066,7 +2191,7 @@
                     if (listView) {
                         listView.classList.remove('hidden');
                         listView.innerHTML = tests.map(function(t) {
-                            return '<div class="bento-card p-6 flex flex-col justify-between gap-4"><div class="space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">Проходной балл: ' + t.passScore + '%</span><h3 class="text-lg font-heavy text-white pt-1">' + t.title + '</h3><p class="text-xs text-zinc-400">Вопросов: ' + t.questions.length + '</p></div><button onclick="startAcademyTest(' + t.id + ')" class="w-full py-3 rounded-xl bg-white text-black font-heavy text-xs">Начать тест</button></div>';
+                            return '<div class="bento-card p-6 flex flex-col justify-between gap-4"><div class="space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">Проходной балл: ' + t.passScore + '%</span><h3 class="text-lg font-heavy text-white pt-1">' + t.title + '</h3><p class="text-xs text-zinc-400">Вопросов: ' + t.questions.length + '</p></div><div class="space-y-2"><button onclick="startAcademyTest(' + t.id + ')" class="w-full py-3 rounded-xl bg-white text-black font-heavy text-xs">Начать тест</button>' + (db.currentUser.role === 'SENIOR' ? '<button onclick="deleteTest(' + t.id + ')" class="w-full py-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 font-heavy text-[11px] transition-all">Удалить тест</button>' : '') + '</div></div>';
                         }).join('');
                     }
                 }
@@ -2115,7 +2240,7 @@
                         var rows = s.details.map(function(d, idx) {
                             return '<div class="p-2.5 rounded-lg bg-[#0a0a0e] border border-[#22222c] flex items-center justify-between text-[11px]"><span>' + (idx + 1) + '. ' + d.qText + ' — <strong class="text-white">' + d.chosenText + '</strong></span><span class="px-2 py-0.5 rounded text-[9px] font-heavy ' + (d.isCorrect ? 'bg-white text-black' : 'bg-red-500/20 text-red-300') + '">' + (d.isCorrect ? 'ВЕРНО' : 'ОШИБКА') + '</span></div>';
                         }).join('');
-                        return '<div class="bento-card p-6 space-y-4"><div class="flex items-center justify-between border-b border-[#23232e] pb-3"><div><div class="text-sm font-heavy text-white">' + s.nick + ' <span class="text-zinc-400">' + s.staticId + '</span> · ' + s.tg + '</div><div class="text-xs text-zinc-400 mt-0.5">' + s.testTitle + '</div></div><span class="px-3 py-1.5 rounded-xl bg-white text-black text-xs font-heavy">' + s.scorePct + '%</span></div><div class="space-y-1.5">' + rows + '</div></div>';
+                        return '<div class="bento-card p-6 space-y-4"><div class="flex items-center justify-between border-b border-[#23232e] pb-3"><div><div class="text-sm font-heavy text-white">' + s.nick + ' <span class="text-zinc-400">' + s.staticId + '</span> · ' + s.tg + '</div><div class="text-xs text-zinc-400 mt-0.5">' + s.testTitle + '</div></div><div class="flex items-center gap-2"><span class="px-3 py-1.5 rounded-xl bg-white text-black text-xs font-heavy">' + s.scorePct + '%</span>' + (canManageContent() ? '<button onclick="deleteTestSubmission(' + s.id + ')" class="px-3 py-1.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-[10px] font-heavy">Удалить</button>' : '') + '</div></div><div class="space-y-1.5">' + rows + '</div></div>';
                     }).join('');
                 }
             }
@@ -2158,7 +2283,32 @@
                 showToast('Тест успешно опубликован!');
             };
 
+            window.deleteTest = function(id) {
+                if (db.currentUser.role !== 'SENIOR') return;
+                var t = (db.tests || []).filter(function(x) { return x.id === id; })[0];
+                if (!t) return;
+                if (!window.confirm('Удалить тест «' + t.title + '»? Результаты, которые уже сданы, останутся.')) return;
+                db.tests = db.tests.filter(function(x) { return x.id !== id; });
+                if (activeRunnerTest && activeRunnerTest.test.id === id) activeRunnerTest = null;
+                addLog('TEST', 'Удалён тест: ' + t.title);
+                saveDb();
+                renderAcademyAndTests();
+                showToast('Тест удалён');
+            };
+
+            window.deleteTestSubmission = function(id) {
+                if (!canManageContent()) { showToast('Удалять результаты может только Лидер или Зам. Лидера'); return; }
+                if (!window.confirm('Удалить этот результат теста?')) return;
+                db.testSubmissions = db.testSubmissions.filter(function(x) { return x.id !== id; });
+                saveDb();
+                renderAcademyAndTests();
+                showToast('Результат удалён');
+            };
+
             window.clearAllTests = function() {
+                if (db.currentUser.role !== 'SENIOR') return;
+                if (!(db.tests || []).length) { showToast('Тестов нет'); return; }
+                if (!window.confirm('Удалить ВСЕ тесты Академии?')) return;
                 db.tests = [];
                 activeRunnerTest = null;
                 addLog('TEST', 'Все тесты очищены');
@@ -2224,31 +2374,102 @@
 
             window.toggleCustomCheck = function(el) { el.classList.toggle('checked'); };
 
+            var RANK_ORDER = ['1. Контракт', '2. Академ', '3. Мейн'];
+
+            function renderPromoRequirements() {
+                var box = document.getElementById('promo-req-list');
+                if (!box) return;
+                var list = (db.promoRequirements || []).filter(function(r) { return r.rank === 'all' || r.rank === currentPromoTarget; });
+                if (!list.length) { box.innerHTML = '<div class="text-xs text-zinc-500">Для этого ранга требования не заданы.</div>'; return; }
+                box.innerHTML = list.map(function(r) {
+                    var on = promoChecked[r.text] ? ' checked' : '';
+                    return '<div onclick="togglePromoReq(this)" data-label="' + escHtml(r.text) + '" class="custom-check-card' + on + '">' +
+                        '<div class="custom-check-box"><svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+                        '<span class="text-xs font-heavy text-white">' + escHtml(r.text) + '</span></div>';
+                }).join('');
+            }
+
+            window.togglePromoReq = function(el) {
+                el.classList.toggle('checked');
+                promoChecked[el.getAttribute('data-label')] = el.classList.contains('checked');
+            };
+
             window.selectPromoTarget = function(rankName) {
                 currentPromoTarget = rankName;
                 var b2 = document.getElementById('promo-btn-2');
                 var b3 = document.getElementById('promo-btn-3');
                 if (!b2 || !b3) return;
-                if (rankName === '2 ранг — Академ') {
-                    b2.className = 'py-3.5 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all';
-                    b3.className = 'py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all';
-                } else {
-                    b3.className = 'py-3.5 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all';
-                    b2.className = 'py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all';
+                var on = 'py-3.5 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all';
+                var off = 'py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all';
+                b2.className = rankName === '2. Академ' ? on : off;
+                b3.className = rankName === '3. Мейн' ? on : off;
+                renderPromoRequirements();
+            };
+
+            window.openEditRequirementsModal = function() {
+                if (db.currentUser.role !== 'SENIOR') return;
+                tempReqs = (db.promoRequirements || []).map(function(r) { return { id: r.id, rank: r.rank, text: r.text }; });
+                renderRequirementsEditor();
+                var m = document.getElementById('modal-edit-requirements');
+                if (m) m.classList.remove('hidden');
+            };
+
+            function renderRequirementsEditor() {
+                var box = document.getElementById('req-editor-list');
+                if (!box) return;
+                box.innerHTML = tempReqs.map(function(r, idx) {
+                    function opt(v, label) { return '<option value="' + v + '"' + (r.rank === v ? ' selected' : '') + '>' + label + '</option>'; }
+                    return '<div class="flex items-center gap-2">' +
+                        '<input type="text" maxlength="100" value="' + escHtml(r.text) + '" placeholder="Текст требования" oninput="onReqRowInput(' + idx + ', \'text\', this.value)" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
+                        '<select onchange="onReqRowInput(' + idx + ', \'rank\', this.value)" class="w-32 px-2.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-[11px] text-white focus:outline-none focus:border-white">' + opt('all', 'Для всех') + opt('2. Академ', 'На 2 ранг') + opt('3. Мейн', 'На 3 ранг') + '</select>' +
+                        '<button type="button" onclick="removeRequirementRow(' + idx + ')" class="w-10 h-10 shrink-0 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-heavy" title="Удалить">✕</button>' +
+                    '</div>';
+                }).join('');
+            }
+
+            window.onReqRowInput = function(idx, field, val) { if (tempReqs[idx]) tempReqs[idx][field] = val; };
+            window.addRequirementRow = function() {
+                tempReqs.push({ id: 'rq' + Date.now() + '_' + tempReqs.length, rank: 'all', text: '' });
+                renderRequirementsEditor();
+                var box = document.getElementById('req-editor-list');
+                if (box && box.lastChild) { var inp = box.lastChild.querySelector('input'); if (inp) inp.focus(); }
+            };
+            window.removeRequirementRow = function(idx) { tempReqs.splice(idx, 1); renderRequirementsEditor(); };
+
+            window.saveEditedRequirements = function() {
+                var cleaned = [];
+                for (var i = 0; i < tempReqs.length; i++) {
+                    var tx = String(tempReqs[i].text || '').trim();
+                    if (!tx) continue;
+                    cleaned.push({ id: tempReqs[i].id || ('rq' + Date.now() + '_' + i), rank: tempReqs[i].rank || 'all', text: tx });
                 }
+                if (!cleaned.length) { showToast('Нужно хотя бы одно требование'); return; }
+                db.promoRequirements = cleaned;
+                addLog('RANK', 'Обновлены требования для повышения (' + cleaned.length + ' шт.)');
+                saveDb();
+                renderPromoRequirements();
+                closeModal('modal-edit-requirements');
+                showToast('Требования сохранены!');
             };
 
             window.submitPromoReport = function() {
                 var u = db.currentUser;
+                var cur = RANK_ORDER.indexOf(u.rankTitle);
+                if (cur === -1) { showToast('Рапорт на повышение подают участники с 1 по 3 ранг'); return; }
+                if (cur >= RANK_ORDER.indexOf(currentPromoTarget)) { showToast('Этот ранг у вас уже есть или выше'); return; }
                 var proofsEl = document.getElementById('promo-proofs');
                 var proofs = proofsEl && proofsEl.value.trim() ? proofsEl.value.trim() : 'Приложено';
-                var checkedEls = document.querySelectorAll('#sec-report-promo .custom-check-card.checked');
+                var checkedEls = document.querySelectorAll('#promo-req-list .custom-check-card.checked');
                 var tasks = [];
                 for (var i = 0; i < checkedEls.length; i++) tasks.push(checkedEls[i].getAttribute('data-label'));
+                if (!tasks.length) { showToast('Отметьте выполненные требования'); return; }
 
-                db.promoReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, fromRank: u.rankTitle, toRank: currentPromoTarget, tasks: tasks.join(', ') || 'Нормативы', proofs: proofs, status: 'PENDING' });
+                db.promoReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, fromRank: u.rankTitle, toRank: currentPromoTarget, tasks: tasks.join(' • '), proofs: proofs, status: 'PENDING' });
                 addLog('RANK', 'Рапорт на повышение до: ' + currentPromoTarget);
+                promoChecked = {};
+                if (proofsEl) proofsEl.value = '';
                 saveDb();
+                renderPromoRequirements();
                 renderSeniorPanels();
                 showToast('Рапорт отправлен!');
             };
@@ -2403,14 +2624,28 @@
                 showToast('Заявка на премию отправлена!');
             };
 
+            // Превращает ссылки из текста в кнопки (только http/https), остальной текст выводит как есть
+            function linkButtons(txt) {
+                var s0 = String(txt == null ? '' : txt);
+                var urls = s0.match(/https?:\/\/[^\s,;<>"'«»]+/g) || [];
+                var rest = s0;
+                var btns = urls.map(function(u, i) {
+                    rest = rest.replace(u, ' ');
+                    return '<a href="' + escHtml(u) + '" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-white text-black hover:bg-zinc-200 text-[10px] font-heavy transition-all">Открыть ссылку' + (urls.length > 1 ? ' ' + (i + 1) : '') + ' ↗</a>';
+                }).join('');
+                rest = rest.replace(/[\s,;]+/g, ' ').trim();
+                if (rest === 'Приложено' || rest === 'Док-ва') rest = '';
+                return (btns ? '<div class="flex flex-wrap gap-1.5 mt-2">' + btns + '</div>' : '') +
+                    (rest ? '<div class="text-[10px] text-zinc-500 mt-1.5">' + escHtml(rest) + '</div>' : '') +
+                    (!btns && !rest ? '<div class="text-[10px] text-zinc-500 mt-1.5">Ссылка не приложена</div>' : '');
+            }
+
             function payoutBreakdownHtml(py) {
                 var parts = [];
                 if (Array.isArray(py.items)) {
                     py.items.forEach(function(l) { parts.push(escHtml(l.name) + ' × ' + l.qty); });
                 }
-                var html = parts.join(' · ');
-                if (py.proofs && py.proofs !== 'Док-ва') html += (html ? '<br>' : '') + 'Док-ва: ' + escHtml(py.proofs);
-                return html;
+                return parts.join(' · ') + linkButtons(py.proofs);
             }
 
             window.submitVacationRequest = function() {
@@ -2469,6 +2704,39 @@
                 if (sbB) sbB.textContent = String(pendApps.length + pendPromos.length + pendPays.length);
                 var vbB = document.getElementById('sidebar-vacations-badge');
                 if (vbB) vbB.textContent = String(pendVacs.length);
+                var pendRb = (db.rollbacks || []).filter(function(r) { return r.status === 'PENDING'; });
+                var rbB = document.getElementById('sidebar-rollbacks-badge');
+                if (rbB) rbB.textContent = String(pendRb.length);
+
+                var rbPendEl = document.getElementById('admin-rollbacks-pending');
+                if (rbPendEl) {
+                    rbPendEl.innerHTML = pendRb.length === 0 ? '<div class="text-xs text-zinc-500">Нет видео на проверке.</div>' : pendRb.map(function(r) {
+                        return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
+                            '<div class="flex items-center gap-3 min-w-0">' +
+                                '<img src="' + escHtml(r.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-11 h-11 rounded-full object-cover border border-white/20 shrink-0">' +
+                                '<div class="min-w-0">' +
+                                    '<div class="flex flex-wrap items-center gap-2"><span class="font-heavy text-white">' + escHtml(r.nick) + '</span><span class="text-zinc-300">' + escHtml(r.tg) + '</span><span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">' + escHtml(r.kind) + '</span></div>' +
+                                    '<div class="text-[11px] text-zinc-400 mt-1">' + escHtml(r.title) + (r.comment ? ' · ' + escHtml(r.comment) : '') + '</div>' +
+                                    linkButtons(r.link) +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="flex items-center gap-2 shrink-0">' +
+                                '<button onclick="decideRollback(' + r.id + ', true)" class="px-4 py-2 rounded-xl bg-white text-black text-[10px] font-heavy">Принять</button>' +
+                                '<button onclick="decideRollback(' + r.id + ', false)" class="px-3.5 py-2 rounded-xl bg-red-500/15 text-red-300 text-[10px] font-heavy">Отклонить</button>' +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+                var rbDoneEl = document.getElementById('admin-rollbacks-done');
+                if (rbDoneEl) {
+                    var doneRb = (db.rollbacks || []).filter(function(r) { return r.status !== 'PENDING'; }).slice(0, 30);
+                    rbDoneEl.innerHTML = doneRb.length === 0 ? '<div class="text-xs text-zinc-500">Пока пусто.</div>' : doneRb.map(function(r) {
+                        return '<div class="p-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] flex flex-wrap items-center justify-between gap-3 text-xs">' +
+                            '<div class="min-w-0"><span class="font-heavy text-white">' + escHtml(r.nick) + '</span> <span class="text-zinc-400">· ' + escHtml(r.kind) + (r.decidedBy ? ' · решил ' + escHtml(r.decidedBy) : '') + '</span>' + linkButtons(r.link) + '</div>' +
+                            '<div class="flex items-center gap-2">' + statusBadge(r.status) + '<button onclick="deleteRollback(' + r.id + ')" class="px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 text-[10px] font-heavy">Удалить</button></div>' +
+                        '</div>';
+                    }).join('');
+                }
 
                 var statusLabelRu = {
                     'PENDING': 'ОЖИДАЕТ',
@@ -2625,7 +2893,7 @@
                                             '<span class="text-zinc-300">' + (a.tg || '@drughill') + '</span>' +
                                             '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">' + a.staticId + '</span>' +
                                         '</div>' +
-                                        (a.kind === 'Уже игрок семьи' ? '<div class="text-[11px] text-amber-300 mt-1 font-heavy">Утверждает, что уже игрок семьи. Проверьте и примите.</div>' : '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + a.age + ' · Прайм: ' + a.prime + ' · Опыт: ' + a.exp + '</div>') +
+                                        (a.kind === 'Уже игрок семьи' ? '<div class="text-[11px] text-amber-300 mt-1 font-heavy">Утверждает, что уже игрок семьи. Проверьте и примите.</div>' : '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + escHtml(a.age) + ' · Прайм: ' + escHtml(a.prime) + ' · Опыт: ' + escHtml(a.exp) + '</div><div class="text-[10px] text-zinc-500 mt-1.5">Откаты:</div>' + linkButtons(a.rolls)) +
                                     '</div>' +
                                 '</div>' +
                                 '<div class="flex items-center gap-2 shrink-0">' +
@@ -2649,7 +2917,7 @@
                                         '<span class="text-zinc-300">' + (a.tg || '@drughill') + '</span>' +
                                         '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">' + a.staticId + '</span>' +
                                     '</div>' +
-                                    (a.kind === 'Уже игрок семьи' ? '<div class="text-[11px] text-amber-300 mt-1 font-heavy">Утверждает, что уже игрок семьи. Проверьте и примите.</div>' : '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + a.age + ' · Прайм: ' + a.prime + ' · Опыт: ' + a.exp + '</div>') +
+                                    (a.kind === 'Уже игрок семьи' ? '<div class="text-[11px] text-amber-300 mt-1 font-heavy">Утверждает, что уже игрок семьи. Проверьте и примите.</div>' : '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + escHtml(a.age) + ' · Прайм: ' + escHtml(a.prime) + ' · Опыт: ' + escHtml(a.exp) + '</div><div class="text-[10px] text-zinc-500 mt-1.5">Откаты:</div>' + linkButtons(a.rolls)) +
                                 '</div>' +
                             '</div>' +
                             '<div class="flex items-center gap-2 shrink-0">' +
@@ -2672,7 +2940,9 @@
                                         '<span class="text-zinc-300">' + (p.tg || '@drughill') + '</span>' +
                                         '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">На ' + p.toRank + '</span>' +
                                     '</div>' +
-                                    '<div class="text-[11px] text-zinc-400 mt-1">' + p.tasks + '</div>' +
+                                    '<div class="text-[10px] text-zinc-500 mt-1">' + escHtml(p.fromRank || '') + ' → ' + escHtml(p.toRank) + '</div>' +
+                                    '<div class="text-[11px] text-zinc-300 mt-1.5 leading-relaxed">' + String(p.tasks || '').split(' • ').map(function(t) { return '<span class="inline-block mr-1.5 mb-1 px-2 py-0.5 rounded bg-[#181822] border border-[#2c2c3a]">' + escHtml(t) + '</span>'; }).join('') + '</div>' +
+                                    linkButtons(p.proofs) +
                                 '</div>' +
                             '</div>' +
                             '<div class="flex items-center gap-2 shrink-0">' +
@@ -2698,7 +2968,10 @@
                                     '<div class="text-[10px] text-zinc-400 mt-1.5 leading-relaxed">' + payoutBreakdownHtml(py) + '</div>' +
                                 '</div>' +
                             '</div>' +
-                            '<button onclick="decidePayout(' + py.id + ', true)" class="px-4 py-2 rounded-xl bg-white text-black text-[10px] font-heavy">Выплачено</button>' +
+                            '<div class="flex items-center gap-2 shrink-0">' +
+                                '<button onclick="decidePayout(' + py.id + ', true)" class="px-4 py-2 rounded-xl bg-white text-black text-[10px] font-heavy">Принять премию</button>' +
+                                '<button onclick="decidePayout(' + py.id + ', false)" class="px-3.5 py-2 rounded-xl bg-red-500/15 text-red-300 text-[10px] font-heavy">Отклонить</button>' +
+                            '</div>' +
                         '</div>';
                     }).join('');
                 }
@@ -2821,31 +3094,202 @@
             };
 
             window.decidePromo = function(id, ok) {
+                if (db.currentUser.role !== 'SENIOR') return;
                 for (var i = 0; i < db.promoReports.length; i++) {
-                    if (db.promoReports[i].id === id) {
-                        db.promoReports[i].status = ok ? 'APPROVED' : 'REJECTED';
-                        if (ok) {
-                            for (var j = 0; j < db.roster.length; j++) {
-                                if (db.roster[j].nick === db.promoReports[i].nick) {
-                                    db.roster[j].rank = db.promoReports[i].toRank;
-                                }
+                    var pr = db.promoReports[i];
+                    if (pr.id !== id) continue;
+                    pr.status = ok ? 'APPROVED' : 'REJECTED';
+                    if (ok) {
+                        for (var j = 0; j < db.roster.length; j++) {
+                            if (String(db.roster[j].tg || '').toLowerCase() === String(pr.tg || '').toLowerCase()) {
+                                db.roster[j].rank = pr.toRank;
                             }
                         }
+                        addLog('RANK', 'Повышен ' + pr.nick + ' до «' + pr.toRank + '»');
+                    } else {
+                        addLog('RANK', 'Отклонён рапорт на повышение: ' + pr.nick);
+                    }
+                    break;
+                }
+                saveDb();
+                renderSeniorPanels();
+                showToast(ok ? 'Участник повышен' : 'Рапорт отклонён');
+            };
+
+            window.decidePayout = function(id, ok) {
+                if (db.currentUser.role !== 'SENIOR') return;
+                for (var i = 0; i < db.payoutReports.length; i++) {
+                    if (db.payoutReports[i].id === id) {
+                        db.payoutReports[i].status = ok ? 'APPROVED' : 'REJECTED';
+                        addLog('RANK', (ok ? 'Одобрена премия $' : 'Отклонена премия $') + Number(db.payoutReports[i].total).toLocaleString('en-US') + ' для ' + db.payoutReports[i].nick);
+                        break;
                     }
                 }
                 saveDb();
                 renderSeniorPanels();
-                showToast('Рапорт обработан');
+                showToast(ok ? 'Премия одобрена' : 'Премия отклонена');
             };
 
-            window.decidePayout = function(id, ok) {
-                for (var i = 0; i < db.payoutReports.length; i++) {
-                    if (db.payoutReports[i].id === id) db.payoutReports[i].status = ok ? 'APPROVED' : 'REJECTED';
+            // ===== ОТКАТЫ / ВИДЕО-АТТЕСТАЦИЯ =====
+            window.selectRollbackKind = function(kind) {
+                currentRollbackKind = kind;
+                var on = 'py-3 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all';
+                var off = 'py-3 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all';
+                var b0 = document.getElementById('rb-kind-0'), b1 = document.getElementById('rb-kind-1');
+                if (b0) b0.className = kind === 'Откат' ? on : off;
+                if (b1) b1.className = kind === 'Аттестация' ? on : off;
+                var w = document.getElementById('rb-test-wrap');
+                if (w) w.classList.toggle('hidden', kind !== 'Аттестация');
+            };
+
+            function statusBadge(st) {
+                if (st === 'APPROVED') return '<span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[9px] font-heavy">ПРИНЯТО</span>';
+                if (st === 'REJECTED') return '<span class="px-2.5 py-1 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 text-[9px] font-heavy">ОТКЛОНЕНО</span>';
+                return '<span class="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[9px] font-heavy">НА ПРОВЕРКЕ</span>';
+            }
+
+            window.submitRollback = function() {
+                var linkEl = document.getElementById('rb-link');
+                var link = linkEl ? linkEl.value.trim() : '';
+                if (!/^https?:\/\/[^\s]{4,}$/.test(link)) { showToast('Вставьте ссылку на видео (https://...)'); return; }
+                var cEl = document.getElementById('rb-comment');
+                var tEl = document.getElementById('rb-test');
+                var title = currentRollbackKind === 'Аттестация' ? ((tEl && tEl.value) || 'Аттестация') : 'Откат';
+                var u = db.currentUser;
+                db.rollbacks.unshift({ id: Date.now(), kind: currentRollbackKind, title: title, link: link, comment: cEl ? cEl.value.trim() : '', nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, status: 'PENDING' });
+                addLog('TEST', (currentRollbackKind === 'Откат' ? 'Добавлен откат' : 'Видео для аттестации «' + title + '»'));
+                if (linkEl) linkEl.value = '';
+                if (cEl) cEl.value = '';
+                saveDb();
+                renderRollbacks();
+                renderSeniorPanels();
+                showToast('Отправлено Старшему составу!');
+            };
+
+            window.decideRollback = function(id, ok) {
+                if (db.currentUser.role !== 'SENIOR') return;
+                for (var i = 0; i < db.rollbacks.length; i++) {
+                    if (db.rollbacks[i].id === id) {
+                        db.rollbacks[i].status = ok ? 'APPROVED' : 'REJECTED';
+                        addLog('TEST', (ok ? 'Принят ' : 'Отклонён ') + (db.rollbacks[i].kind === 'Откат' ? 'откат' : 'видео аттестации') + ' от ' + db.rollbacks[i].nick);
+                        break;
+                    }
                 }
                 saveDb();
                 renderSeniorPanels();
-                showToast('Премия обработана');
+                showToast(ok ? 'Принято' : 'Отклонено');
             };
+
+            window.deleteRollback = function(id) {
+                if (db.currentUser.role !== 'SENIOR') return;
+                if (!window.confirm('Удалить запись?')) return;
+                db.rollbacks = db.rollbacks.filter(function(r) { return r.id !== id; });
+                saveDb();
+                renderSeniorPanels();
+            };
+
+            function renderRollbacks() {
+                var sel = document.getElementById('rb-test');
+                if (sel) {
+                    var tests = db.tests || [];
+                    var sig = tests.map(function(t) { return t.title; }).join('|');
+                    if (sel.getAttribute('data-sig') !== sig) {
+                        var prev = sel.value;
+                        sel.innerHTML = '<option value="Аттестация">Общая аттестация</option>' + tests.map(function(t) { return '<option value="' + escHtml(t.title) + '">' + escHtml(t.title) + '</option>'; }).join('');
+                        sel.setAttribute('data-sig', sig);
+                        if (prev) sel.value = prev;
+                    }
+                }
+                var mine = document.getElementById('my-rollbacks-list');
+                if (mine) {
+                    var my = (db.rollbacks || []).filter(function(r) { return String(r.tg || '').toLowerCase() === String(db.currentUser.tg || '').toLowerCase(); });
+                    mine.innerHTML = my.length === 0 ? '<div class="text-xs text-zinc-500">Вы ещё ничего не отправляли.</div>' : my.map(function(r) {
+                        return '<div class="p-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] text-xs"><div class="flex items-center justify-between gap-2"><div class="font-heavy text-white">' + escHtml(r.kind) + (r.title && r.title !== r.kind ? ' · ' + escHtml(r.title) : '') + '</div>' + statusBadge(r.status) + '</div>' +
+                            (r.comment ? '<div class="text-[11px] text-zinc-400 mt-1">' + escHtml(r.comment) + '</div>' : '') + linkButtons(r.link) + '</div>';
+                    }).join('');
+                }
+            }
+
+            // ===== ПРОМОКОДЫ =====
+            window.redeemPromo = function(inputId) {
+                var el = document.getElementById(inputId);
+                var code = el ? el.value.trim() : '';
+                if (!code) { showToast('Введите промокод'); return; }
+                api('POST', '/api/promo/redeem', { code: code }).then(function(res) {
+                    if (res._status === 401) { forceLogout('Сессия истекла, войдите снова'); return; }
+                    if (res.state) applyServerState(res, false);
+                    if (res.error) { showToast(res.error); return; }
+                    if (el) el.value = '';
+                    var pr = res.promo || {};
+                    showToast(pr.joined ? 'Промокод принят: вы в семье (1. Контракт)!' : ('Промокод активирован' + (pr.reward ? ': ' + pr.reward : '')));
+                }).catch(function() { showToast('Нет связи с сервером'); });
+            };
+
+            window.selectPromoType = function(t) {
+                currentPromoType = t;
+                var on = 'py-3 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all';
+                var off = 'py-3 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all';
+                var b0 = document.getElementById('pc-type-0'), b1 = document.getElementById('pc-type-1');
+                if (b0) b0.className = t === 'invite' ? on : off;
+                if (b1) b1.className = t === 'bonus' ? on : off;
+            };
+
+            function promoAction(path, body, okMsg) {
+                api('POST', path, body).then(function(res) {
+                    if (res.state) applyServerState(res, false);
+                    showToast(res.error || okMsg);
+                }).catch(function() { showToast('Нет связи с сервером'); });
+            }
+
+            window.createPromoCode = function() {
+                var uses = parseInt((document.getElementById('pc-uses') || {}).value, 10);
+                if (!(uses >= 1 && uses <= 100)) { showToast('Количество активаций: от 1 до 100'); return; }
+                var codeEl = document.getElementById('pc-code'), rwEl = document.getElementById('pc-reward');
+                promoAction('/api/promo/create', { code: codeEl ? codeEl.value.trim() : '', uses: uses, type: currentPromoType, reward: rwEl ? rwEl.value.trim() : '' }, 'Промокод создан');
+                if (codeEl) codeEl.value = '';
+                if (rwEl) rwEl.value = '';
+            };
+            window.togglePromoCode = function(id) { promoAction('/api/promo/toggle', { id: id }, 'Статус промокода изменён'); };
+            window.deletePromoCode = function(id) {
+                if (!window.confirm('Удалить промокод вместе с историей активаций?')) return;
+                promoAction('/api/promo/delete', { id: id }, 'Промокод удалён');
+            };
+            window.copyPromoCode = function(code) {
+                var temp = document.createElement('textarea');
+                temp.value = code; document.body.appendChild(temp); temp.select();
+                document.execCommand('copy'); document.body.removeChild(temp);
+                showToast('Скопировано: ' + code);
+            };
+
+            function renderPromoCodes() {
+                var box = document.getElementById('promo-codes-list');
+                if (!box) return;
+                var list = db.promoCodes || [];
+                box.innerHTML = list.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500">Промокодов пока нет.</div>' : list.map(function(c) {
+                    var left = c.uses - c.used;
+                    var pct = c.uses ? Math.round(c.used / c.uses * 100) : 0;
+                    var dead = !c.active || left <= 0;
+                    var who = (c.usedBy || []).map(function(u) { return '<span class="inline-block mr-1.5 mb-1 px-2 py-0.5 rounded bg-[#181822] border border-[#2c2c3a] text-[10px] text-zinc-300">' + escHtml(u.nick) + ' · ' + escHtml(u.tg) + '</span>'; }).join('');
+                    return '<div class="bento-card p-5 space-y-3 text-xs">' +
+                        '<div class="flex flex-wrap items-center justify-between gap-3">' +
+                            '<div class="flex flex-wrap items-center gap-2">' +
+                                '<span class="px-3 py-1.5 rounded-lg bg-white text-black text-sm font-heavy tracking-widest">' + escHtml(c.code) + '</span>' +
+                                '<span class="px-2.5 py-1 rounded-lg bg-white/10 text-white text-[10px] font-heavy">' + (c.type === 'invite' ? 'ПРИГЛАШЕНИЕ' : 'БОНУС') + '</span>' +
+                                '<span class="px-2.5 py-1 rounded-lg text-[10px] font-heavy ' + (dead ? 'bg-red-500/15 border border-red-500/30 text-red-300' : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300') + '">' + (left <= 0 ? 'ЛИМИТ ИСЧЕРПАН' : (c.active ? 'АКТИВЕН' : 'ОТКЛЮЧЁН')) + '</span>' +
+                            '</div>' +
+                            '<div class="flex flex-wrap items-center gap-1.5">' +
+                                '<button onclick="copyPromoCode(\'' + escHtml(c.code) + '\')" class="px-3 py-1.5 rounded-lg bg-[#181822] border border-[#2c2c3a] text-[10px] font-heavy text-white">Копировать</button>' +
+                                '<button onclick="togglePromoCode(' + c.id + ')" class="px-3 py-1.5 rounded-lg bg-[#181822] border border-[#2c2c3a] text-[10px] font-heavy text-white">' + (c.active ? 'Отключить' : 'Включить') + '</button>' +
+                                (canManageContent() ? '<button onclick="deletePromoCode(' + c.id + ')" class="px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 text-[10px] font-heavy">Удалить</button>' : '') +
+                            '</div>' +
+                        '</div>' +
+                        '<div><div class="flex items-center justify-between text-[11px] text-zinc-400 mb-1"><span>Активаций: <strong class="text-white">' + c.used + ' из ' + c.uses + '</strong> · осталось ' + Math.max(0, left) + '</span><span>' + escHtml(c.createdBy || '') + '</span></div>' +
+                        '<div class="h-1.5 rounded bg-[#1c1c26] overflow-hidden"><div class="h-full bg-white" style="width:' + pct + '%"></div></div></div>' +
+                        (c.reward ? '<div class="text-[11px] text-zinc-300">Награда / заметка: ' + escHtml(c.reward) + '</div>' : '') +
+                        (who ? '<div><div class="text-[10px] text-zinc-500 uppercase mb-1">Активировали</div>' + who + '</div>' : '') +
+                    '</div>';
+                }).join('');
+            }
 
             window.setLogFilter = function(flt) { currentLogFilter = flt; renderSeniorPanels(); };
 
@@ -2857,7 +3301,7 @@
                     'estates': 'Добавить дом в Недвижимость',
                     'news': 'Добавить новость семьи',
                     'fleet': 'Добавить транспорт в Автопарк',
-                    'rules': 'Добавить пункт в Устав',
+                    'rules': 'Добавить пункт в Правила',
                     'diplomacy': 'Добавить статус в Дипломатию'
                 };
                 var mTitle = document.getElementById('modal-add-content-title');
@@ -2974,6 +3418,9 @@
                 renderJoinState();
                 renderContentSections();
                 renderAcademyAndTests();
+                renderRollbacks();
+                renderPromoRequirements();
+                renderPromoCodes();
                 renderPayoutRates();
                 renderSeniorPanels();
                 renderDbPanel();

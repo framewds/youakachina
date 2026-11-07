@@ -48,14 +48,27 @@ const SPEC = {
   fleet: ['badge', 'date', 'title', 'desc', 'image'],
   estates: ['badge', 'date', 'title', 'desc', 'image'],
   payoutItems: ['id', 'name', 'rate'],
+  rollbacks: ['id', 'nick', 'staticId', 'tg', 'avatar', 'kind', 'title', 'link', 'comment', 'status', 'decidedBy', 'createdAt'],
+  promoRequirements: ['id', 'rank', 'text'],
+  promoCodes: ['id', 'code', 'type', 'uses', 'used', 'reward', 'active', 'createdBy', 'createdAt', 'usedBy'],
   logs: ['id', 'type', 'actor', 'action', 'time', 'ts']
 };
 const KEYS = Object.keys(SPEC);
-const ID_COLLS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests'];
-const SET_COLLS = ['news', 'rules', 'diplomacy', 'fleet', 'estates', 'payoutItems'];
+const ID_COLLS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests', 'rollbacks', 'promoCodes'];
+const SET_COLLS = ['news', 'rules', 'diplomacy', 'fleet', 'estates', 'payoutItems', 'promoRequirements'];
 const CONTENT = ['news', 'rules', 'diplomacy', 'fleet', 'estates'];
 const URL_FIELDS = ['avatar', 'image'];
 const STATUSES = ['PENDING', 'APPROVED', 'REJECTED'];
+const PROMO_RANKS = ['1. Контракт', '2. Академ', '3. Мейн'];
+const PROMO_TARGETS = ['2. Академ', '3. Мейн'];
+const ROLLBACK_KINDS = ['Откат', 'Аттестация'];
+const PROMO_TYPES = ['invite', 'bonus'];
+const DEFAULT_REQUIREMENTS = [
+  { id: 'rq1', rank: 'all', text: 'Сданы правила семьи DRUGHILL' },
+  { id: 'rq2', rank: 'all', text: 'Выполнены семейные контракты' },
+  { id: 'rq3', rank: 'all', text: 'Пополнен склад / общак' },
+  { id: 'rq4', rank: 'all', text: 'Участие в строях / бизварах' }
+];
 
 function atomicWrite(file, text) {
   const tmp = file + '.tmp';
@@ -141,6 +154,9 @@ function normalizeState(raw) {
       { id: 'stroy', name: 'Участие в семейном строе', rate: 5000 }, { id: 'duty', name: 'Дежурство на территории', rate: 8000 }
     ];
   }
+  if (!S.promoRequirements.length) S.promoRequirements = DEFAULT_REQUIREMENTS.map(r => Object.assign({}, r));
+  S.rules.forEach(r => { if (r.badge) r.badge = r.badge.replace(/УСТАВ/g, 'ПРАВИЛА'); });
+  S.promoRequirements.forEach(r => { if (r.text) r.text = r.text.replace(/устав семьи/gi, 'правила семьи').replace(/Сдан правила/, 'Сданы правила'); });
   ensureIds(S);
   ensureOwner(S);
   return S;
@@ -223,6 +239,8 @@ function viewFor(me) {
     v.payoutReports = state.payoutReports.filter(own);
     v.testSubmissions = state.testSubmissions.filter(own);
     v.applications = state.applications.filter(own);
+    v.rollbacks = state.rollbacks.filter(own);
+    v.promoRequirements = state.promoRequirements;
   } else {
     v.applications = state.applications.filter(own);
   }
@@ -249,8 +267,10 @@ const SUBS = {
   promoReports: { min: LEVELS.MEMBER, fields: ['toRank', 'tasks', 'proofs'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
   payoutReports: { min: LEVELS.MEMBER, fields: ['items', 'proofs'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
   vacations: { min: LEVELS.MEMBER, fields: ['startDate', 'endDate', 'reason'], del: LEVELS.SENIOR, decide: LEVELS.SENIOR },
-  testSubmissions: { min: LEVELS.MEMBER, fields: ['testTitle', 'scorePct', 'passed', 'time', 'details'], del: LEVELS.LEADER, decide: LEVELS.LEADER + 1 }
+  testSubmissions: { min: LEVELS.MEMBER, fields: ['testTitle', 'scorePct', 'passed', 'time', 'details'], del: LEVELS.LEADER, decide: LEVELS.LEADER + 1 },
+  rollbacks: { min: LEVELS.MEMBER, fields: ['kind', 'title', 'link', 'comment'], del: LEVELS.SENIOR, decide: LEVELS.SENIOR }
 };
+function rankIdx(rank) { return PROMO_RANKS.indexOf(rank); }
 
 function buildSubmission(coll, me, rec, W) {
   const cfg = SUBS[coll];
@@ -267,6 +287,9 @@ function buildSubmission(coll, me, rec, W) {
   if (coll === 'promoReports') {
     out.fromRank = me.rank;
     out.toRank = cleanStr(out.toRank || '', 60);
+    if (PROMO_TARGETS.indexOf(out.toRank) === -1) throw new HttpError(400, 'Выберите ранг: 2. Академ или 3. Мейн');
+    if (rankIdx(me.rank) === -1) throw new HttpError(400, 'Рапорт на повышение подают участники с 1 по 3 ранг');
+    if (rankIdx(me.rank) >= rankIdx(out.toRank)) throw new HttpError(400, 'Этот ранг у вас уже есть или выше');
     out.tasks = cleanStr(out.tasks || '', 1000);
     out.proofs = cleanStr(out.proofs || '', 2000);
   }
@@ -297,6 +320,13 @@ function buildSubmission(coll, me, rec, W) {
     out.daysCount = days;
     out.rank = me.rank;
     out.reason = cleanStr(out.reason || 'Семейные обстоятельства', 500);
+  }
+  if (coll === 'rollbacks') {
+    out.kind = ROLLBACK_KINDS.indexOf(out.kind) !== -1 ? out.kind : 'Откат';
+    out.title = cleanStr(out.title || (out.kind === 'Откат' ? 'Откат' : 'Аттестация'), 100);
+    out.comment = cleanStr(out.comment || '', 500);
+    out.link = cleanStr(out.link || '', 600);
+    if (!/^https?:\/\/[^\s]{4,}$/.test(out.link)) throw new HttpError(400, 'Нужна ссылка на видео (https://...)');
   }
   if (coll === 'testSubmissions') {
     out.scorePct = Math.max(0, Math.min(100, Math.round(Number(out.scorePct) || 0)));
@@ -420,6 +450,16 @@ function applyPatch(me, patch, events) {
         if (!it.id || seen.has(it.id)) it.id = 'p' + Date.now() + '_' + i;
         seen.add(it.id);
       });
+    } else if (coll === 'promoRequirements') {
+      if (!next.length) throw new HttpError(400, 'Нужно хотя бы одно требование');
+      const seen = new Set();
+      next.forEach((it, i) => {
+        it.text = cleanStr(it.text, 120);
+        it.rank = it.rank === 'all' || PROMO_TARGETS.indexOf(it.rank) !== -1 ? it.rank : 'all';
+        if (!it.id || seen.has(it.id)) it.id = 'rq' + Date.now() + '_' + i;
+        seen.add(it.id);
+      });
+      if (next.some(it => !it.text)) throw new HttpError(400, 'У требования не заполнен текст');
     } else {
       const old = W[coll].map(r => JSON.stringify(r));
       const nxt = next.map(r => JSON.stringify(r));
@@ -481,7 +521,7 @@ function chatOf(tgHandle) {
   const id = Object.keys(users).find(i => sameTg(users[i].tg, tgHandle) && users[i].chatId);
   return id ? users[id].chatId : null;
 }
-const COLL_TITLE = { applications: 'заявка в семью', vacations: 'заявка на отпуск', promoReports: 'рапорт на повышение', payoutReports: 'заявка на премию' };
+const COLL_TITLE = { applications: 'заявка в семью', vacations: 'заявка на отпуск', promoReports: 'рапорт на повышение', payoutReports: 'заявка на премию', rollbacks: 'заявка с видео' };
 function eventText(ev, site) {
   const it = ev.item;
   const who = '<b>' + esc(it.nick) + '</b> (' + esc(it.staticId) + ', ' + esc(it.tg) + ')';
@@ -491,6 +531,7 @@ function eventText(ev, site) {
   else if (ev.coll === 'vacations') body = '🏖 <b>Заявка на отпуск</b>\n' + who + ' · ' + esc(it.rank) + '\n' + esc(it.startDate) + ' — ' + esc(it.endDate) + ' (' + it.daysCount + ' дн.)\nПричина: ' + esc(it.reason);
   else if (ev.coll === 'promoReports') body = '⬆️ <b>Рапорт на повышение</b>\n' + who + '\n' + esc(it.fromRank) + ' → ' + esc(it.toRank) + '\nВыполнено: ' + esc(it.tasks) + '\nДок-ва: ' + esc(it.proofs);
   else if (ev.coll === 'payoutReports') body = '💰 <b>Заявка на премию</b>\n' + who + '\nСумма: $' + Number(it.total).toLocaleString('en-US') + '\n' + (it.items || []).map(l => esc(l.name) + ' × ' + l.qty).join(', ') + (it.proofs ? '\nДок-ва: ' + esc(it.proofs) : '');
+  else if (ev.coll === 'rollbacks') body = '🎬 <b>' + (it.kind === 'Аттестация' ? 'Видео для аттестации' : 'Новый откат') + '</b>\n' + who + '\n' + esc(it.title) + (it.comment ? '\nКомментарий: ' + esc(it.comment) : '') + '\n' + esc(it.link);
   else return '';
   return body + '\n\nРассмотреть: ' + site;
 }
@@ -728,6 +769,69 @@ async function handleApi(req, res, url) {
     markDirty('users.json');
     const entry = findRoster(state, me.tg);
     if (entry) { if (nick) entry.nick = nick; if (sid) entry.staticId = '#' + sid; state.rev += 1; markDirty('state.json'); }
+    return json(res, 200, stateResponse(resolveMe(me.uid), true));
+  }
+
+  // ───── промокоды (по счёту: лимит активаций) ─────
+  if (p === '/api/promo/redeem' && req.method === 'POST') {
+    if (limited(req, 'promo', 10, 10 * 60 * 1000)) throw new HttpError(429, 'Слишком много попыток, подождите');
+    const b = await readBody(req, 2048);
+    const code = cleanStr(b.code, 30).toUpperCase().replace(/\s+/g, '');
+    const pc = code && state.promoCodes.find(c => c.code === code);
+    if (!pc || !pc.active) throw new HttpError(404, 'Промокод не найден или отключён');
+    if (pc.used >= pc.uses) throw new HttpError(410, 'Лимит активаций этого промокода исчерпан');
+    if ((pc.usedBy || []).some(u => sameTg(u.tg, me.tg))) throw new HttpError(400, 'Вы уже активировали этот промокод');
+    if (pc.type === 'invite' && me.level >= LEVELS.MEMBER) throw new HttpError(400, 'Этот промокод для гостей: вы уже в составе семьи');
+    pc.used += 1;
+    pc.usedBy = (pc.usedBy || []).concat([{ nick: me.nick, staticId: me.staticId, tg: me.tg, at: new Date().toISOString() }]).slice(-100);
+    let joined = false;
+    if (pc.type === 'invite' && me.level === LEVELS.GUEST) {
+      state.roster.push({ id: nextId(new Set(state.roster.map(r => r.id))), nick: me.nick, staticId: me.staticId, tg: me.tg, rank: '1. Контракт', avatar: me.avatar || PLACEHOLDER });
+      state.applications.forEach(a => { if (sameTg(a.tg, me.tg) && a.status === 'PENDING') { a.status = 'APPROVED'; a.decidedBy = 'Промокод ' + pc.code; } });
+      joined = true;
+    }
+    state.logs.unshift({ id: nextId(), type: 'AUTH', actor: me.nick, action: 'Активировал промокод ' + pc.code + (joined ? ' и принят в семью (1. Контракт)' : ''), time: timeNow(), ts: new Date().toISOString() });
+    state.logs = state.logs.slice(0, 500);
+    state.rev += 1;
+    state.savedAt = new Date().toISOString();
+    markDirty('state.json');
+    const left = pc.uses - pc.used;
+    const text = '🎟 <b>Промокод ' + esc(pc.code) + ' активирован</b>\n<b>' + esc(me.nick) + '</b> (' + esc(me.staticId) + ', ' + esc(me.tg) + ')\n' +
+      (joined ? 'Принят в семью на 1. Контракт.\n' : '') + (pc.reward ? 'Награда: ' + esc(pc.reward) + '\n' : '') + 'Осталось активаций: ' + left + ' из ' + pc.uses;
+    leaderChats().forEach(c => send(c, text));
+    const out = stateResponse(resolveMe(me.uid), true);
+    out.promo = { code: pc.code, type: pc.type, reward: pc.reward || '', joined: joined, left: left };
+    return json(res, 200, out);
+  }
+  if (p === '/api/promo/create' && req.method === 'POST') {
+    need(me, LEVELS.SENIOR, 'Промокоды создаёт только Старший состав');
+    const b = await readBody(req, 2048);
+    const uses = Math.floor(Number(b.uses));
+    if (!(uses >= 1 && uses <= 100)) throw new HttpError(400, 'Количество активаций: от 1 до 100');
+    const type = PROMO_TYPES.indexOf(b.type) !== -1 ? b.type : 'invite';
+    let code = cleanStr(b.code, 30).toUpperCase().replace(/\s+/g, '');
+    if (!code) { do { code = 'DH-' + crypto.randomBytes(3).toString('hex').toUpperCase(); } while (state.promoCodes.some(c => c.code === code)); }
+    if (!/^[A-Z0-9А-ЯЁ][A-Z0-9А-ЯЁ_-]{2,23}$/.test(code)) throw new HttpError(400, 'Код: 3–24 символа (буквы, цифры, - и _)');
+    if (state.promoCodes.some(c => c.code === code)) throw new HttpError(400, 'Такой промокод уже есть');
+    state.promoCodes.unshift({
+      id: nextId(new Set(state.promoCodes.map(c => c.id))), code: code, type: type, uses: uses, used: 0,
+      reward: cleanStr(b.reward, 120), active: true, createdBy: me.nick, createdAt: new Date().toISOString(), usedBy: []
+    });
+    state.rev += 1; markDirty('state.json');
+    return json(res, 200, stateResponse(resolveMe(me.uid), true));
+  }
+  if ((p === '/api/promo/toggle' || p === '/api/promo/delete') && req.method === 'POST') {
+    const b = await readBody(req, 1024);
+    const idx = state.promoCodes.findIndex(c => c.id === b.id);
+    if (idx === -1) throw new HttpError(404, 'Промокод не найден');
+    if (p === '/api/promo/toggle') {
+      need(me, LEVELS.SENIOR, 'Только Старший состав');
+      state.promoCodes[idx].active = !state.promoCodes[idx].active;
+    } else {
+      need(me, LEVELS.LEADER, 'Удалять промокоды может только Лидер или Зам. Лидера');
+      state.promoCodes.splice(idx, 1);
+    }
+    state.rev += 1; markDirty('state.json');
     return json(res, 200, stateResponse(resolveMe(me.uid), true));
   }
 
