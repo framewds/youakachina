@@ -1,0 +1,118 @@
+{
+  "payoutItems": [
+    {
+      "id": "bizwar",
+      "name": "Бизвар",
+      "rate": 25000
+    },
+    {
+      "id": "factory",
+      "name": "Цех / ВЗХ",
+      "rate": 35000
+    },
+    {
+      "id": "contract",
+      "name": "Контракт",
+      "rate": 15000
+    },
+    {
+      "id": "warehouse",
+      "name": "Склад",
+      "rate": 10000
+    },
+    {
+      "id": "capt",
+      "name": "Капт / война за территорию",
+      "rate": 30000
+    },
+    {
+      "id": "cargo",
+      "name": "Перевозка груза",
+      "rate": 12000
+    },
+    {
+      "id": "heist",
+      "name": "Ограбление",
+      "rate": 20000
+    },
+    {
+      "id": "recruit",
+      "name": "Приглашение нового участника",
+      "rate": 10000
+    },
+    {
+      "id": "stroy",
+      "name": "Участие в семейном строе",
+      "rate": 5000
+    },
+    {
+      "id": "duty",
+      "name": "Дежурство на территории",
+      "rate": 8000
+    }
+  ],
+  "tests": [],
+  "testSubmissions": [],
+  "news": [
+    {
+      "badge": "ВАЖНО",
+      "date": "Сегодня",
+      "title": "Полная доминация DRUGHILL на бизварах Region RP",
+      "desc": "Синдикат удерживает ключевые предприятия штата.",
+      "image": "https://placehold.co/800x420/121217/ffffff?text=DRUGHILL"
+    }
+  ],
+  "rules": [
+    {
+      "badge": "1.1 УСТАВ",
+      "title": "Безусловное соблюдение кодекса DRUGHILL",
+      "desc": "Каждый участник обязан знать правила сервера."
+    }
+  ],
+  "diplomacy": [
+    {
+      "badge": "СОЮЗ",
+      "title": "CARTEL SYNDICATE",
+      "desc": "Совместный контроль трассы и цехов."
+    }
+  ],
+  "fleet": [
+    {
+      "badge": "1 РАНГ",
+      "title": "Benefactor V-Series",
+      "desc": "Транспорт для контрактов.",
+      "image": "https://placehold.co/600x360/121217/ffffff?text=АВТОПАРК"
+    }
+  ],
+  "estates": [
+    {
+      "badge": "ШТАБ",
+      "title": "Особняк DRUGHILL на Richman",
+      "desc": "Основной штаб семьи.",
+      "image": "https://placehold.co/800x450/121217/ffffff?text=ОСОБНЯК"
+    }
+  ],
+  "roster": [
+    {
+      "id": 1,
+      "nick": "Panic PR",
+      "staticId": "#15440",
+      "tg": "@krystalovb",
+      "rank": "Лидер",
+      "avatar": "https://placehold.co/100x100/1c1c24/ffffff?text=PR"
+    },
+    {
+      "id": 2,
+      "nick": "Markushka_Drughill",
+      "staticId": "#21940",
+      "tg": "@markushka_dh",
+      "rank": "3. Мейн",
+      "avatar": "https://placehold.co/100x100/1c1c24/ffffff?text=MD"
+    }
+  ],
+  "applications": [],
+  "promoReports": [],
+  "payoutReports": [],
+  "vacations": [],
+  "logs": []
+}

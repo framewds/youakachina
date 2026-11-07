@@ -1,0 +1,2989 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRUGHILL — Официальный портал семьи | Region RP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cursor-x: 50vw;
+            --cursor-y: 50vh;
+        }
+        * {
+            font-family: 'Unbounded', sans-serif !important;
+            font-weight: 700;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        input, textarea {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+        }
+        /* Полное удаление стандартных белых стрелочек в числовых полях браузера */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none !important;
+            margin: 0 !important;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield !important;
+            appearance: textfield !important;
+        }
+        body {
+            background-color: #08080a;
+            color: #fafafa;
+            overflow-x: hidden;
+            margin: 0;
+        }
+        .font-heavy {
+            font-weight: 900 !important;
+        }
+        .bg-dot-matrix {
+            background-color: #08080a;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.065) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        #mouse-ambient-glow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            background: radial-gradient(520px circle at var(--cursor-x) var(--cursor-y), rgba(255, 255, 255, 0.055), transparent 65%);
+            transition: opacity 0.3s ease;
+        }
+        #cursor-follower-ring {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 9999px;
+            border: 1.5px solid rgba(255, 255, 255, 0.32);
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate3d(-100px, -100px, 0);
+            transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease, background-color 0.22s ease;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
+        }
+        #cursor-follower-ring.cursor-hover {
+            width: 54px;
+            height: 54px;
+            border-color: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 28px rgba(255, 255, 255, 0.18);
+        }
+        #cursor-follower-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            background: #ffffff;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate3d(-100px, -100px, 0);
+            box-shadow: 0 0 10px #ffffff;
+        }
+        @media (max-width: 1024px) {
+            #cursor-follower-ring, #cursor-follower-dot {
+                display: none !important;
+            }
+        }
+        .monogram-pattern {
+            background-color: #0d0d11;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1.5px, transparent 1.5px);
+            background-size: 26px 26px;
+        }
+        .topo-bg {
+            background-color: #121217;
+            background-image:
+                radial-gradient(circle at 85% 15%, rgba(255,255,255,0.09) 0%, transparent 45%),
+                radial-gradient(circle at 15% 85%, rgba(255,255,255,0.05) 0%, transparent 50%),
+                repeating-radial-gradient(circle at 0 0, transparent 0, #121217 13px),
+                repeating-linear-gradient(#23232f33, #23232f33);
+        }
+        .hero-banner-glow {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(145deg, #14141b 0%, #0d0d12 100%);
+            border: 1px solid #252530;
+            border-radius: 24px;
+        }
+        .bento-card {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(155deg, rgba(22, 22, 29, 0.92) 0%, rgba(13, 13, 18, 0.96) 100%);
+            border: 1px solid #23232d;
+            border-radius: 22px;
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+        }
+        .bento-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(380px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.075), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .bento-card:hover {
+            border-color: rgba(255, 255, 255, 0.32);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 255, 255, 0.04);
+        }
+        .bento-card:hover::after {
+            opacity: 1;
+        }
+        .icon-badge {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: linear-gradient(145deg, #20202a 0%, #14141b 100%);
+            border: 1px solid #323240;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 18px rgba(0,0,0,0.45);
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bento-card:hover .icon-badge {
+            background: #ffffff;
+            color: #09090b;
+            border-color: #ffffff;
+            transform: scale(1.08) rotate(-3deg);
+            box-shadow: 0 0 24px rgba(255, 255, 255, 0.35);
+        }
+        .icon-badge-invert {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: #ffffff;
+            color: #09090b;
+            border: 1px solid #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.25);
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bento-card:hover .icon-badge-invert {
+            transform: scale(1.08) rotate(3deg);
+            box-shadow: 0 0 32px rgba(255, 255, 255, 0.45);
+        }
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 12px;
+            color: #a1a1aa;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: left;
+            gap: 10px;
+            position: relative;
+        }
+        .nav-btn:hover {
+            background-color: #16161f;
+            color: #ffffff;
+            transform: translateX(3px);
+        }
+        .nav-btn.active {
+            background-color: #ffffff;
+            color: #09090b !important;
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.18);
+        }
+        .nav-btn.active svg {
+            color: #09090b !important;
+            stroke: #09090b !important;
+        }
+        .custom-check-card {
+            cursor: pointer;
+            border: 1px solid #24242e;
+            background: #111116;
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .custom-check-card:hover {
+            border-color: #454556;
+            transform: translateY(-1px);
+        }
+        .custom-check-card.checked {
+            border-color: #ffffff;
+            background: #181822;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.07);
+        }
+        .custom-check-box {
+            width: 22px;
+            height: 22px;
+            border-radius: 7px;
+            border: 2px solid #3f3f4e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0b0b0e;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            flex-shrink: 0;
+        }
+        .custom-check-card.checked .custom-check-box {
+            background: #ffffff;
+            border-color: #ffffff;
+            transform: scale(1.05);
+        }
+        .custom-check-box svg {
+            opacity: 0;
+            transform: scale(0.4);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .custom-check-card.checked .custom-check-box svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-7px); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.06); }
+        }
+        .animate-float {
+            animation: floatSlow 4.5s ease-in-out infinite;
+        }
+        .empty-stack-wrap {
+            position: relative;
+            width: 220px;
+            height: 150px;
+            margin: 0 auto 26px auto;
+        }
+        .empty-stack-card-left {
+            position: absolute;
+            inset: 16px 22px;
+            background: #101015;
+            border: 1px solid #252530;
+            border-radius: 20px;
+            transform: rotate(-13deg) translateX(-26px);
+        }
+        .empty-stack-card-right {
+            position: absolute;
+            inset: 16px 22px;
+            background: #101015;
+            border: 1px solid #252530;
+            border-radius: 20px;
+            transform: rotate(13deg) translateX(26px);
+        }
+        .empty-stack-card-main {
+            position: relative;
+            z-index: 10;
+            width: 176px;
+            height: 124px;
+            margin: 0 auto;
+            background: linear-gradient(155deg, #1b1b24 0%, #121218 100%);
+            border: 1px solid #353545;
+            border-radius: 22px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.75);
+        }
+        .empty-floating-badge {
+            position: absolute;
+            top: -10px;
+            right: 12px;
+            z-index: 20;
+            width: 32px;
+            height: 32px;
+            border-radius: 9999px;
+            background: #ffffff;
+            color: #09090b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(255,255,255,0.45);
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+        .page-sec {
+            animation: secFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes secFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #272730;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="bg-dot-matrix min-h-screen text-white relative">
+
+    <div id="mouse-ambient-glow"></div>
+    <div id="cursor-follower-ring"></div>
+    <div id="cursor-follower-dot"></div>
+
+    <!-- AUTH GATE (FIRST LAUNCH - CLEAN CENTERED LAYOUT) -->
+    <div id="auth-gate" class="fixed inset-0 z-50 bg-[#09090b] bg-dot-matrix flex flex-col justify-between p-6 sm:p-10 overflow-y-auto">
+        <div class="w-full max-w-5xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-[#111116] border border-[#262632] flex items-center justify-center p-1.5 shadow-[0_0_20px_rgba(239,35,42,0.2)]">
+                    <svg class="w-full h-full" viewBox="0 0 200 200" fill="none">
+                        <path d="M60 30H118C148 30 166 48 166 76C166 98 152 114 130 120L168 170H128L96 124H114C128 124 136 116 136 102C136 88 127 80 112 80H94C88 66 84 56 80 48L60 30Z" fill="#FFFFFF"/>
+                        <path d="M36 30H92C116 30 132 42 138 64H82C75 48 60 38 36 30Z" fill="#EF232A"/>
+                        <path d="M52 124H78C84 124 88 127 90 132L106 170H68C63 170 59 167 57 162L45 135C43 130 47 124 52 124Z" fill="#FFFFFF"/>
+                    </svg>
+                </div>
+                <span class="text-lg font-heavy tracking-tight text-white">DRUGHILL</span>
+                <span class="px-2.5 py-0.5 rounded-md bg-white text-black text-[10px] font-heavy uppercase">ПОРТАЛ</span>
+            </div>
+            <a href="https://discord.gg/sEJkFaNDJ" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-[#141419] border border-[#262630] hover:border-white/50 text-[11px] font-heavy text-zinc-300 flex items-center gap-2 transition-all">
+                <span>Спецсвязь семьи</span>
+            </a>
+        </div>
+
+        <div class="max-w-md w-full mx-auto my-auto py-8 space-y-6">
+            <div class="text-center">
+                <h1 class="text-2xl sm:text-3xl font-heavy text-white">Панель управления DRUGHILL</h1>
+            </div>
+
+            <div class="space-y-4 bento-card p-6">
+                <div class="hidden">
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-2">КТО ВЫ?</label>
+                    <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-[#0a0a0d] border border-[#24242f]">
+                        <button type="button" id="reg-mode-guest" onclick="setRegMode('GUEST')" class="py-2.5 px-3 rounded-lg bg-white text-black text-[11px] font-heavy transition-all">
+                            Я Гость (Вступить)
+                        </button>
+                        <button type="button" id="reg-mode-member" onclick="setRegMode('MEMBER')" class="py-2.5 px-3 rounded-lg text-zinc-400 hover:text-white text-[11px] font-heavy transition-all">
+                            Уже игрок семьи
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Игровой Никнейм</label>
+                        <input id="auth-nick-input" type="text" placeholder="Vortex_Drughill" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Ваш Static ID</label>
+                        <input id="auth-static-input" type="text" placeholder="#15440" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
+                    </div>
+                </div>
+
+                <button onclick="startTelegramAuth()" class="w-full py-3.5 px-5 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(255,255,255,0.2)] transition-all">
+                    <span>ВОЙТИ ЧЕРЕЗ TELEGRAM</span>
+                </button>
+
+                <div id="tg-polling-box" class="hidden p-4 rounded-xl bg-[#0a0a0d] border border-white/20 text-center space-y-2.5">
+                    <div class="text-[11px] font-heavy text-white">Откройте @drughillsite_bot, нажмите «Start», затем кнопку «Да, это я» в чате с ботом</div>
+                    <div class="flex items-center justify-center gap-2 pt-1">
+                        <a id="tg-deep-link" href="https://t.me/drughillsite_bot" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-white text-black text-[10px] font-heavy">Открыть @drughillsite_bot</a>
+                        <button onclick="completeInstantSelectedLogin()" class="px-4 py-2 rounded-xl bg-[#1d1d26] hover:bg-white hover:text-black text-zinc-200 text-[10px] font-heavy transition-all">Проверить вход</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div></div>
+    </div>
+
+    <!-- MAIN PORTAL SHELL -->
+    <div id="portal-shell" class="hidden min-h-screen flex relative z-10">
+
+        <!-- LEFT SIDEBAR -->
+        <aside id="sidebar" class="w-72 bg-[#0c0c10]/95 backdrop-blur-xl border-r border-[#1e1e26] flex flex-col justify-between shrink-0 fixed lg:static inset-y-0 left-0 z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-200">
+            <div class="p-5 space-y-5 overflow-y-auto flex-1">
+                <div class="flex items-center justify-between px-2">
+                    <button onclick="navigateTo('home')" class="text-lg font-heavy tracking-wider text-white flex items-center gap-2.5 group">
+                        <div class="w-9 h-9 rounded-xl bg-[#13131a] border border-[#292936] flex items-center justify-center p-1.5 shadow-[0_0_18px_rgba(239,35,42,0.2)]">
+                            <svg class="w-full h-full" viewBox="0 0 200 200" fill="none">
+                                <path d="M60 30H118C148 30 166 48 166 76C166 98 152 114 130 120L168 170H128L96 124H114C128 124 136 116 136 102C136 88 127 80 112 80H94C88 66 84 56 80 48L60 30Z" fill="#FFFFFF"/>
+                                <path d="M36 30H92C116 30 132 42 138 64H82C75 48 60 38 36 30Z" fill="#EF232A"/>
+                                <path d="M52 124H78C84 124 88 127 90 132L106 170H68C63 170 59 167 57 162L45 135C43 130 47 124 52 124Z" fill="#FFFFFF"/>
+                            </svg>
+                        </div>
+                        <span>DRUGHILL</span>
+                    </button>
+                    <button onclick="toggleMobileSidebar()" class="lg:hidden p-1.5 rounded-lg bg-[#16161d] text-zinc-400">✕</button>
+                </div>
+
+                <!-- GUEST NAVIGATION -->
+                <div id="nav-group-guest" class="hidden space-y-1">
+                    <div class="px-3 py-1.5 text-[10px] font-heavy text-zinc-500 uppercase tracking-wider">ДОСТУП ГОСТЯ</div>
+                    <button onclick="navigateTo('join-family')" data-nav="join-family" class="nav-btn">
+                        <span>Подать заявку в семью</span>
+                    </button>
+                    <button onclick="navigateTo('guest-status')" data-nav="guest-status" class="nav-btn">
+                        <span>Ожидание роли</span>
+                    </button>
+                    <button onclick="navigateTo('profile')" data-nav="profile" class="nav-btn">
+                        <span>Профиль</span>
+                    </button>
+                </div>
+
+                <!-- MEMBER & SENIOR NAVIGATION -->
+                <div id="nav-group-main" class="space-y-1">
+                    <div class="px-3 py-1.5 text-[10px] font-heavy text-zinc-500 uppercase tracking-wider">ОСНОВНОЕ</div>
+                    <button onclick="navigateTo('home')" data-nav="home" class="nav-btn active"><span>Главная</span></button>
+                    <button onclick="navigateTo('profile')" data-nav="profile" class="nav-btn"><span>Профиль</span></button>
+                    <button onclick="navigateTo('news')" data-nav="news" class="nav-btn"><span>Новости семьи</span></button>
+                    <button onclick="navigateTo('rules')" data-nav="rules" class="nav-btn"><span>Устав семьи</span></button>
+                    <button onclick="navigateTo('ranks')" data-nav="ranks" class="nav-btn"><span>Система повышения</span></button>
+                    <button onclick="navigateTo('diplomacy')" data-nav="diplomacy" class="nav-btn"><span>Дипломатия и Война</span></button>
+                    <button onclick="navigateTo('fleet')" data-nav="fleet" class="nav-btn"><span>Автопарк</span></button>
+                    <button onclick="navigateTo('estates')" data-nav="estates" class="nav-btn"><span>Недвижимость</span></button>
+                    <button onclick="navigateTo('academy')" data-nav="academy" class="nav-btn"><span>Академия</span></button>
+                </div>
+
+                <!-- REPORTS & APPLICATIONS -->
+                <div id="nav-group-reports" class="space-y-1 pt-2">
+                    <div class="px-3 py-1.5 text-[10px] font-heavy text-zinc-500 uppercase tracking-wider">ОТЧЁТЫ И ЗАЯВКИ</div>
+                    <button onclick="navigateTo('join-family')" data-nav="join-family" class="nav-btn"><span>Подать заявку в семью</span></button>
+                    <button onclick="navigateTo('report-promo')" data-nav="report-promo" class="nav-btn"><span>Отчёт на повышение</span></button>
+                    <button onclick="navigateTo('report-payout')" data-nav="report-payout" class="nav-btn"><span>Отчёт на премию</span></button>
+                    <button onclick="navigateTo('vacations')" data-nav="vacations" class="nav-btn"><span>Система отпуска</span></button>
+                </div>
+
+                <!-- PRIVATE SENIOR STAFF CATEGORY -->
+                <div id="nav-group-senior" class="hidden space-y-1 pt-2 border-t border-[#1e1e26]">
+                    <div class="px-3 py-1.5 flex items-center justify-between">
+                        <span class="text-[10px] font-heavy text-white uppercase tracking-wider">СТАРШИЙ СОСТАВ</span>
+                        <span class="px-1.5 py-0.5 rounded bg-white text-black text-[8px] font-heavy">ЗАКРЫТО</span>
+                    </div>
+                    <button onclick="navigateTo('senior-roster')" data-nav="senior-roster" class="nav-btn"><span>Управление составом</span></button>
+                    <button onclick="navigateTo('senior-reviews')" data-nav="senior-reviews" class="nav-btn justify-between">
+                        <span>Проверка отчётов</span>
+                        <span id="sidebar-pending-badge" class="px-2 py-0.5 rounded-full bg-white text-black text-[10px] font-heavy">0</span>
+                    </button>
+                    <button onclick="navigateTo('senior-test-results')" data-nav="senior-test-results" class="nav-btn"><span>Итоги тестов</span></button>
+                    <button onclick="navigateTo('senior-vacations')" data-nav="senior-vacations" class="nav-btn justify-between">
+                        <span>Контроль отпусков</span>
+                        <span id="sidebar-vacations-badge" class="px-2 py-0.5 rounded-full bg-[#24242f] text-white text-[10px] font-heavy">0</span>
+                    </button>
+                    <button onclick="navigateTo('senior-logs')" data-nav="senior-logs" class="nav-btn"><span>Логи действий</span></button>
+                    <button id="nav-btn-db" onclick="navigateTo('senior-db')" data-nav="senior-db" class="nav-btn hidden justify-between">
+                        <span>База данных</span>
+                        <span class="px-1.5 py-0.5 rounded bg-white text-black text-[8px] font-heavy">@krystalovb</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BOTTOM PROFILE WIDGET & POPOVER -->
+            <div class="p-3 border-t border-[#1e1e26] relative">
+                <div id="profile-popover" class="hidden absolute bottom-20 left-3 right-3 z-50 rounded-2xl border border-[#2a2a36] bg-[#101015] shadow-2xl overflow-hidden">
+                    <div class="topo-bg p-4 border-b border-[#252530] space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="relative shrink-0">
+                                <img id="pop-user-avatar" src="https://placehold.co/100x100/1c1c24/ffffff?text=DH" alt="" class="w-12 h-12 rounded-full object-cover border border-white/20">
+                                <span class="w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#101015] absolute bottom-0 right-0"></span>
+                            </div>
+                            <div class="min-w-0">
+                                <div id="pop-user-nick" class="text-sm font-heavy text-white truncate">Vortex Draghill</div>
+                                <div id="pop-user-tg" class="text-[11px] text-zinc-400 truncate">@draghill_member</div>
+                            </div>
+                        </div>
+
+                        <div class="px-3 py-2 rounded-xl bg-[#181820]/90 border border-[#2b2b37] flex items-center justify-between text-xs">
+                            <span class="text-zinc-400">Static ID</span>
+                            <span id="pop-user-static" class="font-heavy text-white">#15440</span>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-zinc-400 uppercase">РОЛЬ</span>
+                            <span id="pop-user-role" class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/25 text-white font-heavy text-[10px]">Старший состав</span>
+                        </div>
+                    </div>
+
+                    <div class="p-2 space-y-1 bg-[#101015]">
+                        <button onclick="navigateTo('profile'); toggleProfilePopover();" class="w-full px-3 py-2.5 rounded-xl hover:bg-[#191922] flex items-center gap-3 text-xs text-white">Профиль</button>
+                        <button onclick="copyUserStaticId()" class="w-full px-3 py-2.5 rounded-xl hover:bg-[#191922] flex items-center gap-3 text-xs text-white">Скопировать Static ID</button>
+                        <button onclick="logoutToAuthGate()" class="w-full px-3 py-2.5 rounded-xl hover:bg-red-500/15 flex items-center gap-3 text-xs text-red-400">Выйти</button>
+                    </div>
+                </div>
+
+                <button onclick="toggleProfilePopover()" class="w-full topo-bg p-3 rounded-2xl border border-[#252530] hover:border-white/30 flex items-center justify-between transition-all">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="relative shrink-0">
+                            <img id="sidebar-user-avatar" src="https://placehold.co/100x100/1c1c24/ffffff?text=DH" alt="" class="w-10 h-10 rounded-full object-cover border border-white/20">
+                            <span class="w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0c0c10] absolute bottom-0 right-0"></span>
+                        </div>
+                        <div class="text-left min-w-0">
+                            <div id="sidebar-user-nick" class="text-xs font-heavy text-white truncate">Vortex Drughill</div>
+                            <div id="sidebar-user-static" class="text-[11px] text-zinc-400 truncate">#15440</div>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- RIGHT MAIN AREA -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <header class="h-16 border-b border-[#1e1e26] bg-[#09090b]/90 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl bg-[#14141b] border border-[#252530] text-white">☰</button>
+                    <div class="flex items-center gap-2 text-xs truncate">
+                        <span class="text-zinc-500 font-heavy">DRUGHILL</span>
+                        <span class="text-zinc-600">·</span>
+                        <span id="top-breadcrumb" class="text-white font-heavy truncate">Главная</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <button onclick="navigateTo('join-family')" class="px-4 py-2 rounded-xl bg-white text-black hover:bg-zinc-200 text-[11px] font-heavy transition-all">Подать заявку в семью</button>
+                    <a href="https://discord.gg/sEJkFaNDJ" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-[#14141b] border border-[#272733] hover:border-white/40 text-[11px] font-heavy text-white transition-all">Discord</a>
+                </div>
+            </header>
+
+            <main class="flex-1 p-4 sm:p-8 lg:p-10 max-w-6xl w-full mx-auto space-y-8">
+
+                <!-- 1. HOME -->
+                <section id="sec-home" class="page-sec space-y-8">
+                    <div class="hero-banner-glow p-8 sm:p-10 text-center max-w-4xl mx-auto space-y-4">
+                        <h1 class="text-3xl sm:text-5xl font-heavy tracking-tight text-white">
+                            Всё о жизни в <span class="underline decoration-[#ef232a] underline-offset-8">DRUGHILL</span>
+                        </h1>
+                        <p class="text-xs sm:text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+                            Внутренний портал синдиката на проекте Region RP. Отчёты на повышение, устав, новости, автопарк и академия в одном месте.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div onclick="navigateTo('rules')" class="md:col-span-6 bento-card p-6 cursor-pointer flex flex-col justify-between min-h-[185px]">
+                            <div class="flex items-center justify-between">
+                                <div class="icon-badge">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 3v18m-7-4h14M5 7h14"/></svg>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-[#181822] border border-[#2b2b38] text-[10px] font-heavy text-zinc-400">КОДЕКС</span>
+                            </div>
+                            <div class="pt-6">
+                                <h3 class="text-lg font-heavy text-white">Устав семьи</h3>
+                                <p class="text-xs text-zinc-400 mt-1">Кодекс чести, дисциплина и правила синдиката DRUGHILL</p>
+                            </div>
+                        </div>
+
+                        <div onclick="navigateTo('ranks')" class="md:col-span-3 bento-card p-6 cursor-pointer flex flex-col justify-between min-h-[185px]">
+                            <div class="flex items-center justify-between">
+                                <div class="icon-badge">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                                </div>
+                                <span class="px-2 py-0.5 rounded bg-white/10 text-[9px] font-heavy text-white">1 → 3 РАНГ</span>
+                            </div>
+                            <div class="pt-6">
+                                <h3 class="text-base font-heavy text-white">Система повышения</h3>
+                                <p class="text-xs text-zinc-400 mt-1">1. Контракт → 2. Академ → 3. Мейн</p>
+                            </div>
+                        </div>
+
+                        <div onclick="navigateTo('news')" class="md:col-span-3 bento-card p-6 cursor-pointer flex flex-col justify-between min-h-[185px]">
+                            <div class="flex items-center justify-between">
+                                <div class="icon-badge">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2"/></svg>
+                                </div>
+                                <span class="w-2 h-2 rounded-full bg-white"></span>
+                            </div>
+                            <div class="pt-6">
+                                <h3 class="text-base font-heavy text-white">Новости семьи</h3>
+                                <p class="text-xs text-zinc-400 mt-1">Сводки бизваров и объявления</p>
+                            </div>
+                        </div>
+
+                        <div onclick="navigateTo('report-promo')" class="md:col-span-3 bento-card p-6 cursor-pointer flex flex-col justify-between min-h-[175px]">
+                            <div class="icon-badge-invert">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div class="pt-4">
+                                <h3 class="text-base font-heavy text-white">Отчёт на повышение</h3>
+                                <p class="text-xs text-zinc-400 mt-1">Подача рапорта до 3 ранга</p>
+                            </div>
+                        </div>
+
+                        <div onclick="navigateTo('report-payout')" class="md:col-span-3 bento-card p-6 cursor-pointer flex flex-col justify-between min-h-[175px]">
+                            <div class="icon-badge">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                            </div>
+                            <div class="pt-4">
+                                <h3 class="text-base font-heavy text-white">Отчёт на премию</h3>
+                                <p class="text-xs text-zinc-400 mt-1">Калькулятор выплат за актив</p>
+                            </div>
+                        </div>
+
+                        <div onclick="navigateTo('estates')" class="md:col-span-3 bento-card p-6 cursor-pointer flex flex-col justify-between min-h-[175px]">
+                            <div class="icon-badge">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1V9.5z"/></svg>
+                            </div>
+                            <div class="pt-4">
+                                <h3 class="text-base font-heavy text-white">Недвижимость</h3>
+                                <p class="text-xs text-zinc-400 mt-1">Особняки и штаб-квартиры</p>
+                            </div>
+                        </div>
+
+                        <div onclick="navigateTo('fleet')" class="md:col-span-3 bento-card p-6 cursor-pointer flex flex-col justify-between min-h-[175px]">
+                            <div class="icon-badge">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M5 17h14v-5l-2-5H7L5 12v5z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>
+                            </div>
+                            <div class="pt-4">
+                                <h3 class="text-base font-heavy text-white">Автопарк</h3>
+                                <p class="text-xs text-zinc-400 mt-1">Транспорт по рангам</p>
+                            </div>
+                        </div>
+
+                        <div onclick="navigateTo('diplomacy')" class="md:col-span-6 bento-card p-6 cursor-pointer flex flex-col justify-between min-h-[170px]">
+                            <div class="flex items-center justify-between">
+                                <div class="icon-badge">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-[#181822] border border-[#2b2b38] text-[10px] font-heavy text-zinc-300">СОЮЗЫ И ВОЙНЫ</span>
+                            </div>
+                            <div class="pt-4">
+                                <h3 class="text-lg font-heavy text-white">Дипломатия и Война</h3>
+                                <p class="text-xs text-zinc-400 mt-1">Союзные синдикаты и активные военные конфликты на Region RP</p>
+                            </div>
+                        </div>
+
+                        <div onclick="navigateTo('academy')" class="md:col-span-6 bento-card p-6 cursor-pointer flex flex-col justify-between min-h-[170px]">
+                            <div class="flex items-center justify-between">
+                                <div class="icon-badge">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-white text-black text-[10px] font-heavy">АТТЕСТАЦИЯ</span>
+                            </div>
+                            <div class="pt-4">
+                                <h3 class="text-lg font-heavy text-white">Академия</h3>
+                                <p class="text-xs text-zinc-400 mt-1">Проверка знаний устава и аттестация на переход в Мейн состав</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. PROFILE & TESTS -->
+                <section id="sec-profile" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 topo-bg flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div class="flex items-center gap-5">
+                            <div class="relative shrink-0">
+                                <img id="prof-page-avatar" src="https://placehold.co/120x120/1c1c24/ffffff?text=DH" alt="" class="w-20 h-20 rounded-full object-cover border-2 border-white/30">
+                                <span class="w-4 h-4 rounded-full bg-emerald-400 border-2 border-[#0e0e12] absolute bottom-0 right-0"></span>
+                            </div>
+                            <div class="space-y-1.5">
+                                <div class="flex flex-wrap items-center gap-2.5">
+                                    <h2 id="prof-page-nick" class="text-xl sm:text-2xl font-heavy text-white">Vortex_Drughill</h2>
+                                    <span id="prof-page-tg" class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-xs font-heavy text-zinc-200">@vortex_dh</span>
+                                    <span id="prof-page-role" class="px-3 py-1 rounded-lg bg-white text-black text-[10px] font-heavy uppercase">Старший состав</span>
+                                </div>
+                                <div class="text-xs text-zinc-400 flex items-center gap-2">
+                                    <span>Static ID: <strong id="prof-page-static" class="text-white">#15440</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
+                            <button onclick="openEditProfileModal()" class="px-4 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Изменить Ник / Static ID</button>
+                            <button onclick="copyUserStaticId()" class="px-4 py-2.5 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c3a] text-xs font-heavy transition-all">Скопировать Static ID</button>
+                        </div>
+                    </div>
+
+                    <div class="bento-card p-6 sm:p-8 space-y-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2.5">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                                    <h3 class="text-lg font-heavy text-white">Тесты</h3>
+                                </div>
+                                <p id="prof-tests-subtitle" class="text-xs text-zinc-400">Вы ещё не проходили тесты.</p>
+                            </div>
+                            <button onclick="navigateTo('academy')" class="px-4 py-2.5 rounded-xl bg-[#16161d] hover:bg-white hover:text-black border border-[#2a2a36] text-xs font-heavy text-white transition-all self-start sm:self-center">К тестам →</button>
+                        </div>
+
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+                            <div class="p-5 rounded-2xl bg-[#14141a] border border-[#23232e] space-y-2">
+                                <div class="text-xs text-zinc-400">Пройдено тестов</div>
+                                <div id="stat-tests-total" class="text-2xl font-heavy text-white">0</div>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-[#14141a] border border-[#23232e] space-y-2">
+                                <div class="text-xs text-zinc-400">Сдано</div>
+                                <div id="stat-tests-passed" class="text-2xl font-heavy text-white">—</div>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-[#14141a] border border-[#23232e] space-y-2">
+                                <div class="text-xs text-zinc-400">Средний результат</div>
+                                <div id="stat-tests-avg" class="text-2xl font-heavy text-white">—</div>
+                            </div>
+                            <div class="p-5 rounded-2xl bg-[#14141a] border border-[#23232e] space-y-2">
+                                <div class="text-xs text-zinc-400">Лучший результат</div>
+                                <div id="stat-tests-best" class="text-2xl font-heavy text-white">—</div>
+                            </div>
+                        </div>
+
+                        <div id="prof-test-answers-box" class="space-y-3 pt-2"></div>
+                    </div>
+                </section>
+
+                <!-- 3. GUEST WAITING STATUS -->
+                <section id="sec-guest-status" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-8 sm:p-12 text-center space-y-4">
+                        <h2 class="text-2xl font-heavy text-white">Ваша роль: Гость</h2>
+                        <p class="text-xs text-zinc-400 max-w-lg mx-auto leading-relaxed">
+                            Вы успешно вошли через Telegram без ожидания подтверждения. Чтобы открыть доступ к внутренним разделам семьи DRUGHILL, подайте заявку на вступление и дождитесь выдачи ранга.
+                        </p>
+                        <div id="guest-app-status-badge" class="inline-block px-4 py-2 rounded-xl bg-[#16161e] border border-[#2c2c3a] text-xs font-heavy text-zinc-200">Статус заявки: Заявка ещё не отправлена</div>
+                        <div class="pt-2">
+                            <button onclick="navigateTo('join-family')" class="px-6 py-3 rounded-xl bg-white text-black font-heavy text-xs">Перейти к анкете в семью</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. ACADEMY -->
+                <section id="sec-academy" class="page-sec hidden space-y-6">
+                    <div class="hero-banner-glow p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="space-y-1.5">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-white text-[10px] font-heavy uppercase">АКАДЕМИЯ</span>
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Выберите тест</h2>
+                            <p id="academy-count-sub" class="text-xs text-zinc-400">0 тестов · проверьте знания правил проекта и устава семьи</p>
+                        </div>
+                        <div class="senior-only hidden">
+                            <button onclick="openCreateTestModal()" class="px-5 py-2.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-heavy">+ Создать тест</button>
+                        </div>
+                    </div>
+
+                    <div id="academy-empty-view" class="py-16 text-center space-y-3">
+                        <div class="empty-stack-wrap animate-float">
+                            <div class="empty-floating-badge">★</div>
+                            <div class="empty-stack-card-left"></div>
+                            <div class="empty-stack-card-right"></div>
+                            <div class="empty-stack-card-main">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center font-heavy text-xs">?</div>
+                                    <div class="flex-1 space-y-1.5">
+                                        <div class="h-2 rounded bg-[#343444] w-full"></div>
+                                        <div class="h-2 rounded bg-[#252532] w-2/3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-heavy text-white">Тестов пока нет</h3>
+                        <p class="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
+                            Администрация ещё не опубликовала ни одного теста. Загляните сюда позже, когда он появится, он будет в этом списке.
+                        </p>
+                    </div>
+
+                    <div id="academy-list-view" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <div id="academy-runner-view" class="hidden bento-card p-6 sm:p-8 space-y-6"></div>
+                </section>
+
+                <!-- 5. NEWS -->
+                <section id="sec-news" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Новости семьи</h2>
+                            <p class="text-xs text-zinc-400 mt-1">Официальные сводки, итоги бизваров и важные объявления DRUGHILL</p>
+                        </div>
+                        <button onclick="openAddContentModal('news')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Добавить новость</button>
+                    </div>
+                    <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+                </section>
+
+                <!-- 6. RULES -->
+                <section id="sec-rules" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Устав семьи</h2>
+                            <p class="text-xs text-zinc-400 mt-1">Строгие правила синдиката DRUGHILL на проекте Region RP</p>
+                        </div>
+                        <button onclick="openAddContentModal('rules')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Добавить правило</button>
+                    </div>
+                    <div id="rules-list" class="space-y-3"></div>
+                </section>
+
+                <!-- 7. RANKS -->
+                <section id="sec-ranks" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Система повышения</h2>
+                            <p class="text-xs text-zinc-400 mt-1">Повышение по отчётам доступно с 1 по 3 ранг (1. Контракт → 2. Академ → 3. Мейн). Старший состав назначается Лидером или Замом.</p>
+                        </div>
+                        <button onclick="navigateTo('report-promo')" class="px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">Подать отчёт</button>
+                    </div>
+                    <div id="ranks-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </section>
+
+                <!-- 8. DIPLOMACY -->
+                <section id="sec-diplomacy" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Дипломатия и Война</h2>
+                            <p class="text-xs text-zinc-400 mt-1">Актуальные союзы и враждебные семьи на сервере Region RP</p>
+                        </div>
+                        <button onclick="openAddContentModal('diplomacy')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Добавить дипломатию</button>
+                    </div>
+                    <div id="diplomacy-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </section>
+
+                <!-- 9. FLEET -->
+                <section id="sec-fleet" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Автопарк</h2>
+                            <p class="text-xs text-zinc-400 mt-1">Техника синдиката DRUGHILL для бизваров, трассы и контрактов</p>
+                        </div>
+                        <button onclick="openAddContentModal('fleet')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Добавить авто</button>
+                    </div>
+                    <div id="fleet-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                </section>
+
+                <!-- 10. ESTATES -->
+                <section id="sec-estates" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Недвижимость</h2>
+                            <p class="text-xs text-zinc-400 mt-1">Штаб-квартиры, семейные особняки и склады DRUGHILL</p>
+                        </div>
+                        <button onclick="openAddContentModal('estates')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Добавить дом</button>
+                    </div>
+                    <div id="estates-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+                </section>
+
+                <!-- 11. JOIN FAMILY -->
+                <section id="sec-join-family" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 space-y-2">
+                        <h2 class="text-2xl sm:text-3xl font-heavy text-white">Подать заявку в семью DRUGHILL</h2>
+                        <p class="text-xs text-zinc-400">Ваш игровой Никнейм, Static ID, аватарка и @юз берутся из профиля автоматически.</p>
+                    </div>
+
+                    <div class="bento-card p-6 sm:p-8 space-y-6">
+                        <div class="p-4 rounded-2xl topo-bg border border-[#2b2b38] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-3.5">
+                                <div class="relative shrink-0">
+                                    <img id="join-preview-avatar" src="https://placehold.co/100x100/1c1c24/ffffff?text=DH" alt="" class="w-12 h-12 rounded-full object-cover border-2 border-white/25">
+                                    <span class="w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0e0e12] absolute bottom-0 right-0"></span>
+                                </div>
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span id="join-preview-nick" class="text-sm font-heavy text-white">Vortex_Drughill</span>
+                                        <span id="join-preview-tg" class="px-2 py-0.5 rounded-md bg-white/10 text-[11px] text-zinc-200">@vortex_dh</span>
+                                        <span id="join-preview-static" class="px-2 py-0.5 rounded-md bg-white text-black text-[10px] font-heavy">#15440</span>
+                                    </div>
+                                    <div class="text-[10px] text-zinc-400 mt-1">Профиль кандидата синхронизирован</div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="openEditProfileModal()" class="px-3.5 py-2 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c38] text-[10px] font-heavy text-zinc-300 transition-all self-start sm:self-center">Изменить Ник / Static</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">1. Ваш реальный возраст (OOC)</label>
+                                <input id="join-age" type="text" placeholder="Например: 18 лет" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">2. Ваш суточный прайм-тайм (онлайн)</label>
+                                <input id="join-prime" type="text" placeholder="Например: 6–8 часов в день" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">3. Опыт в семьях и стрельба</label>
+                                <input id="join-exp" type="text" placeholder="Бизвары, цеха, трасса, знание правил" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">4. Ссылка на откаты стрельбы</label>
+                                <input id="join-rolls" type="text" placeholder="https://youtu.be/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+                        </div>
+
+                        <button onclick="submitJoinApplication()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all shadow-[0_0_25px_rgba(255,255,255,0.2)]">Отправить заявку на рассмотрение Старшему составу</button>
+                    </div>
+                </section>
+
+                <!-- 12. PROMOTION REPORT -->
+                <section id="sec-report-promo" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 space-y-2">
+                        <h2 class="text-2xl sm:text-3xl font-heavy text-white">Отчёт на повышение</h2>
+                        <p class="text-xs text-zinc-400">Рассмотрение рапортов на повышение (1. Контракт → 2. Академ → 3. Мейн) внутри сайта</p>
+                    </div>
+
+                    <div class="bento-card p-6 sm:p-8 space-y-5">
+                        <div class="p-4 rounded-2xl topo-bg border border-[#2b2b38] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-3.5">
+                                <div class="relative shrink-0">
+                                    <img id="promo-preview-avatar" src="https://placehold.co/100x100/1c1c24/ffffff?text=DH" alt="" class="w-12 h-12 rounded-full object-cover border-2 border-white/20">
+                                    <span class="w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0e0e12] absolute bottom-0 right-0"></span>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-heavy text-white flex flex-wrap items-center gap-2">
+                                        <span id="promo-preview-nick">Vortex_Drughill</span>
+                                        <span id="promo-preview-tg" class="px-2 py-0.5 rounded-md bg-white/10 text-[11px] text-zinc-200">@vortex_dh</span>
+                                        <span id="promo-preview-static" class="px-2 py-0.5 rounded bg-white text-black text-[10px]">#15440</span>
+                                    </div>
+                                    <div class="text-[10px] text-zinc-400 mt-1">Текущий ранг: <span id="promo-preview-rank" class="text-white">2 ранг — Академ</span></div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="openEditProfileModal()" class="px-3.5 py-2 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c38] text-[10px] font-heavy text-zinc-300 transition-all self-start sm:self-center">Изменить Ник / Static</button>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] text-zinc-400 uppercase mb-2">Повышение на ранг (Максимум до 3 ранга)</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" onclick="selectPromoTarget('2 ранг — Академ')" id="promo-btn-2" class="py-3.5 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all">2 ранг — Академ</button>
+                                <button type="button" onclick="selectPromoTarget('3 ранг — Мейн')" id="promo-btn-3" class="py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all">3 ранг — Мейн</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2.5">
+                            <label class="block text-xs font-heavy text-zinc-200">Выполненные нормативы (отметьте нужное)</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div onclick="toggleCustomCheck(this)" data-label="Сдан устав семьи DRUGHILL" class="custom-check-card checked">
+                                    <div class="custom-check-box"><svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="text-xs font-heavy text-white">Сдан устав семьи DRUGHILL</span>
+                                </div>
+                                <div onclick="toggleCustomCheck(this)" data-label="Выполнены семейные контракты" class="custom-check-card checked">
+                                    <div class="custom-check-box"><svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="text-xs font-heavy text-white">Выполнены семейные контракты</span>
+                                </div>
+                                <div onclick="toggleCustomCheck(this)" data-label="Пополнен склад / общак" class="custom-check-card">
+                                    <div class="custom-check-box"><svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="text-xs font-heavy text-white">Пополнен склад / общак</span>
+                                </div>
+                                <div onclick="toggleCustomCheck(this)" data-label="Участие в строях / бизварах" class="custom-check-card">
+                                    <div class="custom-check-box"><svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="text-xs font-heavy text-white">Участие в строях / бизварах</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Ссылки на скриншоты / откат</label>
+                            <input id="promo-proofs" type="text" placeholder="https://imgur.com/a/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                        </div>
+
+                        <button onclick="submitPromoReport()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Отправить отчёт на повышение Старшему составу</button>
+                    </div>
+                </section>
+
+                <!-- 13. BONUS PAYOUT CALCULATOR (CUSTOM STEPPERS WITHOUT BROWSER ARROWS) -->
+                <section id="sec-report-payout" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Отчёт на премию</h2>
+                            <p class="text-xs text-zinc-400 mt-1">Автоматический расчёт выплат. Список пунктов и цены настраивает Старший состав</p>
+                        </div>
+                        <button onclick="openEditRatesModal()" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">Изменить пункты и цены</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                        <div class="lg:col-span-7 bento-card p-6 space-y-5">
+                            <div class="p-3.5 rounded-2xl topo-bg border border-[#2b2b38] flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <img id="payout-preview-avatar" src="https://placehold.co/100x100/1c1c24/ffffff?text=DH" alt="" class="w-10 h-10 rounded-full object-cover border border-white/25">
+                                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                                        <span id="payout-preview-nick" class="font-heavy text-white">Vortex_Drughill</span>
+                                        <span id="payout-preview-tg" class="px-2 py-0.5 rounded bg-white/10 text-[10px] text-zinc-200">@vortex_dh</span>
+                                        <span id="payout-preview-static" class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">#15440</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h3 class="text-base font-heavy text-white">Калькулятор активности</h3>
+                            <div id="payout-items-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Доказательства (Видео / Скриншоты)</label>
+                                <input id="payout-proofs" type="text" placeholder="https://imgur.com/..." class="w-full px-3.5 py-3 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 bento-card p-6 flex flex-col justify-between space-y-4">
+                            <div class="space-y-4">
+                                <h3 class="text-base font-heavy text-white">Итоговая выплата</h3>
+                                <div class="p-6 rounded-2xl topo-bg border border-[#2c2c38] text-center space-y-2">
+                                    <div class="text-xs text-zinc-400">СУММА К ВЫПЛАТЕ</div>
+                                    <div id="payout-total-sum" class="text-3xl font-heavy text-emerald-400">$0</div>
+                                </div>
+                            </div>
+                            <button onclick="submitPayoutRequest()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Запросить премию</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 14. VACATION SYSTEM (DD.MM.YYYY FORMAT + DAYS COUNT) -->
+                <section id="sec-vacations" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 space-y-2">
+                        <h2 class="text-2xl sm:text-3xl font-heavy text-white">Система отпуска</h2>
+                        <p class="text-xs text-zinc-400">Даты указываются в формате ДД.ММ.ГГГГ. Срок в днях рассчитывается для Старшего состава автоматически.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                        <div class="lg:col-span-7 bento-card p-6 space-y-5">
+                            <div class="p-3.5 rounded-2xl topo-bg border border-[#2b2b38] flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <img id="vac-preview-avatar" src="https://placehold.co/100x100/1c1c24/ffffff?text=DH" alt="" class="w-10 h-10 rounded-full object-cover border border-white/25">
+                                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                                        <span id="vac-preview-nick" class="font-heavy text-white">Vortex_Drughill</span>
+                                        <span id="vac-preview-tg" class="px-2 py-0.5 rounded bg-white/10 text-[10px] text-zinc-200">@vortex_dh</span>
+                                        <span id="vac-preview-static" class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">#15440</span>
+                                    </div>
+                                </div>
+                                <span id="vac-days-preview-badge" class="px-3 py-1 rounded-lg bg-white text-black text-[10px] font-heavy">НА 7 ДН.</span>
+                            </div>
+
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-[10px] text-zinc-400 uppercase">Быстрый выбор срока отпуска</label>
+                                </div>
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button type="button" onclick="setQuickVacationDays(3)" class="py-2 rounded-xl bg-[#14141c] hover:bg-white hover:text-black border border-[#292936] text-[10px] font-heavy text-zinc-300 transition-all">На 3 дня</button>
+                                    <button type="button" onclick="setQuickVacationDays(7)" class="py-2 rounded-xl bg-[#14141c] hover:bg-white hover:text-black border border-[#292936] text-[10px] font-heavy text-zinc-300 transition-all">На 7 дней</button>
+                                    <button type="button" onclick="setQuickVacationDays(14)" class="py-2 rounded-xl bg-[#14141c] hover:bg-white hover:text-black border border-[#292936] text-[10px] font-heavy text-zinc-300 transition-all">На 14 дней</button>
+                                    <button type="button" onclick="setQuickVacationDays(30)" class="py-2 rounded-xl bg-[#14141c] hover:bg-white hover:text-black border border-[#292936] text-[10px] font-heavy text-zinc-300 transition-all">На 30 дней</button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                <div>
+                                    <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Дата ухода (ДД.ММ.ГГГГ)</label>
+                                    <input id="vac-start" type="text" maxlength="10" placeholder="07.11.2026" oninput="maskDateInput(this); updateVacationDaysPreview()" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Дата возвращения (ДД.ММ.ГГГГ)</label>
+                                    <input id="vac-end" type="text" maxlength="10" placeholder="14.11.2026" oninput="maskDateInput(this); updateVacationDaysPreview()" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Причина неактива</label>
+                                <input id="vac-reason" type="text" placeholder="Отъезд / Семейные обстоятельства / Учёба" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            </div>
+
+                            <button onclick="submitVacationRequest()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Отправить заявку Старшему составу</button>
+                        </div>
+
+                        <div class="lg:col-span-5 bento-card p-6 space-y-4">
+                            <h3 class="text-base font-heavy text-white">Реестр отпусков семьи</h3>
+                            <div id="public-vacations-list" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 15. SENIOR STAFF: ROSTER -->
+                <section id="sec-senior-roster" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
+                            <h2 class="text-2xl font-heavy text-white mt-2">Управление составом и рангами</h2>
+                            <p class="text-xs text-zinc-400 mt-1">Назначайте ранги одним нажатием кнопки или добавляйте новых участников семьи</p>
+                        </div>
+                        <button onclick="openAddMemberModal()" class="px-5 py-3 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all self-start sm:self-center">+ Добавить участника</button>
+                    </div>
+
+                    <div id="roster-pending-apps-wrap" class="bento-card p-6 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-base font-heavy text-white">Ожидают принятия в семью</h3>
+                        </div>
+                        <div id="roster-pending-apps-list" class="space-y-3"></div>
+                    </div>
+
+                    <div id="admin-roster-list" class="space-y-3.5"></div>
+                </section>
+
+                <!-- 16. SENIOR STAFF: REVIEWS -->
+                <section id="sec-senior-reviews" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8">
+                        <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
+                        <h2 class="text-2xl font-heavy text-white mt-2">Проверка отчётов и заявок в семью</h2>
+                    </div>
+
+                    <div class="bento-card p-6 space-y-4">
+                        <h3 class="text-base font-heavy text-white">Новые заявки в семью</h3>
+                        <div id="admin-applications-list" class="space-y-3"></div>
+                    </div>
+
+                    <div class="bento-card p-6 space-y-4">
+                        <h3 class="text-base font-heavy text-white">Рапорты на повышение</h3>
+                        <div id="admin-promo-reports-list" class="space-y-3"></div>
+                    </div>
+
+                    <div class="bento-card p-6 space-y-4">
+                        <h3 class="text-base font-heavy text-white">Заявки на выплату премии</h3>
+                        <div id="admin-payout-reports-list" class="space-y-3"></div>
+                    </div>
+                </section>
+
+                <!-- 17. SENIOR STAFF: TEST RESULTS -->
+                <section id="sec-senior-test-results" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8">
+                        <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
+                        <h2 class="text-2xl font-heavy text-white mt-2">Итоги тестов Академии</h2>
+                    </div>
+                    <div id="senior-test-results-list" class="space-y-4"></div>
+                </section>
+
+                <!-- 18. SENIOR STAFF: VACATIONS CONTROL -->
+                <section id="sec-senior-vacations" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8">
+                        <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
+                        <h2 class="text-2xl font-heavy text-white mt-2">Контроль отпусков</h2>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <div class="bento-card p-6 space-y-4">
+                            <h3 class="text-base font-heavy text-white">Ожидают одобрения</h3>
+                            <div id="admin-vacations-pending" class="space-y-3"></div>
+                        </div>
+                        <div class="bento-card p-6 space-y-4">
+                            <h3 class="text-base font-heavy text-white">Сейчас в отпуске</h3>
+                            <div id="admin-vacations-active" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 19. SENIOR STAFF: LOGS -->
+                <section id="sec-senior-logs" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
+                            <h2 class="text-2xl font-heavy text-white mt-2">Логи действий</h2>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button onclick="setLogFilter('ALL')" class="px-3 py-1.5 rounded-lg bg-white text-black text-[10px] font-heavy">Все</button>
+                            <button onclick="setLogFilter('AUTH')" class="px-3 py-1.5 rounded-lg bg-[#16161f] text-zinc-300 text-[10px] font-heavy">Входы</button>
+                            <button onclick="setLogFilter('RANK')" class="px-3 py-1.5 rounded-lg bg-[#16161f] text-zinc-300 text-[10px] font-heavy">Ранги</button>
+                            <button onclick="setLogFilter('TEST')" class="px-3 py-1.5 rounded-lg bg-[#16161f] text-zinc-300 text-[10px] font-heavy">Тесты</button>
+                        </div>
+                    </div>
+                    <div id="logs-list-container" class="space-y-2.5"></div>
+                <!-- 20. SENIOR STAFF: DB (ONLY FOR @krystalovb / LEADER & DEPUTY) -->
+                <section id="sec-senior-db" class="page-sec hidden space-y-6">
+                    <div class="bento-card p-6 sm:p-8 space-y-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">ЛИДЕР / ЗАМ. ЛИДЕРА</span>
+                            <span class="px-2.5 py-1 rounded bg-[#181822] border border-[#2c2c3a] text-zinc-200 text-[10px] font-heavy">@krystalovb</span>
+                        </div>
+                        <h2 class="text-2xl font-heavy text-white">База данных семьи</h2>
+                        <p class="text-xs text-zinc-400">Сейчас на сайте: состав, заявки, отчёты, премии, отпуска, тесты, новости, устав и всё остальное. Раздел виден только Лидеру и Заместителям.</p>
+                        <div id="db-stats" class="flex flex-wrap gap-2 pt-1"></div>
+                    </div>
+
+                    <div class="bento-card p-6 sm:p-8 space-y-4">
+                        <h3 class="text-base font-heavy text-white">Сохранение базы</h3>
+                        <p class="text-xs text-zinc-400">Все данные хранятся <span class="text-white">на сервере</span> и общие для всех. Заявки, отпуска и отчёты сразу попадают Лидеру и Заму. Кнопка ниже скачивает <span class="text-white">резервную копию db.json</span>.</p>
+                        <div class="flex flex-wrap gap-3 pt-1">
+                            <button onclick="downloadDbJson()" class="px-5 py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy shadow-[0_0_25px_rgba(255,255,255,0.2)] transition-all">Сохранить базу (скачать db.json)</button>
+                            <label class="px-5 py-3.5 rounded-xl bg-[#181822] border border-[#2d2d3b] hover:border-white text-xs font-heavy text-white cursor-pointer transition-all">
+                                Загрузить базу из файла
+                                <input type="file" accept=".json,application/json" onchange="importDbJson(event)" class="hidden">
+                            </label>
+                            <button onclick="resetDemoDatabase()" class="px-5 py-3.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-heavy">Сбросить базу</button>
+                        </div>
+                        <p class="text-[10px] text-zinc-500">«Загрузить базу из файла» заменяет базу на сервере у всех. «Сбросить базу» возвращает начальные данные. Перед этими действиями скачайте резервную копию.</p>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD MEMBER MANUALLY -->
+    <div id="modal-add-member" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bento-card max-w-md w-full p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-heavy text-white">Добавить участника в состав</h3>
+                <button onclick="closeModal('modal-add-member')" class="text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Игровой Никнейм</label>
+                    <input id="new-mem-nick" type="text" placeholder="Shadow_Drughill" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Static ID</label>
+                    <input id="new-mem-static" type="text" placeholder="#18900" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Telegram (@юз)</label>
+                    <input id="new-mem-tg" type="text" placeholder="@shadow_dh" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Начальный ранг</label>
+                    <div class="grid grid-cols-2 gap-2" id="new-mem-rank-grid">
+                        <button type="button" onclick="selectNewMemRank('1. Контракт')" data-rk="1. Контракт" class="new-rk-btn py-2 px-2.5 rounded-xl bg-white text-black text-[10px] font-heavy">1. Контракт</button>
+                        <button type="button" onclick="selectNewMemRank('2. Академ')" data-rk="2. Академ" class="new-rk-btn py-2 px-2.5 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-[10px] font-heavy">2. Академ</button>
+                        <button type="button" onclick="selectNewMemRank('3. Мейн')" data-rk="3. Мейн" class="new-rk-btn py-2 px-2.5 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-[10px] font-heavy">3. Мейн</button>
+                        <button type="button" onclick="selectNewMemRank('Старший состав')" data-rk="Старший состав" class="new-rk-btn py-2 px-2.5 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-[10px] font-heavy">Старший состав</button>
+                        <button type="button" onclick="selectNewMemRank('Зам. Лидера')" data-rk="Зам. Лидера" class="new-rk-btn py-2 px-2.5 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-[10px] font-heavy">Зам. Лидера</button>
+                        <button type="button" onclick="selectNewMemRank('Лидер')" data-rk="Лидер" class="new-rk-btn py-2 px-2.5 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-[10px] font-heavy">Лидер</button>
+                    </div>
+                </div>
+            </div>
+            <button onclick="saveAddedMember()" class="w-full py-3.5 rounded-xl bg-white text-black font-heavy text-xs">Добавить в состав</button>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD CONTENT -->
+    <div id="modal-add-content" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bento-card max-w-lg w-full p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 id="modal-add-content-title" class="text-lg font-heavy text-white">Добавить запись</h3>
+                <button onclick="closeModal('modal-add-content')" class="text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <input id="cms-target-section" type="hidden" value="news">
+            <div>
+                <label class="block text-[10px] text-zinc-400 uppercase mb-1">Бейдж / Категория</label>
+                <input id="cms-badge" type="text" placeholder="ВАЖНО" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
+            </div>
+            <div>
+                <label class="block text-[10px] text-zinc-400 uppercase mb-1">Заголовок</label>
+                <input id="cms-title" type="text" placeholder="Название..." class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
+            </div>
+            <div>
+                <label class="block text-[10px] text-zinc-400 uppercase mb-1">Описание</label>
+                <textarea id="cms-desc" rows="3" placeholder="Текст..." class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white"></textarea>
+            </div>
+            <div>
+                <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ссылка на фото</label>
+                <input id="cms-image" type="text" placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
+            </div>
+            <button onclick="saveCmsContent()" class="w-full py-3.5 rounded-xl bg-white text-black font-heavy text-xs">Опубликовать</button>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE TEST -->
+    <div id="modal-create-test" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bento-card max-w-2xl w-full p-6 space-y-4 my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-heavy text-white">Создать тест Академии</h3>
+                <button onclick="closeModal('modal-create-test')" class="text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Название теста</label>
+                    <input id="new-test-title" type="text" placeholder="Аттестация в Мейн" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Проходной балл (%)</label>
+                    <input id="new-test-pass" type="number" value="70" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
+                </div>
+            </div>
+            <div id="builder-questions-list" class="space-y-4"></div>
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                <button onclick="addBuilderQuestion()" class="px-4 py-2.5 rounded-xl bg-[#181822] text-xs font-heavy text-white">+ Вопрос</button>
+                <div class="flex items-center gap-2">
+                    <button onclick="clearAllTests()" class="px-4 py-2.5 rounded-xl bg-red-500/15 text-red-300 text-xs font-heavy">Очистить все тесты</button>
+                    <button onclick="saveBuiltTest()" class="px-5 py-2.5 rounded-xl bg-white text-black text-xs font-heavy">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT RATES (редактор пунктов премии) -->
+    <div id="modal-edit-rates" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bento-card max-w-xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-heavy text-white">Пункты премий</h3>
+                <button onclick="closeModal('modal-edit-rates')" class="text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <p class="text-[10px] text-zinc-400">Меняйте название (за что премия) и цену за 1 единицу. Можно добавлять новые и удалять ненужные пункты.</p>
+            <div id="rates-editor-list" class="space-y-2.5"></div>
+            <button type="button" onclick="addRateRow()" class="w-full py-3 rounded-xl bg-[#181822] border border-dashed border-[#3a3a4a] hover:border-white text-xs font-heavy text-white transition-all">+ Добавить пункт</button>
+            <button onclick="saveEditedRates()" class="w-full py-3.5 rounded-xl bg-white text-black font-heavy text-xs">Сохранить</button>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT PROFILE (NICK & STATIC ID IN ONE PLACE) -->
+    <div id="modal-edit-profile" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bento-card max-w-md w-full p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-heavy text-white">Редактировать профиль</h3>
+                <button onclick="closeModal('modal-edit-profile')" class="text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваш игровой Никнейм</label>
+                    <input id="edit-prof-nick" type="text" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваш Static ID</label>
+                    <input id="edit-prof-static" type="text" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                </div>
+            </div>
+            <button onclick="saveProfileEdit()" class="w-full py-3.5 rounded-xl bg-white text-black font-heavy text-xs">Сохранить данные профиля</button>
+        </div>
+    </div>
+
+    <div id="toast-box" class="fixed bottom-5 right-5 z-50 hidden px-5 py-3.5 rounded-2xl bg-white text-black font-heavy text-xs shadow-2xl"></div>
+
+    <script>
+        (function() {
+            var TG_BOT_USERNAME = 'drughillsite_bot';
+            var OWNER_TG_HANDLE = '@krystalovb';
+            var pollTimer = null;
+            var currentPromoTarget = '2 ранг — Академ';
+            var currentLogFilter = 'ALL';
+            var tempBuilderQuestions = [];
+            var activeRunnerTest = null;
+            var selectedRegMode = 'GUEST';
+            var selectedNewMemRank = '1. Контракт';
+
+            var defaultDb = {
+                currentUser: {
+                    loggedIn: false,
+                    nick: 'Panic PR',
+                    staticId: '#15440',
+                    tg: '@krystalovb',
+                    avatar: 'https://placehold.co/120x120/181820/ffffff?text=PR',
+                    role: 'SENIOR',
+                    rankTitle: 'Лидер'
+                },
+                payoutItems: makeDefaultPayoutItems(),
+                tests: [],
+                testSubmissions: [],
+                news: [
+                    { badge: 'ВАЖНО', date: 'Сегодня', title: 'Полная доминация DRUGHILL на бизварах Region RP', desc: 'Синдикат удерживает ключевые предприятия штата.', image: 'https://placehold.co/800x420/121217/ffffff?text=DRUGHILL' }
+                ],
+                rules: [
+                    { badge: '1.1 УСТАВ', title: 'Безусловное соблюдение кодекса DRUGHILL', desc: 'Каждый участник обязан знать правила сервера.' }
+                ],
+                diplomacy: [
+                    { badge: 'СОЮЗ', title: 'CARTEL SYNDICATE', desc: 'Совместный контроль трассы и цехов.' }
+                ],
+                fleet: [
+                    { badge: '1 РАНГ', title: 'Benefactor V-Series', desc: 'Транспорт для контрактов.', image: 'https://placehold.co/600x360/121217/ffffff?text=АВТОПАРК' }
+                ],
+                estates: [
+                    { badge: 'ШТАБ', title: 'Особняк DRUGHILL на Richman', desc: 'Основной штаб семьи.', image: 'https://placehold.co/800x450/121217/ffffff?text=ОСОБНЯК' }
+                ],
+                roster: [
+                    { id: 1, nick: 'Panic PR', staticId: '#15440', tg: '@krystalovb', rank: 'Лидер', avatar: 'https://placehold.co/100x100/1c1c24/ffffff?text=PR' },
+                    { id: 2, nick: 'Markushka_Drughill', staticId: '#21940', tg: '@markushka_dh', rank: '3. Мейн', avatar: 'https://placehold.co/100x100/1c1c24/ffffff?text=MD' }
+                ],
+                applications: [],
+                promoReports: [],
+                payoutReports: [],
+                vacations: [
+                    {
+                        id: 101,
+                        nick: 'Markushka_Drughill',
+                        staticId: '#21940',
+                        tg: '@markushka_dh',
+                        avatar: 'https://placehold.co/100x100/1c1c24/ffffff?text=MD',
+                        rank: '3. Мейн',
+                        startDate: '07.11.2026',
+                        endDate: '14.11.2026',
+                        daysCount: 7,
+                        reason: 'Отъезд / Семейные обстоятельства',
+                        status: 'PENDING'
+                    }
+                ],
+                logs: [{ type: 'AUTH', actor: 'Система', action: 'Запуск боевого портала DRUGHILL', time: 'Сегодня' }]
+            };
+
+            var db = loadDb();
+
+            function makeDefaultPayoutItems() {
+                return [
+                    { id: 'bizwar', name: 'Бизвар', rate: 25000 },
+                    { id: 'factory', name: 'Цех / ВЗХ', rate: 35000 },
+                    { id: 'contract', name: 'Контракт', rate: 15000 },
+                    { id: 'warehouse', name: 'Склад', rate: 10000 },
+                    { id: 'capt', name: 'Капт / война за территорию', rate: 30000 },
+                    { id: 'cargo', name: 'Перевозка груза', rate: 12000 },
+                    { id: 'heist', name: 'Ограбление', rate: 20000 },
+                    { id: 'recruit', name: 'Приглашение нового участника', rate: 10000 },
+                    { id: 'stroy', name: 'Участие в семейном строе', rate: 5000 },
+                    { id: 'duty', name: 'Дежурство на территории', rate: 8000 }
+                ];
+            }
+
+            function escHtml(v) {
+                return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            // Приводит данные любой старой версии к актуальному формату
+            function migrateDb(o) {
+                if (!Array.isArray(o.payoutItems) || o.payoutItems.length === 0) {
+                    var items = makeDefaultPayoutItems();
+                    if (o.payoutRates && typeof o.payoutRates === 'object') {
+                        items.forEach(function(it) {
+                            var v = parseInt(o.payoutRates[it.id], 10);
+                            if (!isNaN(v) && v > 0) it.rate = v;
+                        });
+                    }
+                    o.payoutItems = items;
+                }
+                delete o.payoutRates;
+                return o;
+            }
+
+            function mergeWithDefaults(obj) {
+                var base = JSON.parse(JSON.stringify(defaultDb));
+                var src = migrateDb(JSON.parse(JSON.stringify(obj)));
+                return Object.assign(base, src);
+            }
+
+            function stripSession(o) {
+                var c = JSON.parse(JSON.stringify(o));
+                delete c.currentUser;
+                return c;
+            }
+
+            function isValidDbShape(o) {
+                return !!o && typeof o === 'object' && !Array.isArray(o) && Array.isArray(o.roster);
+            }
+
+            // Данные живут на сервере. В браузере они хранятся только в памяти.
+            function loadDb() {
+                return JSON.parse(JSON.stringify(defaultDb));
+            }
+
+            function saveDb() { scheduleSync(); }
+
+            function isDatabaseAccessAllowed(user) {
+                if (!user) return false;
+                var tgClean = (user.tg || '').toLowerCase();
+                var nickClean = (user.nick || '').toLowerCase();
+                if (tgClean === '@krystalovb' || nickClean === 'krystalovb' || nickClean === '@krystalovb') {
+                    return true;
+                }
+                return user.rankTitle === 'Лидер' || user.rankTitle === 'Зам. Лидера';
+            }
+
+            // Форматирование и расчёт дней для дат в формате ДД.ММ.ГГГГ
+            function formatDateToRu(dateObj) {
+                var d = String(dateObj.getDate()).padStart(2, '0');
+                var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                var y = dateObj.getFullYear();
+                return d + '.' + m + '.' + y;
+            }
+
+            function normalizeAnyDateString(str) {
+                if (!str) return formatDateToRu(new Date());
+                var s = String(str).trim();
+                // Если уже ДД.ММ.ГГГГ
+                var dotParts = s.split('.');
+                if (dotParts.length === 3) {
+                    var dd = dotParts[0].padStart(2, '0').slice(0, 2);
+                    var mm = dotParts[1].padStart(2, '0').slice(0, 2);
+                    var yy = dotParts[2].slice(0, 4);
+                    if (yy.length < 4) yy = '2026';
+                    return dd + '.' + mm + '.' + yy;
+                }
+                // Если YYYY-MM-DD (или кривой 20009-06-21)
+                var dashParts = s.split('-');
+                if (dashParts.length === 3) {
+                    var yPart = dashParts[0].slice(0, 4);
+                    var mPart = dashParts[1].padStart(2, '0').slice(0, 2);
+                    var dPart = dashParts[2].padStart(2, '0').slice(0, 2);
+                    return dPart + '.' + mPart + '.' + yPart;
+                }
+                return s;
+            }
+
+            function parseRuDate(str) {
+                var norm = normalizeAnyDateString(str);
+                var p = norm.split('.');
+                if (p.length !== 3) return null;
+                var d = parseInt(p[0], 10);
+                var m = parseInt(p[1], 10) - 1;
+                var y = parseInt(p[2], 10);
+                if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
+                return new Date(y, m, d);
+            }
+
+            function calcVacationDays(startStr, endStr) {
+                var d1 = parseRuDate(startStr);
+                var d2 = parseRuDate(endStr);
+                if (!d1 || !d2) return 1;
+                var diff = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+                return diff > 0 ? diff : 1;
+            }
+
+            window.maskDateInput = function(input) {
+                var digits = input.value.replace(/\D/g, '').slice(0, 8);
+                var res = '';
+                if (digits.length > 0) res += digits.substring(0, 2);
+                if (digits.length >= 3) res += '.' + digits.substring(2, 4);
+                if (digits.length >= 5) res += '.' + digits.substring(4, 8);
+                input.value = res;
+            };
+
+            window.sanitizeNumericInput = function(input) {
+                input.value = input.value.replace(/\D/g, '');
+            };
+
+            window.stepPayoutQty = function(inputId, delta) {
+                var el = document.getElementById(inputId);
+                if (!el) return;
+                var cur = parseInt(el.value, 10) || 0;
+                var next = cur + delta;
+                if (next < 0) next = 0;
+                el.value = String(next);
+                window.recalcPayoutTotal();
+            };
+
+            window.setQuickVacationDays = function(days) {
+                var now = new Date();
+                var end = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+                var sEl = document.getElementById('vac-start');
+                var eEl = document.getElementById('vac-end');
+                if (sEl) sEl.value = formatDateToRu(now);
+                if (eEl) eEl.value = formatDateToRu(end);
+                window.updateVacationDaysPreview();
+            };
+
+            window.updateVacationDaysPreview = function() {
+                var sEl = document.getElementById('vac-start');
+                var eEl = document.getElementById('vac-end');
+                var badge = document.getElementById('vac-days-preview-badge');
+                if (!badge) return;
+                var days = calcVacationDays(sEl ? sEl.value : '', eEl ? eEl.value : '');
+                badge.textContent = 'НА ' + days + ' ДН.';
+            };
+
+            window.openEditProfileModal = function() {
+                var nEl = document.getElementById('edit-prof-nick');
+                var sEl = document.getElementById('edit-prof-static');
+                if (nEl) nEl.value = db.currentUser.nick;
+                if (sEl) sEl.value = db.currentUser.staticId;
+                var m = document.getElementById('modal-edit-profile');
+                if (m) m.classList.remove('hidden');
+            };
+
+            window.saveProfileEdit = function() {
+                var nEl = document.getElementById('edit-prof-nick');
+                var sEl = document.getElementById('edit-prof-static');
+                var nick = nEl && nEl.value.trim() ? nEl.value.trim() : db.currentUser.nick;
+                var stat = sEl && sEl.value.trim() ? sEl.value.trim() : db.currentUser.staticId;
+                api('POST', '/api/profile', { nick: nick, staticId: stat }).then(function(res) {
+                    if (res.state) applyServerState(res, false);
+                    closeModal('modal-edit-profile');
+                    showToast(res.error || ('Профиль обновлён: ' + db.currentUser.nick + ' (' + db.currentUser.staticId + ')'));
+                });
+            };
+
+            function addLog(type, action) {
+                var now = new Date();
+                db.logs.unshift({ id: Date.now() * 1000 + Math.floor(Math.random() * 1000), type: type, actor: db.currentUser.nick || 'Гость', action: action, time: now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) });
+                saveDb();
+            }
+
+            window.showToast = function(msg) {
+                var box = document.getElementById('toast-box');
+                if (!box) return;
+                box.textContent = msg;
+                box.classList.remove('hidden');
+                setTimeout(function() { box.classList.add('hidden'); }, 3200);
+            };
+
+            window.setRegMode = function(mode) {
+                selectedRegMode = mode;
+                var btnGuest = document.getElementById('reg-mode-guest');
+                var btnMem = document.getElementById('reg-mode-member');
+                if (!btnGuest || !btnMem) return;
+                if (mode === 'GUEST') {
+                    btnGuest.className = 'py-2.5 px-3 rounded-lg bg-white text-black text-[11px] font-heavy transition-all';
+                    btnMem.className = 'py-2.5 px-3 rounded-lg text-zinc-400 hover:text-white text-[11px] font-heavy transition-all';
+                } else {
+                    btnMem.className = 'py-2.5 px-3 rounded-lg bg-white text-black text-[11px] font-heavy transition-all';
+                    btnGuest.className = 'py-2.5 px-3 rounded-lg text-zinc-400 hover:text-white text-[11px] font-heavy transition-all';
+                }
+            };
+
+            // ===== СЕРВЕР: вход, синхронизация =====
+            var TOKEN_KEY = 'drughill_session';
+            var apiToken = null;
+            try { apiToken = localStorage.getItem(TOKEN_KEY); } catch (e) {}
+            var ID_KEYS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests'];
+            var SET_KEYS = ['news', 'rules', 'diplomacy', 'fleet', 'estates', 'payoutItems'];
+            var ALL_KEYS = ID_KEYS.concat(SET_KEYS, ['logs']);
+            var snap = {}, syncRev = 0, lastVsig = '', pushTimer = null, pushing = false, pushAgain = false;
+            var loginCode = null;
+
+            function api(method, path, body) {
+                var headers = { 'Content-Type': 'application/json' };
+                if (apiToken) headers['Authorization'] = 'Bearer ' + apiToken;
+                return fetch(path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' }).then(function(r) {
+                    return r.json().then(function(j) { j._status = r.status; return j; }, function() { return { _status: r.status, error: 'Ошибка ответа сервера' }; });
+                });
+            }
+
+            function takeSnap() {
+                snap = {};
+                ALL_KEYS.forEach(function(k) { snap[k] = JSON.parse(JSON.stringify(db[k] || [])); });
+            }
+
+            function buildPatch() {
+                var patch = {}, any = false;
+                ID_KEYS.forEach(function(k) {
+                    var cur = db[k] || [], old = snap[k] || [], oldById = {}, curIds = {};
+                    old.forEach(function(r) { oldById[r.id] = JSON.stringify(r); });
+                    var up = [];
+                    cur.forEach(function(r) { curIds[r.id] = 1; if (oldById[r.id] !== JSON.stringify(r)) up.push(r); });
+                    var del = old.filter(function(r) { return !curIds[r.id]; }).map(function(r) { return r.id; });
+                    if (up.length || del.length) { patch[k] = { up: up, del: del }; any = true; }
+                });
+                SET_KEYS.forEach(function(k) {
+                    if (JSON.stringify(db[k] || []) !== JSON.stringify(snap[k] || [])) { patch[k] = db[k] || []; any = true; }
+                });
+                var oldLog = {};
+                (snap.logs || []).forEach(function(l) { oldLog[l.id] = 1; });
+                var add = (db.logs || []).filter(function(l) { return l.id && !oldLog[l.id]; });
+                if (add.length) { patch.logs = { add: add }; any = true; }
+                return any ? patch : null;
+            }
+
+            function pendingCount() {
+                function n(a) { return (a || []).filter(function(x) { return x.status === 'PENDING'; }).length; }
+                return n(db.applications) + n(db.promoReports) + n(db.payoutReports) + n(db.vacations);
+            }
+
+            function applyServerState(res, fromPoll) {
+                var prevRole = db.currentUser.role;
+                var prevPending = pendingCount();
+                var wasIn = db.currentUser.loggedIn;
+                if (res.state) {
+                    KEYS_FOR_APPLY().forEach(function(k) { db[k] = res.state[k] || []; });
+                    syncRev = res.rev;
+                    lastVsig = res.vsig || lastVsig;
+                }
+                if (res.me) db.currentUser = JSON.parse(JSON.stringify(res.me));
+                takeSnap();
+                renderAll();
+                if (wasIn && prevRole === 'GUEST' && db.currentUser.role !== 'GUEST') {
+                    navigateTo('home');
+                    showToast('Вас приняли в семью: ' + db.currentUser.rankTitle);
+                } else if (fromPoll && db.currentUser.role === 'SENIOR' && pendingCount() > prevPending) {
+                    showToast('Новая заявка на рассмотрение');
+                }
+            }
+            function KEYS_FOR_APPLY() { return ALL_KEYS; }
+
+            function scheduleSync() {
+                if (!apiToken || !db.currentUser.loggedIn) return;
+                if (pushTimer) clearTimeout(pushTimer);
+                pushTimer = setTimeout(doPush, 60);
+            }
+
+            function doPush() {
+                pushTimer = null;
+                if (pushing) { pushAgain = true; return; }
+                var patch = buildPatch();
+                if (!patch) return;
+                pushing = true;
+                api('POST', '/api/sync', { patch: patch }).then(function(res) {
+                    pushing = false;
+                    if (res._status === 401) { forceLogout('Сессия истекла, войдите снова'); return; }
+                    if (res.state) applyServerState(res, false);
+                    if (res.error) showToast(res.error);
+                    if (pushAgain) { pushAgain = false; scheduleSync(); }
+                }).catch(function() {
+                    pushing = false;
+                    showToast('Нет связи с сервером, повторяю...');
+                    setTimeout(scheduleSync, 3000);
+                });
+            }
+
+            function pollOnce() {
+                if (!apiToken || !db.currentUser.loggedIn || document.hidden) return;
+                if (pushing || pushTimer || buildPatch()) { scheduleSync(); return; }
+                api('GET', '/api/state?rev=' + syncRev + '&vsig=' + encodeURIComponent(lastVsig)).then(function(res) {
+                    if (res._status === 401) { forceLogout('Сессия истекла, войдите снова'); return; }
+                    if (res.state && !pushing && !pushTimer && !buildPatch()) applyServerState(res, true);
+                }).catch(function() {});
+            }
+            setInterval(pollOnce, 4000);
+            document.addEventListener('visibilitychange', function() { if (!document.hidden) pollOnce(); });
+
+            function resetLocalSession() {
+                apiToken = null;
+                try { localStorage.removeItem(TOKEN_KEY); } catch (e) {}
+                var fresh = JSON.parse(JSON.stringify(defaultDb));
+                fresh.currentUser.loggedIn = false;
+                db = fresh;
+                takeSnap();
+                syncRev = 0; lastVsig = '';
+            }
+
+            function forceLogout(msg) {
+                resetLocalSession();
+                var pop = document.getElementById('profile-popover');
+                if (pop) pop.classList.add('hidden');
+                renderAll();
+                if (msg) showToast(msg);
+            }
+
+            function startSession() {
+                takeSnap();
+                if (!apiToken) { renderAll(); return; }
+                api('GET', '/api/state?rev=0').then(function(res) {
+                    if (res._status === 401 || !res.state) { resetLocalSession(); renderAll(); return; }
+                    applyServerState(res, false);
+                    navigateTo(db.currentUser.role === 'GUEST' ? 'join-family' : 'home');
+                }).catch(function() { renderAll(); showToast('Нет связи с сервером'); });
+            }
+
+            window.startTelegramAuth = function() {
+                var nickInput = document.getElementById('auth-nick-input');
+                var staticInput = document.getElementById('auth-static-input');
+                var nick = nickInput ? nickInput.value.trim() : '';
+                var stat = staticInput ? staticInput.value.trim() : '';
+                fetch('/api/auth/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick: nick, staticId: stat }) })
+                    .then(function(r) { return r.json(); })
+                    .then(function(j) {
+                        if (!j.code) { showToast(j.error || 'Не удалось начать вход'); return; }
+                        loginCode = j.code;
+                        var linkEl = document.getElementById('tg-deep-link');
+                        if (linkEl) linkEl.href = j.link;
+                        var pollBox = document.getElementById('tg-polling-box');
+                        if (pollBox) pollBox.classList.remove('hidden');
+                        try { window.open(j.link, '_blank'); } catch (e) {}
+                        if (pollTimer) clearInterval(pollTimer);
+                        pollTimer = setInterval(checkLoginStatus, 2000);
+                    })
+                    .catch(function() { showToast('Нет связи с сервером'); });
+            };
+
+            function checkLoginStatus() {
+                if (!loginCode) return;
+                fetch('/api/auth/status?code=' + encodeURIComponent(loginCode), { cache: 'no-store' })
+                    .then(function(r) { return r.json(); })
+                    .then(function(j) {
+                        if (j.status === 'ok' && j.token) {
+                            clearInterval(pollTimer); loginCode = null;
+                            apiToken = j.token;
+                            try { localStorage.setItem(TOKEN_KEY, apiToken); } catch (e) {}
+                            return api('GET', '/api/state?rev=0').then(function(res) {
+                                if (!res.state) { showToast(res.error || 'Не удалось войти'); resetLocalSession(); return; }
+                                applyServerState(res, false);
+                                addLog('AUTH', 'Вход через @' + TG_BOT_USERNAME + ' (' + db.currentUser.tg + ' · ' + db.currentUser.rankTitle + ')');
+                                navigateTo(db.currentUser.role === 'GUEST' ? 'join-family' : 'home');
+                                showToast('Добро пожаловать в DRUGHILL, ' + db.currentUser.nick + '!');
+                            });
+                        }
+                        if (j.status === 'denied') { clearInterval(pollTimer); loginCode = null; showToast('Вход отклонён в Telegram'); var b = document.getElementById('tg-polling-box'); if (b) b.classList.add('hidden'); }
+                        if (j.status === 'expired') { clearInterval(pollTimer); loginCode = null; showToast('Время входа истекло, попробуйте ещё раз'); var b2 = document.getElementById('tg-polling-box'); if (b2) b2.classList.add('hidden'); }
+                    })
+                    .catch(function() {});
+            }
+
+            // Кнопка «Я нажал Start / Подтвердил»: просто проверяет вход прямо сейчас, ничего не подтверждает сама
+            window.completeInstantSelectedLogin = function() {
+                if (!loginCode) { showToast('Сначала нажмите «Войти через Telegram»'); return; }
+                checkLoginStatus();
+                showToast('Проверяю вход... Подтвердите вход в боте кнопкой «Да, это я»');
+            };
+
+            window.logoutToAuthGate = function() {
+                api('POST', '/api/logout', {}).catch(function() {});
+                forceLogout();
+            };
+
+            window.toggleProfilePopover = function() {
+                var pop = document.getElementById('profile-popover');
+                if (pop) pop.classList.toggle('hidden');
+            };
+
+            window.toggleMobileSidebar = function() {
+                var sb = document.getElementById('sidebar');
+                if (sb) sb.classList.toggle('-translate-x-full');
+            };
+
+            window.copyUserStaticId = function() {
+                var text = db.currentUser.staticId || '#15440';
+                var temp = document.createElement('textarea');
+                temp.value = text;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+                showToast('Static ID скопирован: ' + text);
+            };
+
+            var sectionTitles = {
+                'home': 'Главная', 'profile': 'Профиль', 'guest-status': 'Ожидание роли', 'news': 'Новости семьи',
+                'rules': 'Устав семьи', 'ranks': 'Система повышения', 'diplomacy': 'Дипломатия и Война', 'fleet': 'Автопарк',
+                'estates': 'Недвижимость', 'academy': 'Академия', 'join-family': 'Подать заявку в семью', 'report-promo': 'Отчёт на повышение',
+                'report-payout': 'Отчёт на премию', 'vacations': 'Система отпуска', 'senior-roster': 'Управление составом',
+                'senior-reviews': 'Проверка отчётов', 'senior-test-results': 'Итоги тестов', 'senior-vacations': 'Контроль отпусков',
+                'senior-logs': 'Логи действий', 'senior-db': 'База данных'
+            };
+
+            window.navigateTo = function(secId) {
+                var role = db.currentUser.role;
+                if (role === 'GUEST' && secId !== 'join-family' && secId !== 'guest-status' && secId !== 'profile') {
+                    secId = 'join-family';
+                }
+                if (secId === 'senior-db' && !isDatabaseAccessAllowed(db.currentUser)) {
+                    showToast('База данных доступна только Лидеру @krystalovb и Заместителям!');
+                    return;
+                }
+                if (secId.indexOf('senior-') === 0 && role !== 'SENIOR') {
+                    showToast('Доступ разрешён только Старшему составу!');
+                    return;
+                }
+
+                var secs = document.querySelectorAll('.page-sec');
+                for (var i = 0; i < secs.length; i++) secs[i].classList.add('hidden');
+                var target = document.getElementById('sec-' + secId);
+                if (target) target.classList.remove('hidden');
+
+                var btns = document.querySelectorAll('.nav-btn');
+                for (var j = 0; j < btns.length; j++) {
+                    if (btns[j].getAttribute('data-nav') === secId) btns[j].classList.add('active');
+                    else btns[j].classList.remove('active');
+                }
+
+                var bc = document.getElementById('top-breadcrumb');
+                if (bc) bc.textContent = sectionTitles[secId] || 'Главная';
+
+                var sb = document.getElementById('sidebar');
+                if (sb && window.innerWidth < 1024) sb.classList.add('-translate-x-full');
+            };
+
+            function renderUserBar() {
+                var gate = document.getElementById('auth-gate');
+                var shell = document.getElementById('portal-shell');
+                if (!gate || !shell) return;
+
+                if (!db.currentUser.loggedIn) {
+                    gate.classList.remove('hidden');
+                    shell.classList.add('hidden');
+                    return;
+                }
+                gate.classList.add('hidden');
+                shell.classList.remove('hidden');
+
+                var u = db.currentUser;
+                var role = u.role;
+
+                ['sidebar-user-nick', 'pop-user-nick', 'prof-page-nick', 'join-preview-nick', 'promo-preview-nick', 'payout-preview-nick', 'vac-preview-nick'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) el.textContent = u.nick;
+                });
+                ['sidebar-user-static', 'pop-user-static', 'prof-page-static', 'join-preview-static', 'promo-preview-static', 'payout-preview-static', 'vac-preview-static'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) el.textContent = u.staticId;
+                });
+                ['pop-user-tg', 'prof-page-tg', 'join-preview-tg', 'promo-preview-tg', 'payout-preview-tg', 'vac-preview-tg'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) el.textContent = u.tg;
+                });
+                ['sidebar-user-avatar', 'pop-user-avatar', 'prof-page-avatar', 'join-preview-avatar', 'promo-preview-avatar', 'payout-preview-avatar', 'vac-preview-avatar'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) el.src = u.avatar;
+                });
+                var rEl = document.getElementById('pop-user-role');
+                if (rEl) rEl.textContent = u.rankTitle;
+                var pfR = document.getElementById('prof-page-role');
+                if (pfR) pfR.textContent = u.rankTitle;
+                var prR = document.getElementById('promo-preview-rank');
+                if (prR) prR.textContent = u.rankTitle;
+
+                var gGuest = document.getElementById('nav-group-guest');
+                var gMain = document.getElementById('nav-group-main');
+                var gRep = document.getElementById('nav-group-reports');
+                var gSen = document.getElementById('nav-group-senior');
+
+                if (gGuest && gMain && gRep && gSen) {
+                    if (role === 'GUEST') {
+                        gGuest.classList.remove('hidden');
+                        gMain.classList.add('hidden');
+                        gRep.classList.add('hidden');
+                        gSen.classList.add('hidden');
+                    } else if (role === 'MEMBER') {
+                        gGuest.classList.add('hidden');
+                        gMain.classList.remove('hidden');
+                        gRep.classList.remove('hidden');
+                        gSen.classList.add('hidden');
+                    } else {
+                        gGuest.classList.add('hidden');
+                        gMain.classList.remove('hidden');
+                        gRep.classList.remove('hidden');
+                        gSen.classList.remove('hidden');
+                    }
+                }
+
+                var navDbBtn = document.getElementById('nav-btn-db');
+                if (navDbBtn) {
+                    if (isDatabaseAccessAllowed(u)) {
+                        navDbBtn.classList.remove('hidden');
+                    } else {
+                        navDbBtn.classList.add('hidden');
+                    }
+                }
+
+                var senBtns = document.querySelectorAll('.senior-only');
+                for (var i = 0; i < senBtns.length; i++) {
+                    if (role === 'SENIOR') senBtns[i].classList.remove('hidden');
+                    else senBtns[i].classList.add('hidden');
+                }
+            }
+
+            function canManageContent() {
+                return !!(db.currentUser.loggedIn && isDatabaseAccessAllowed(db.currentUser));
+            }
+
+            function delBtn(sec, i) {
+                if (!canManageContent()) return '';
+                return '<div class="flex justify-end pt-2"><button type="button" onclick="deleteContentEntry(\'' + sec + '\', ' + i + ')" class="px-3.5 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 text-[10px] font-heavy transition-all">Удалить запись</button></div>';
+            }
+
+            window.deleteContentEntry = function(sec, i) {
+                if (!canManageContent()) { showToast('Удалять может только Лидер или Зам. Лидера'); return; }
+                if (!db[sec] || !db[sec][i]) return;
+                var title = db[sec][i].title || 'запись';
+                if (!window.confirm('Удалить запись «' + title + '»?')) return;
+                db[sec].splice(i, 1);
+                addLog('RANK', 'Удалена запись: ' + title);
+                saveDb();
+                renderContentSections();
+                showToast('Запись удалена');
+            };
+
+            function renderContentSections() {
+                var newsEl = document.getElementById('news-grid');
+                if (newsEl) {
+                    newsEl.innerHTML = db.news.map(function(n, i) {
+                        return '<div class="bento-card overflow-hidden flex flex-col"><img src="' + n.image + '" alt="" class="w-full h-44 object-cover border-b border-[#23232d]"><div class="p-6 space-y-2.5"><div class="flex items-center justify-between"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + n.badge + '</span><span class="text-[11px] text-zinc-500">' + (n.date || 'Сегодня') + '</span></div><h3 class="text-base font-heavy text-white pt-1">' + n.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + n.desc + '</p>' + delBtn('news', i) + '</div></div>';
+                    }).join('');
+                }
+
+                var rulesEl = document.getElementById('rules-list');
+                if (rulesEl) {
+                    rulesEl.innerHTML = db.rules.map(function(r, i) {
+                        return '<div class="bento-card p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + r.badge + '</span><h3 class="text-base font-heavy text-white pt-1">' + r.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + r.desc + '</p>' + delBtn('rules', i) + '</div>';
+                    }).join('');
+                }
+
+                var ranksData = [
+                    { badge: '1 РАНГ', title: '1. Контракт', desc: 'Начальная ступень после одобрения заявки.' },
+                    { badge: '2 РАНГ', title: '2. Академ', desc: 'Обучение командной работе, выезды на цеха.' },
+                    { badge: '3 РАНГ', title: '3. Мейн', desc: 'Основной боевой состав семьи DRUGHILL.' },
+                    { badge: 'СТАРШИЙ СОСТАВ', title: 'Руководство', desc: 'Назначается решением Лидера или Замов.' }
+                ];
+                var ranksEl = document.getElementById('ranks-grid');
+                if (ranksEl) {
+                    ranksEl.innerHTML = ranksData.map(function(rk) {
+                        return '<div class="bento-card p-6 space-y-2.5"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + rk.badge + '</span><h3 class="text-lg font-heavy text-white pt-1">' + rk.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + rk.desc + '</p></div>';
+                    }).join('');
+                }
+
+                var dipEl = document.getElementById('diplomacy-grid');
+                if (dipEl) {
+                    dipEl.innerHTML = db.diplomacy.map(function(d, i) {
+                        return '<div class="bento-card p-6 space-y-2.5"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + d.badge + '</span><h3 class="text-lg font-heavy text-white pt-1">' + d.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + d.desc + '</p>' + delBtn('diplomacy', i) + '</div>';
+                    }).join('');
+                }
+
+                var flEl = document.getElementById('fleet-grid');
+                if (flEl) {
+                    flEl.innerHTML = db.fleet.map(function(f, i) {
+                        return '<div class="bento-card overflow-hidden flex flex-col"><img src="' + f.image + '" alt="" class="w-full h-40 object-cover border-b border-[#23232d]"><div class="p-5 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + f.badge + '</span><h3 class="text-base font-heavy text-white pt-1">' + f.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + f.desc + '</p>' + delBtn('fleet', i) + '</div></div>';
+                    }).join('');
+                }
+
+                var estEl = document.getElementById('estates-grid');
+                if (estEl) {
+                    estEl.innerHTML = db.estates.map(function(es, i) {
+                        return '<div class="bento-card overflow-hidden flex flex-col"><img src="' + es.image + '" alt="" class="w-full h-48 object-cover border-b border-[#23232d]"><div class="p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + es.badge + '</span><h3 class="text-lg font-heavy text-white pt-1">' + es.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + es.desc + '</p>' + delBtn('estates', i) + '</div></div>';
+                    }).join('');
+                }
+            }
+
+            function renderAcademyAndTests() {
+                var tests = db.tests || [];
+                var countSub = document.getElementById('academy-count-sub');
+                var emptyView = document.getElementById('academy-empty-view');
+                var listView = document.getElementById('academy-list-view');
+                var runnerView = document.getElementById('academy-runner-view');
+
+                if (countSub) countSub.textContent = tests.length + ' тестов · проверьте знания правил';
+                if (activeRunnerTest) {
+                    if (emptyView) emptyView.classList.add('hidden');
+                    if (listView) listView.classList.add('hidden');
+                    if (runnerView) runnerView.classList.remove('hidden');
+                    return;
+                }
+                if (runnerView) runnerView.classList.add('hidden');
+
+                if (tests.length === 0) {
+                    if (emptyView) emptyView.classList.remove('hidden');
+                    if (listView) listView.classList.add('hidden');
+                } else {
+                    if (emptyView) emptyView.classList.add('hidden');
+                    if (listView) {
+                        listView.classList.remove('hidden');
+                        listView.innerHTML = tests.map(function(t) {
+                            return '<div class="bento-card p-6 flex flex-col justify-between gap-4"><div class="space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">Проходной балл: ' + t.passScore + '%</span><h3 class="text-lg font-heavy text-white pt-1">' + t.title + '</h3><p class="text-xs text-zinc-400">Вопросов: ' + t.questions.length + '</p></div><button onclick="startAcademyTest(' + t.id + ')" class="w-full py-3 rounded-xl bg-white text-black font-heavy text-xs">Начать тест</button></div>';
+                        }).join('');
+                    }
+                }
+
+                var mySubs = (db.testSubmissions || []).filter(function(s) { return s.nick === db.currentUser.nick; });
+                var stTotal = document.getElementById('stat-tests-total');
+                var stPassed = document.getElementById('stat-tests-passed');
+                var stAvg = document.getElementById('stat-tests-avg');
+                var stBest = document.getElementById('stat-tests-best');
+                var subText = document.getElementById('prof-tests-subtitle');
+                var ansBox = document.getElementById('prof-test-answers-box');
+
+                if (mySubs.length === 0) {
+                    if (subText) subText.textContent = 'Вы ещё не проходили тесты.';
+                    if (stTotal) stTotal.textContent = '0';
+                    if (stPassed) stPassed.textContent = '—';
+                    if (stAvg) stAvg.textContent = '—';
+                    if (stBest) stBest.textContent = '—';
+                    if (ansBox) ansBox.innerHTML = '';
+                } else {
+                    var passedCount = mySubs.filter(function(s) { return s.passed; }).length;
+                    var sumPct = mySubs.reduce(function(acc, s) { return acc + s.scorePct; }, 0);
+                    var avgPct = Math.round(sumPct / mySubs.length);
+                    var bestPct = Math.max.apply(null, mySubs.map(function(s) { return s.scorePct; }));
+
+                    if (subText) subText.textContent = 'Ваша персональная ведомость и ответы';
+                    if (stTotal) stTotal.textContent = String(mySubs.length);
+                    if (stPassed) stPassed.textContent = String(passedCount);
+                    if (stAvg) stAvg.textContent = avgPct + '%';
+                    if (stBest) stBest.textContent = bestPct + '%';
+
+                    if (ansBox) {
+                        ansBox.innerHTML = mySubs.map(function(s) {
+                            var rows = s.details.map(function(d, idx) {
+                                return '<div class="p-3 rounded-xl bg-[#0c0c10] border border-[#23232e] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"><div><div class="font-heavy text-white">' + (idx + 1) + '. ' + d.qText + '</div><div class="text-zinc-400 mt-0.5">Ваш ответ: <span class="text-white">' + d.chosenText + '</span> · Правильный: <span class="text-zinc-300">' + d.correctText + '</span></div></div><span class="px-2.5 py-1 rounded text-[10px] font-heavy shrink-0 ' + (d.isCorrect ? 'bg-white text-black' : 'bg-red-500/20 text-red-300') + '">' + (d.isCorrect ? 'ВЕРНО' : 'ОШИБКА') + '</span></div>';
+                            }).join('');
+                            return '<div class="p-5 rounded-2xl bg-[#121218] border border-[#252532] space-y-3"><div class="flex items-center justify-between"><span class="text-sm font-heavy text-white">' + s.testTitle + '</span><span class="px-3 py-1 rounded-lg bg-white text-black text-xs font-heavy">' + s.scorePct + '% (' + (s.passed ? 'СДАНО' : 'НЕ СДАНО') + ')</span></div><div class="space-y-2">' + rows + '</div></div>';
+                        }).join('');
+                    }
+                }
+
+                var senTestCont = document.getElementById('senior-test-results-list');
+                if (senTestCont) {
+                    var allSubs = db.testSubmissions || [];
+                    senTestCont.innerHTML = allSubs.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500">Пока ни один участник не сдавал тесты Академии.</div>' : allSubs.map(function(s) {
+                        var rows = s.details.map(function(d, idx) {
+                            return '<div class="p-2.5 rounded-lg bg-[#0a0a0e] border border-[#22222c] flex items-center justify-between text-[11px]"><span>' + (idx + 1) + '. ' + d.qText + ' — <strong class="text-white">' + d.chosenText + '</strong></span><span class="px-2 py-0.5 rounded text-[9px] font-heavy ' + (d.isCorrect ? 'bg-white text-black' : 'bg-red-500/20 text-red-300') + '">' + (d.isCorrect ? 'ВЕРНО' : 'ОШИБКА') + '</span></div>';
+                        }).join('');
+                        return '<div class="bento-card p-6 space-y-4"><div class="flex items-center justify-between border-b border-[#23232e] pb-3"><div><div class="text-sm font-heavy text-white">' + s.nick + ' <span class="text-zinc-400">' + s.staticId + '</span> · ' + s.tg + '</div><div class="text-xs text-zinc-400 mt-0.5">' + s.testTitle + '</div></div><span class="px-3 py-1.5 rounded-xl bg-white text-black text-xs font-heavy">' + s.scorePct + '%</span></div><div class="space-y-1.5">' + rows + '</div></div>';
+                    }).join('');
+                }
+            }
+
+            window.openCreateTestModal = function() {
+                tempBuilderQuestions = [
+                    { q: 'До какого ранга доступно повышение на сайте?', opts: ['До 3 ранга (Мейн)', 'До 10 ранга', 'Только 1 ранг'], correct: 0 }
+                ];
+                renderBuilderQuestions();
+                var m = document.getElementById('modal-create-test');
+                if (m) m.classList.remove('hidden');
+            };
+
+            function renderBuilderQuestions() {
+                var box = document.getElementById('builder-questions-list');
+                if (!box) return;
+                box.innerHTML = tempBuilderQuestions.map(function(item, qIdx) {
+                    var optInputs = item.opts.map(function(optVal, oIdx) {
+                        return '<div class="flex items-center gap-2"><input type="radio" name="correct_q_' + qIdx + '" ' + (item.correct === oIdx ? 'checked' : '') + ' onchange="updateBuilderCorrect(' + qIdx + ', ' + oIdx + ')"><input type="text" value="' + optVal + '" oninput="updateBuilderOpt(' + qIdx + ', ' + oIdx + ', this.value)" class="flex-1 px-3 py-2 rounded-lg bg-[#121218] border border-[#272733] text-xs text-white"></div>';
+                    }).join('');
+                    return '<div class="p-4 rounded-2xl bg-[#0c0c10] border border-[#252530] space-y-2.5"><input type="text" value="' + item.q + '" oninput="updateBuilderQ(' + qIdx + ', this.value)" class="w-full px-3 py-2 rounded-xl bg-[#14141c] border border-[#292936] text-xs text-white"><div class="space-y-1.5">' + optInputs + '</div></div>';
+                }).join('');
+            }
+
+            window.updateBuilderQ = function(qIdx, val) { tempBuilderQuestions[qIdx].q = val; };
+            window.updateBuilderOpt = function(qIdx, oIdx, val) { tempBuilderQuestions[qIdx].opts[oIdx] = val; };
+            window.updateBuilderCorrect = function(qIdx, oIdx) { tempBuilderQuestions[qIdx].correct = oIdx; };
+            window.addBuilderQuestion = function() { tempBuilderQuestions.push({ q: 'Новый вопрос?', opts: ['Вариант 1', 'Вариант 2'], correct: 0 }); renderBuilderQuestions(); };
+
+            window.saveBuiltTest = function() {
+                var titleEl = document.getElementById('new-test-title');
+                var passEl = document.getElementById('new-test-pass');
+                var title = titleEl && titleEl.value.trim() ? titleEl.value.trim() : 'Аттестация';
+                var pass = passEl ? (parseInt(passEl.value, 10) || 70) : 70;
+                db.tests.push({ id: Date.now(), title: title, passScore: pass, questions: JSON.parse(JSON.stringify(tempBuilderQuestions)) });
+                addLog('TEST', 'Опубликован тест: ' + title);
+                saveDb();
+                closeModal('modal-create-test');
+                renderAcademyAndTests();
+                showToast('Тест успешно опубликован!');
+            };
+
+            window.clearAllTests = function() {
+                db.tests = [];
+                activeRunnerTest = null;
+                addLog('TEST', 'Все тесты очищены');
+                saveDb();
+                closeModal('modal-create-test');
+                renderAcademyAndTests();
+                showToast('Тесты удалены.');
+            };
+
+            window.startAcademyTest = function(testId) {
+                var found = db.tests.filter(function(t) { return t.id === testId; })[0];
+                if (!found) return;
+                activeRunnerTest = { test: found, answers: {} };
+                renderRunnerUI();
+                renderAcademyAndTests();
+            };
+
+            function renderRunnerUI() {
+                var runnerView = document.getElementById('academy-runner-view');
+                if (!runnerView || !activeRunnerTest) return;
+                var t = activeRunnerTest.test;
+                var qHtml = t.questions.map(function(q, qIdx) {
+                    var optsHtml = q.opts.map(function(optText, oIdx) {
+                        var selected = activeRunnerTest.answers[qIdx] === oIdx;
+                        return '<button type="button" onclick="chooseTestAnswer(' + qIdx + ', ' + oIdx + ')" class="w-full text-left p-3.5 rounded-xl border text-xs font-heavy transition-all ' + (selected ? 'bg-white text-black border-white' : 'bg-[#0e0e13] text-zinc-300 border-[#262632]') + '">' + optText + '</button>';
+                    }).join('');
+                    return '<div class="p-5 rounded-2xl bg-[#111117] border border-[#24242f] space-y-3"><div class="text-sm font-heavy text-white">' + (qIdx + 1) + '. ' + q.q + '</div><div class="space-y-2">' + optsHtml + '</div></div>';
+                }).join('');
+
+                runnerView.innerHTML = '<div class="flex items-center justify-between border-b border-[#23232e] pb-4"><h3 class="text-xl font-heavy text-white">' + t.title + '</h3><button onclick="cancelRunnerTest()" class="px-3.5 py-2 rounded-xl bg-[#181822] text-xs font-heavy text-zinc-300">Назад</button></div><div class="space-y-4">' + qHtml + '</div><button onclick="finishRunnerTest()" class="w-full py-4 rounded-xl bg-white text-black font-heavy text-xs">Завершить тест</button>';
+            }
+
+            window.chooseTestAnswer = function(qIdx, oIdx) {
+                if (!activeRunnerTest) return;
+                activeRunnerTest.answers[qIdx] = oIdx;
+                renderRunnerUI();
+            };
+
+            window.cancelRunnerTest = function() { activeRunnerTest = null; renderAcademyAndTests(); };
+
+            window.finishRunnerTest = function() {
+                if (!activeRunnerTest) return;
+                var t = activeRunnerTest.test;
+                var correctCount = 0;
+                var details = [];
+                for (var i = 0; i < t.questions.length; i++) {
+                    var q = t.questions[i];
+                    var chosenIdx = activeRunnerTest.answers[i];
+                    var isCorr = (chosenIdx === q.correct);
+                    if (isCorr) correctCount++;
+                    details.push({ qText: q.q, chosenText: (chosenIdx !== undefined && q.opts[chosenIdx]) ? q.opts[chosenIdx] : 'Нет', correctText: q.opts[q.correct], isCorrect: isCorr });
+                }
+                var pct = Math.round((correctCount / t.questions.length) * 100);
+                var passed = pct >= t.passScore;
+                db.testSubmissions.unshift({ id: Date.now(), testTitle: t.title, nick: db.currentUser.nick, staticId: db.currentUser.staticId, tg: db.currentUser.tg, scorePct: pct, passed: passed, time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }), details: details });
+                addLog('TEST', 'Сдал тест «' + t.title + '» на ' + pct + '%');
+                activeRunnerTest = null;
+                saveDb();
+                renderAcademyAndTests();
+                navigateTo('profile');
+                showToast('Результат: ' + pct + '%');
+            };
+
+            window.toggleCustomCheck = function(el) { el.classList.toggle('checked'); };
+
+            window.selectPromoTarget = function(rankName) {
+                currentPromoTarget = rankName;
+                var b2 = document.getElementById('promo-btn-2');
+                var b3 = document.getElementById('promo-btn-3');
+                if (!b2 || !b3) return;
+                if (rankName === '2 ранг — Академ') {
+                    b2.className = 'py-3.5 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all';
+                    b3.className = 'py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all';
+                } else {
+                    b3.className = 'py-3.5 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all';
+                    b2.className = 'py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all';
+                }
+            };
+
+            window.submitPromoReport = function() {
+                var u = db.currentUser;
+                var proofsEl = document.getElementById('promo-proofs');
+                var proofs = proofsEl && proofsEl.value.trim() ? proofsEl.value.trim() : 'Приложено';
+                var checkedEls = document.querySelectorAll('#sec-report-promo .custom-check-card.checked');
+                var tasks = [];
+                for (var i = 0; i < checkedEls.length; i++) tasks.push(checkedEls[i].getAttribute('data-label'));
+
+                db.promoReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, fromRank: u.rankTitle, toRank: currentPromoTarget, tasks: tasks.join(', ') || 'Нормативы', proofs: proofs, status: 'PENDING' });
+                addLog('RANK', 'Рапорт на повышение до: ' + currentPromoTarget);
+                saveDb();
+                renderSeniorPanels();
+                showToast('Рапорт отправлен!');
+            };
+
+            window.submitJoinApplication = function() {
+                var u = db.currentUser;
+                var aEl = document.getElementById('join-age');
+                var pEl = document.getElementById('join-prime');
+                var eEl = document.getElementById('join-exp');
+                var rEl = document.getElementById('join-rolls');
+
+                db.applications.unshift({
+                    id: Date.now(),
+                    nick: u.nick,
+                    staticId: u.staticId,
+                    tg: u.tg,
+                    avatar: u.avatar,
+                    age: aEl && aEl.value.trim() ? aEl.value.trim() : '18 лет',
+                    prime: pEl && pEl.value.trim() ? pEl.value.trim() : '6+ часов',
+                    exp: eEl && eEl.value.trim() ? eEl.value.trim() : 'Бизвары, цеха',
+                    rolls: rEl && rEl.value.trim() ? rEl.value.trim() : 'Приложено',
+                    status: 'PENDING'
+                });
+                addLog('AUTH', 'Подана заявка в семью от ' + u.nick);
+                saveDb();
+                renderUserBar();
+                renderSeniorPanels();
+                showToast('Заявка отправлена Старшему составу!');
+            };
+
+            window.renderPayoutRates = function() {
+                var grid = document.getElementById('payout-items-grid');
+                if (!grid) return;
+                var prev = {};
+                var items = db.payoutItems || [];
+                items.forEach(function(it) {
+                    var el = document.getElementById('qty-' + it.id);
+                    if (el) prev[it.id] = el.value;
+                });
+                grid.innerHTML = items.map(function(it) {
+                    var q = prev[it.id] != null ? prev[it.id] : '0';
+                    var inId = 'qty-' + it.id;
+                    return '<div class="p-4 rounded-xl bg-[#0b0b0f] border border-[#252530] space-y-3">' +
+                        '<div class="flex items-start justify-between gap-3 text-xs"><span class="text-zinc-400 leading-snug">' + escHtml(it.name) + '</span><span class="text-white font-heavy shrink-0">$' + Number(it.rate).toLocaleString('en-US') + '</span></div>' +
+                        '<div class="flex items-center justify-between gap-2 bg-[#14141c] border border-[#2d2d3a] rounded-xl p-1.5">' +
+                            '<button type="button" onclick="stepPayoutQty(\'' + inId + '\', -1)" class="w-9 h-9 rounded-lg bg-[#1e1e2a] hover:bg-white hover:text-black text-white text-sm font-heavy transition-all">−</button>' +
+                            '<input id="' + inId + '" type="text" inputmode="numeric" value="' + escHtml(q) + '" oninput="sanitizeNumericInput(this); recalcPayoutTotal()" class="w-16 text-center bg-transparent text-sm font-heavy text-white focus:outline-none">' +
+                            '<button type="button" onclick="stepPayoutQty(\'' + inId + '\', 1)" class="w-9 h-9 rounded-lg bg-[#1e1e2a] hover:bg-white hover:text-black text-white text-sm font-heavy transition-all">+</button>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+                window.recalcPayoutTotal();
+                bindCards();
+            };
+
+            function collectPayoutLines() {
+                var lines = [];
+                (db.payoutItems || []).forEach(function(it) {
+                    var el = document.getElementById('qty-' + it.id);
+                    var q = el ? (parseInt(el.value, 10) || 0) : 0;
+                    if (q > 0) lines.push({ name: it.name, qty: q, rate: it.rate });
+                });
+                return lines;
+            }
+
+            window.recalcPayoutTotal = function() {
+                var sum = 0;
+                collectPayoutLines().forEach(function(l) { sum += l.qty * l.rate; });
+                var sumEl = document.getElementById('payout-total-sum');
+                if (sumEl) sumEl.textContent = '$' + sum.toLocaleString('en-US');
+                return sum;
+            };
+
+            var tempRates = [];
+
+            function renderRatesEditor() {
+                var box = document.getElementById('rates-editor-list');
+                if (!box) return;
+                box.innerHTML = tempRates.map(function(it, idx) {
+                    return '<div class="flex items-center gap-2">' +
+                        '<input type="text" maxlength="60" value="' + escHtml(it.name) + '" placeholder="За что премия" oninput="onRateRowInput(' + idx + ', \'name\', this.value)" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
+                        '<input type="text" inputmode="numeric" value="' + escHtml(it.rate) + '" placeholder="$" oninput="sanitizeNumericInput(this); onRateRowInput(' + idx + ', \'rate\', this.value)" class="w-28 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
+                        '<button type="button" onclick="removeRateRow(' + idx + ')" class="w-10 h-10 shrink-0 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-heavy" title="Удалить пункт">✕</button>' +
+                    '</div>';
+                }).join('');
+            }
+
+            window.onRateRowInput = function(idx, field, val) {
+                if (!tempRates[idx]) return;
+                tempRates[idx][field] = val;
+            };
+
+            window.addRateRow = function() {
+                tempRates.push({ id: 'p' + Date.now() + '_' + tempRates.length, name: '', rate: '' });
+                renderRatesEditor();
+                var box = document.getElementById('rates-editor-list');
+                if (box && box.lastChild) {
+                    var inp = box.lastChild.querySelector('input');
+                    if (inp) inp.focus();
+                }
+            };
+
+            window.removeRateRow = function(idx) {
+                tempRates.splice(idx, 1);
+                renderRatesEditor();
+            };
+
+            window.openEditRatesModal = function() {
+                if (db.currentUser.role !== 'SENIOR') return;
+                tempRates = (db.payoutItems || []).map(function(it) { return { id: it.id, name: it.name, rate: String(it.rate) }; });
+                renderRatesEditor();
+                var m = document.getElementById('modal-edit-rates');
+                if (m) m.classList.remove('hidden');
+            };
+
+            window.saveEditedRates = function() {
+                var cleaned = [];
+                for (var i = 0; i < tempRates.length; i++) {
+                    var nm = String(tempRates[i].name || '').trim();
+                    var rt = parseInt(tempRates[i].rate, 10);
+                    if (!nm && (isNaN(rt) || !tempRates[i].rate)) continue;
+                    if (!nm) { showToast('У пункта №' + (i + 1) + ' нет названия'); return; }
+                    if (isNaN(rt) || rt < 0) { showToast('У пункта «' + nm + '» не указана цена'); return; }
+                    cleaned.push({ id: tempRates[i].id || ('p' + Date.now() + '_' + i), name: nm, rate: rt });
+                }
+                if (cleaned.length === 0) { showToast('Нужен хотя бы один пункт'); return; }
+                db.payoutItems = cleaned;
+                addLog('RANK', 'Обновлены пункты премий (' + cleaned.length + ' шт.)');
+                saveDb();
+                renderPayoutRates();
+                closeModal('modal-edit-rates');
+                showToast('Пункты премий сохранены!');
+            };
+
+            window.submitPayoutRequest = function() {
+                var lines = collectPayoutLines();
+                var sum = recalcPayoutTotal();
+                if (sum <= 0) { showToast('Укажите активность'); return; }
+                var u = db.currentUser;
+                var pEl = document.getElementById('payout-proofs');
+                db.payoutReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, total: sum, items: lines, proofs: pEl ? pEl.value : 'Док-ва', status: 'PENDING' });
+                saveDb();
+                (db.payoutItems || []).forEach(function(it) {
+                    var el = document.getElementById('qty-' + it.id);
+                    if (el) el.value = '0';
+                });
+                if (pEl) pEl.value = '';
+                recalcPayoutTotal();
+                renderSeniorPanels();
+                showToast('Заявка на премию отправлена!');
+            };
+
+            function payoutBreakdownHtml(py) {
+                var parts = [];
+                if (Array.isArray(py.items)) {
+                    py.items.forEach(function(l) { parts.push(escHtml(l.name) + ' × ' + l.qty); });
+                }
+                var html = parts.join(' · ');
+                if (py.proofs && py.proofs !== 'Док-ва') html += (html ? '<br>' : '') + 'Док-ва: ' + escHtml(py.proofs);
+                return html;
+            }
+
+            window.submitVacationRequest = function() {
+                var u = db.currentUser;
+                var sEl = document.getElementById('vac-start');
+                var eEl = document.getElementById('vac-end');
+                var rEl = document.getElementById('vac-reason');
+
+                var startFmt = normalizeAnyDateString(sEl && sEl.value.trim() ? sEl.value.trim() : formatDateToRu(new Date()));
+                var defaultEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                var endFmt = normalizeAnyDateString(eEl && eEl.value.trim() ? eEl.value.trim() : formatDateToRu(defaultEnd));
+                var days = calcVacationDays(startFmt, endFmt);
+                var reasonText = rEl && rEl.value.trim() ? rEl.value.trim() : 'Семейные обстоятельства';
+
+                db.vacations.unshift({
+                    id: Date.now(),
+                    nick: u.nick,
+                    staticId: u.staticId,
+                    tg: u.tg,
+                    avatar: u.avatar,
+                    rank: u.rankTitle || '3 ранг — Мейн',
+                    startDate: startFmt,
+                    endDate: endFmt,
+                    daysCount: days,
+                    reason: reasonText,
+                    status: 'PENDING'
+                });
+                addLog('RANK', 'Запрошен отпуск на ' + days + ' дн. (' + startFmt + ' — ' + endFmt + ')');
+                saveDb();
+                renderSeniorPanels();
+                showToast('Заявка на отпуск (' + days + ' дн.) отправлена Старшему составу!');
+            };
+
+            window.decideVacation = function(id, status) {
+                if (db.currentUser.role !== 'SENIOR') return;
+                for (var i = 0; i < db.vacations.length; i++) {
+                    if (db.vacations[i].id === id) {
+                        if (status === 'RETURNED') db.vacations.splice(i, 1);
+                        else db.vacations[i].status = status;
+                        break;
+                    }
+                }
+                saveDb();
+                renderSeniorPanels();
+                showToast('Статус отпуска обновлён');
+            };
+
+            function renderSeniorPanels() {
+                var pendApps = db.applications.filter(function(a) { return a.status === 'PENDING'; });
+                var pendPromos = db.promoReports.filter(function(p) { return p.status === 'PENDING'; });
+                var pendPays = db.payoutReports.filter(function(p) { return p.status === 'PENDING'; });
+                var pendVacs = db.vacations.filter(function(v) { return v.status === 'PENDING'; });
+                var actVacs = db.vacations.filter(function(v) { return v.status === 'APPROVED'; });
+
+                var sbB = document.getElementById('sidebar-pending-badge');
+                if (sbB) sbB.textContent = String(pendApps.length + pendPromos.length + pendPays.length);
+                var vbB = document.getElementById('sidebar-vacations-badge');
+                if (vbB) vbB.textContent = String(pendVacs.length);
+
+                var statusLabelRu = {
+                    'PENDING': 'ОЖИДАЕТ',
+                    'APPROVED': 'В ОТПУСКЕ',
+                    'REJECTED': 'ОТКЛОНЕНО'
+                };
+
+                var pubVacEl = document.getElementById('public-vacations-list');
+                if (pubVacEl) {
+                    pubVacEl.innerHTML = db.vacations.length === 0 ? '<div class="text-xs text-zinc-500">Заявок на отпуск пока нет.</div>' : db.vacations.map(function(v) {
+                        var sDate = normalizeAnyDateString(v.startDate);
+                        var eDate = normalizeAnyDateString(v.endDate);
+                        var dCount = v.daysCount || calcVacationDays(sDate, eDate);
+                        var ruStat = statusLabelRu[v.status] || 'ОЖИДАЕТ';
+                        var badgeStyle = v.status === 'APPROVED'
+                            ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+                            : (v.status === 'REJECTED' ? 'bg-red-500/15 border border-red-500/30 text-red-300' : 'bg-amber-500/15 border border-amber-500/30 text-amber-300');
+                        return '<div class="p-4 rounded-2xl bg-[#0d0d12] border border-[#252532] space-y-2.5 text-xs">' +
+                            '<div class="flex items-center justify-between gap-2">' +
+                                '<div class="flex items-center gap-2.5 min-w-0">' +
+                                    '<img src="' + (v.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0">' +
+                                    '<div class="min-w-0">' +
+                                        '<div class="flex items-center gap-1.5 flex-wrap">' +
+                                            '<span class="font-heavy text-white truncate">' + v.nick + '</span>' +
+                                            '<span class="px-1.5 py-0.5 rounded bg-white text-black text-[9px] font-heavy">' + (v.staticId || '#15440') + '</span>' +
+                                        '</div>' +
+                                        '<div class="text-[10px] text-zinc-400 truncate">' + (v.tg || '@drughill') + '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<span class="px-2.5 py-1 rounded-lg text-[9px] font-heavy shrink-0 ' + badgeStyle + '">' + ruStat + '</span>' +
+                            '</div>' +
+                            '<div class="p-2.5 rounded-xl bg-[#13131b] border border-[#22222e] flex items-center justify-between text-[11px]">' +
+                                '<span class="text-zinc-300">' + sDate + ' — ' + eDate + '</span>' +
+                                '<span class="px-2 py-0.5 rounded bg-white/10 text-white text-[10px] font-heavy">На ' + dCount + ' дн.</span>' +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+
+                var pendVacEl = document.getElementById('admin-vacations-pending');
+                if (pendVacEl) {
+                    pendVacEl.innerHTML = pendVacs.length === 0 ? '<div class="text-xs text-zinc-500">Нет заявок на рассмотрении.</div>' : pendVacs.map(function(v) {
+                        var sDate = normalizeAnyDateString(v.startDate);
+                        var eDate = normalizeAnyDateString(v.endDate);
+                        var dCount = v.daysCount || calcVacationDays(sDate, eDate);
+                        return '<div class="p-5 rounded-2xl topo-bg border border-[#282836] space-y-4 text-xs">' +
+                            '<div class="flex items-start justify-between gap-3">' +
+                                '<div class="flex items-center gap-3">' +
+                                    '<div class="relative shrink-0">' +
+                                        '<img src="' + (v.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-12 h-12 rounded-full object-cover border border-white/25">' +
+                                        '<span class="w-3 h-3 rounded-full bg-amber-400 border-2 border-[#0c0c10] absolute bottom-0 right-0"></span>' +
+                                    '</div>' +
+                                    '<div>' +
+                                        '<div class="flex flex-wrap items-center gap-2">' +
+                                            '<span class="text-sm font-heavy text-white">' + v.nick + '</span>' +
+                                            '<span class="px-2 py-0.5 rounded-md bg-white text-black text-[10px] font-heavy">' + (v.staticId || '#15440') + '</span>' +
+                                        '</div>' +
+                                        '<div class="flex flex-wrap items-center gap-2 text-[11px] text-zinc-400 mt-1">' +
+                                            '<span class="text-zinc-200">' + (v.tg || '@drughill') + '</span>' +
+                                            '<span>·</span>' +
+                                            '<span>' + (v.rank || '3 ранг — Мейн') + '</span>' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<span class="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[9px] font-heavy uppercase shrink-0">ОЖИДАЕТ</span>' +
+                            '</div>' +
+                            '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-[#0b0b0f]/90 border border-[#23232f]">' +
+                                '<div>' +
+                                    '<div class="text-[9px] text-zinc-500 uppercase">ПЕРИОД И СРОК ОТПУСКА</div>' +
+                                    '<div class="text-xs font-heavy text-white mt-1">' + sDate + ' — ' + eDate + '</div>' +
+                                    '<div class="inline-block mt-1.5 px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">Срок: ' + dCount + ' дн.</div>' +
+                                '</div>' +
+                                '<div>' +
+                                    '<div class="text-[9px] text-zinc-500 uppercase">ПРИЧИНА НЕАКТИВА</div>' +
+                                    '<div class="text-xs font-heavy text-zinc-200 mt-1">' + v.reason + '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="flex items-center gap-2.5">' +
+                                '<button onclick="decideVacation(' + v.id + ', \'APPROVED\')" class="flex-1 py-3 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Одобрить отпуск (' + dCount + ' дн.)</button>' +
+                                '<button onclick="decideVacation(' + v.id + ', \'REJECTED\')" class="px-5 py-3 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-xs font-heavy transition-all">Отклонить</button>' +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+
+                var actVacEl = document.getElementById('admin-vacations-active');
+                if (actVacEl) {
+                    actVacEl.innerHTML = actVacs.length === 0 ? '<div class="text-xs text-zinc-500">В данный момент никто не находится в отпуске.</div>' : actVacs.map(function(v) {
+                        var sDate = normalizeAnyDateString(v.startDate);
+                        var eDate = normalizeAnyDateString(v.endDate);
+                        var dCount = v.daysCount || calcVacationDays(sDate, eDate);
+                        return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">' +
+                            '<div class="flex items-center gap-3">' +
+                                '<img src="' + (v.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-10 h-10 rounded-full object-cover border border-white/20">' +
+                                '<div>' +
+                                    '<div class="flex items-center gap-2">' +
+                                        '<span class="font-heavy text-white">' + v.nick + '</span>' +
+                                        '<span class="text-zinc-400">' + (v.tg || '@drughill') + '</span>' +
+                                        '<span class="px-2 py-0.5 rounded bg-white text-black text-[9px] font-heavy">На ' + dCount + ' дн.</span>' +
+                                    '</div>' +
+                                    '<div class="text-[11px] text-zinc-400 mt-0.5">Период: ' + sDate + ' — ' + eDate + '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<button onclick="decideVacation(' + v.id + ', \'RETURNED\')" class="px-4 py-2 rounded-xl bg-white text-black text-[10px] font-heavy shrink-0">Вернуть в строй</button>' +
+                        '</div>';
+                    }).join('');
+                }
+
+                var rostEl = document.getElementById('admin-roster-list');
+                if (rostEl) {
+                    var rankChoices = ['1. Контракт', '2. Академ', '3. Мейн', 'Старший состав', 'Зам. Лидера', 'Лидер'];
+                    rostEl.innerHTML = db.roster.length === 0 ? '<div class="bento-card p-6 text-center text-xs text-zinc-500">Список участников пуст.</div>' : db.roster.map(function(m) {
+                        var rankButtons = rankChoices.map(function(rName) {
+                            var isCurrent = (m.rank === rName) || (m.rank && m.rank.indexOf(rName) !== -1);
+                            var btnStyle = isCurrent
+                                ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.25)]'
+                                : 'bg-[#13131b] text-zinc-300 border-[#282836] hover:border-white/50 hover:text-white';
+                            return '<button type="button" onclick="assignMemberRank(' + m.id + ', \'' + rName + '\')" class="px-3 py-1.5 rounded-xl border text-[10px] font-heavy transition-all ' + btnStyle + '">' + rName + '</button>';
+                        }).join('');
+
+                        return '<div class="bento-card p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-xs">' +
+                            '<div class="flex items-center gap-3.5 min-w-0">' +
+                                '<img src="' + (m.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-12 h-12 rounded-full object-cover border border-white/25 shrink-0">' +
+                                '<div class="min-w-0">' +
+                                    '<div class="flex flex-wrap items-center gap-2">' +
+                                        '<strong class="text-sm font-heavy text-white">' + m.nick + '</strong>' +
+                                        '<span class="text-zinc-400">' + (m.tg || '@drughill') + '</span>' +
+                                        '<span class="px-2 py-0.5 rounded-md bg-white/10 text-white text-[10px] font-heavy">' + (m.staticId || '#15440') + '</span>' +
+                                    '</div>' +
+                                    '<div class="text-[11px] text-zinc-400 mt-1">Текущий ранг: <span class="text-white font-heavy">' + m.rank + '</span></div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="flex flex-wrap items-center gap-1.5">' +
+                                rankButtons +
+                                '<button type="button" onclick="kickFamilyMember(' + m.id + ')" class="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-[10px] font-heavy transition-all ml-1">Исключить</button>' +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+
+                var rostPendingWrap = document.getElementById('roster-pending-apps-wrap');
+                var rostPendingList = document.getElementById('roster-pending-apps-list');
+                if (rostPendingList && rostPendingWrap) {
+                    if (pendApps.length === 0) {
+                        rostPendingList.innerHTML = '<div class="text-xs text-zinc-500">Новых заявок от гостей сейчас нет.</div>';
+                    } else {
+                        rostPendingList.innerHTML = pendApps.map(function(a) {
+                            return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
+                                '<div class="flex items-center gap-3">' +
+                                    '<img src="' + (a.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-11 h-11 rounded-full object-cover border border-white/20">' +
+                                    '<div>' +
+                                        '<div class="flex flex-wrap items-center gap-2">' +
+                                            '<span class="font-heavy text-white">' + a.nick + '</span>' +
+                                            '<span class="text-zinc-300">' + (a.tg || '@drughill') + '</span>' +
+                                            '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">' + a.staticId + '</span>' +
+                                        '</div>' +
+                                        '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + a.age + ' · Прайм: ' + a.prime + ' · Опыт: ' + a.exp + '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="flex items-center gap-2 shrink-0">' +
+                                    '<button onclick="decideJoinApp(' + a.id + ', true)" class="px-4 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-[10px] font-heavy">Принять на 1 ранг (Контракт)</button>' +
+                                    '<button onclick="decideJoinApp(' + a.id + ', false)" class="px-3.5 py-2.5 rounded-xl bg-red-500/15 text-red-300 text-[10px] font-heavy">Отклонить</button>' +
+                                '</div>' +
+                            '</div>';
+                        }).join('');
+                    }
+                }
+
+                var appEl = document.getElementById('admin-applications-list');
+                if (appEl) {
+                    appEl.innerHTML = pendApps.length === 0 ? '<div class="text-xs text-zinc-500">Новых заявок в семью нет.</div>' : pendApps.map(function(a) {
+                        return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
+                            '<div class="flex items-center gap-3">' +
+                                '<img src="' + (a.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-11 h-11 rounded-full object-cover border border-white/20">' +
+                                '<div>' +
+                                    '<div class="flex flex-wrap items-center gap-2">' +
+                                        '<span class="font-heavy text-white">' + a.nick + '</span>' +
+                                        '<span class="text-zinc-300">' + (a.tg || '@drughill') + '</span>' +
+                                        '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">' + a.staticId + '</span>' +
+                                    '</div>' +
+                                    '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + a.age + ' · Прайм: ' + a.prime + ' · Опыт: ' + a.exp + '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="flex items-center gap-2 shrink-0">' +
+                                '<button onclick="decideJoinApp(' + a.id + ', true)" class="px-4 py-2 rounded-xl bg-white text-black text-[10px] font-heavy">Принять (1 ранг)</button>' +
+                                '<button onclick="decideJoinApp(' + a.id + ', false)" class="px-3.5 py-2 rounded-xl bg-red-500/15 text-red-300 text-[10px] font-heavy">Отклонить</button>' +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+
+                var prEl = document.getElementById('admin-promo-reports-list');
+                if (prEl) {
+                    prEl.innerHTML = pendPromos.length === 0 ? '<div class="text-xs text-zinc-500">Новых рапортов на повышение нет.</div>' : pendPromos.map(function(p) {
+                        return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
+                            '<div class="flex items-center gap-3">' +
+                                '<img src="' + (p.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-11 h-11 rounded-full object-cover border border-white/20">' +
+                                '<div>' +
+                                    '<div class="flex flex-wrap items-center gap-2">' +
+                                        '<span class="font-heavy text-white">' + p.nick + '</span>' +
+                                        '<span class="text-zinc-300">' + (p.tg || '@drughill') + '</span>' +
+                                        '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">На ' + p.toRank + '</span>' +
+                                    '</div>' +
+                                    '<div class="text-[11px] text-zinc-400 mt-1">' + p.tasks + '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="flex items-center gap-2 shrink-0">' +
+                                '<button onclick="decidePromo(' + p.id + ', true)" class="px-4 py-2 rounded-xl bg-white text-black text-[10px] font-heavy">Повысить</button>' +
+                                '<button onclick="decidePromo(' + p.id + ', false)" class="px-3.5 py-2 rounded-xl bg-red-500/15 text-red-300 text-[10px] font-heavy">Отклонить</button>' +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+
+                var payEl = document.getElementById('admin-payout-reports-list');
+                if (payEl) {
+                    payEl.innerHTML = pendPays.length === 0 ? '<div class="text-xs text-zinc-500">Заявок на выплату премии нет.</div>' : pendPays.map(function(py) {
+                        return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
+                            '<div class="flex items-center gap-3">' +
+                                '<img src="' + (py.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-11 h-11 rounded-full object-cover border border-white/20">' +
+                                '<div>' +
+                                    '<div class="flex items-center gap-2">' +
+                                        '<span class="font-heavy text-white">' + py.nick + '</span>' +
+                                        '<span class="text-zinc-300">' + (py.tg || '@drughill') + '</span>' +
+                                        '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-heavy">$' + py.total.toLocaleString('en-US') + '</span>' +
+                                    '</div>' +
+                                    '<div class="text-[10px] text-zinc-400 mt-1.5 leading-relaxed">' + payoutBreakdownHtml(py) + '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<button onclick="decidePayout(' + py.id + ', true)" class="px-4 py-2 rounded-xl bg-white text-black text-[10px] font-heavy">Выплачено</button>' +
+                        '</div>';
+                    }).join('');
+                }
+
+                var logEl = document.getElementById('logs-list-container');
+                if (logEl) {
+                    var logs = db.logs || [];
+                    if (currentLogFilter !== 'ALL') logs = logs.filter(function(l) { return l.type === currentLogFilter; });
+                    var logTypeRu = { 'AUTH': 'ВХОД', 'RANK': 'РАНГ / ОТПУСК', 'TEST': 'ТЕСТЫ' };
+                    logEl.innerHTML = logs.map(function(l) {
+                        return '<div class="bento-card p-4 flex items-center justify-between text-xs"><span class="px-2 py-0.5 rounded bg-white text-black text-[9px] font-heavy">' + (logTypeRu[l.type] || 'СИСТЕМА') + '</span><span><strong>' + l.actor + ':</strong> ' + l.action + '</span><span class="text-zinc-500 text-[10px]">' + l.time + '</span></div>';
+                    }).join('');
+                }
+            }
+
+            window.decideJoinApp = function(id, ok) {
+                for (var i = 0; i < db.applications.length; i++) {
+                    if (db.applications[i].id === id) {
+                        db.applications[i].status = ok ? 'APPROVED' : 'REJECTED';
+                        if (ok) {
+                            db.roster.push({
+                                id: Date.now(),
+                                nick: db.applications[i].nick,
+                                staticId: db.applications[i].staticId,
+                                tg: db.applications[i].tg,
+                                rank: '1. Контракт',
+                                avatar: db.applications[i].avatar
+                            });
+                            addLog('RANK', 'Принят в семью на 1. Контракт: ' + db.applications[i].nick);
+                        }
+                        break;
+                    }
+                }
+                saveDb();
+                renderSeniorPanels();
+                showToast(ok ? 'Игрок принят на 1 ранг (Контракт)!' : 'Заявка отклонена');
+            };
+
+            window.assignMemberRank = function(memberId, newRank) {
+                if (db.currentUser.role !== 'SENIOR') {
+                    showToast('Только Старший состав может менять ранги!');
+                    return;
+                }
+                for (var i = 0; i < db.roster.length; i++) {
+                    if (db.roster[i].id === memberId) {
+                        db.roster[i].rank = newRank;
+                        if (db.roster[i].nick === db.currentUser.nick) {
+                            db.currentUser.rankTitle = newRank;
+                        }
+                        addLog('RANK', 'Выдан ранг «' + newRank + '» участнику ' + db.roster[i].nick);
+                        showToast('Ранг ' + db.roster[i].nick + ' изменён на: ' + newRank);
+                        break;
+                    }
+                }
+                saveDb();
+                renderUserBar();
+                renderSeniorPanels();
+            };
+
+            window.kickFamilyMember = function(memberId) {
+                if (db.currentUser.role !== 'SENIOR') return;
+                for (var i = 0; i < db.roster.length; i++) {
+                    if (db.roster[i].id === memberId) {
+                        var removedNick = db.roster[i].nick;
+                        db.roster.splice(i, 1);
+                        addLog('RANK', 'Исключён из семьи: ' + removedNick);
+                        showToast('Участник ' + removedNick + ' исключён из состава');
+                        break;
+                    }
+                }
+                saveDb();
+                renderSeniorPanels();
+            };
+
+            window.openAddMemberModal = function() {
+                if (db.currentUser.role !== 'SENIOR') return;
+                var m = document.getElementById('modal-add-member');
+                if (m) m.classList.remove('hidden');
+            };
+
+            window.selectNewMemRank = function(rk) {
+                selectedNewMemRank = rk;
+                var btns = document.querySelectorAll('.new-rk-btn');
+                for (var i = 0; i < btns.length; i++) {
+                    if (btns[i].getAttribute('data-rk') === rk) {
+                        btns[i].className = 'new-rk-btn py-2 px-2.5 rounded-xl bg-white text-black text-[10px] font-heavy';
+                    } else {
+                        btns[i].className = 'new-rk-btn py-2 px-2.5 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-[10px] font-heavy';
+                    }
+                }
+            };
+
+            window.saveAddedMember = function() {
+                var nEl = document.getElementById('new-mem-nick');
+                var sEl = document.getElementById('new-mem-static');
+                var tEl = document.getElementById('new-mem-tg');
+                var nick = nEl && nEl.value.trim() ? nEl.value.trim() : 'Fighter_Drughill';
+                var stat = sEl && sEl.value.trim() ? sEl.value.trim() : '#19500';
+                if (stat.indexOf('#') !== 0) stat = '#' + stat;
+                var tg = tEl && tEl.value.trim() ? tEl.value.trim() : '@drughill_member';
+                if (tg.indexOf('@') !== 0) tg = '@' + tg;
+
+                var initials = nick.substring(0, 2).toUpperCase();
+                db.roster.push({
+                    id: Date.now(),
+                    nick: nick,
+                    staticId: stat,
+                    tg: tg,
+                    rank: selectedNewMemRank,
+                    avatar: 'https://placehold.co/100x100/1c1c24/ffffff?text=' + encodeURIComponent(initials)
+                });
+                addLog('RANK', 'Добавлен участник ' + nick + ' (' + selectedNewMemRank + ')');
+                saveDb();
+                renderSeniorPanels();
+                closeModal('modal-add-member');
+                if (nEl) nEl.value = '';
+                if (sEl) sEl.value = '';
+                if (tEl) tEl.value = '';
+                showToast('Участник ' + nick + ' добавлен в состав!');
+            };
+
+            window.decidePromo = function(id, ok) {
+                for (var i = 0; i < db.promoReports.length; i++) {
+                    if (db.promoReports[i].id === id) {
+                        db.promoReports[i].status = ok ? 'APPROVED' : 'REJECTED';
+                        if (ok) {
+                            for (var j = 0; j < db.roster.length; j++) {
+                                if (db.roster[j].nick === db.promoReports[i].nick) {
+                                    db.roster[j].rank = db.promoReports[i].toRank;
+                                }
+                            }
+                        }
+                    }
+                }
+                saveDb();
+                renderSeniorPanels();
+                showToast('Рапорт обработан');
+            };
+
+            window.decidePayout = function(id, ok) {
+                for (var i = 0; i < db.payoutReports.length; i++) {
+                    if (db.payoutReports[i].id === id) db.payoutReports[i].status = ok ? 'APPROVED' : 'REJECTED';
+                }
+                saveDb();
+                renderSeniorPanels();
+                showToast('Премия обработана');
+            };
+
+            window.setLogFilter = function(flt) { currentLogFilter = flt; renderSeniorPanels(); };
+
+            window.openAddContentModal = function(section) {
+                if (db.currentUser.role !== 'SENIOR') return;
+                var el = document.getElementById('cms-target-section');
+                if (el) el.value = section;
+                var titleMap = {
+                    'estates': 'Добавить дом в Недвижимость',
+                    'news': 'Добавить новость семьи',
+                    'fleet': 'Добавить транспорт в Автопарк',
+                    'rules': 'Добавить пункт в Устав',
+                    'diplomacy': 'Добавить статус в Дипломатию'
+                };
+                var mTitle = document.getElementById('modal-add-content-title');
+                if (mTitle) mTitle.textContent = titleMap[section] || 'Добавить запись';
+                var m = document.getElementById('modal-add-content');
+                if (m) m.classList.remove('hidden');
+            };
+
+            window.closeModal = function(id) {
+                var m = document.getElementById(id);
+                if (m) m.classList.add('hidden');
+            };
+
+            window.saveCmsContent = function() {
+                var sec = document.getElementById('cms-target-section').value;
+                var badge = document.getElementById('cms-badge').value.trim() || 'DRUGHILL';
+                var title = document.getElementById('cms-title').value.trim() || 'Запись';
+                var desc = document.getElementById('cms-desc').value.trim() || 'Текст';
+                var defaultPlaceholder = sec === 'estates' ? 'https://placehold.co/800x450/14141c/ffffff?text=ОСОБНЯК' : 'https://placehold.co/800x450/14141c/ffffff?text=DRUGHILL';
+                var image = document.getElementById('cms-image').value.trim() || defaultPlaceholder;
+
+                if (db[sec] && Array.isArray(db[sec])) {
+                    db[sec].unshift({ badge: badge, date: 'Сегодня', title: title, desc: desc, image: image });
+                }
+                saveDb();
+                renderContentSections();
+                closeModal('modal-add-content');
+                showToast('Опубликовано!');
+            };
+
+            // ===== БАЗА ДАННЫХ (только Лидер / Зам. Лидера, только по нажатию кнопок) =====
+
+            function dbCounts(d) {
+                function n(x) { return Array.isArray(x) ? x.length : 0; }
+                return { roster: n(d.roster), apps: n(d.applications), promo: n(d.promoReports), pay: n(d.payoutReports), vac: n(d.vacations), tests: n(d.tests), news: n(d.news) };
+            }
+
+            function requireDbAccess() {
+                if (!db.currentUser.loggedIn || !isDatabaseAccessAllowed(db.currentUser)) {
+                    showToast('Доступно только Лидеру @krystalovb и Заместителям!');
+                    return false;
+                }
+                return true;
+            }
+
+            // «Сохранить базу»: серверная база скачивается файлом db.json (резервная копия для Лидера)
+            window.downloadDbJson = function() {
+                if (!requireDbAccess()) return;
+                api('GET', '/api/admin/export').then(function(out) {
+                    if (out.error) { showToast(out.error); return; }
+                    delete out._status;
+                    var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'db.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+                    showToast('Резервная копия скачана: db.json');
+                });
+            };
+
+            window.importDbJson = function(e) {
+                if (!requireDbAccess()) return;
+                var file = e.target.files && e.target.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        var data = JSON.parse(ev.target.result);
+                        if (!isValidDbShape(data)) { showToast('Это не файл базы DRUGHILL'); return; }
+                        if (!window.confirm('Заменить базу НА СЕРВЕРЕ данными из файла?\nТекущие данные у всех участников будут перезаписаны.')) return;
+                        delete data.currentUser;
+                        api('POST', '/api/admin/import', data).then(function(res) {
+                            if (res.state) { applyServerState(res, false); showToast('База загружена на сервер'); }
+                            else showToast(res.error || 'Не удалось загрузить базу');
+                        });
+                    } catch (err) { showToast('Ошибка чтения файла'); }
+                };
+                reader.readAsText(file);
+                e.target.value = '';
+            };
+
+            window.resetDemoDatabase = function() {
+                if (!requireDbAccess()) return;
+                if (!window.confirm('Сбросить базу НА СЕРВЕРЕ к начальной?\nСначала скачайте резервную копию db.json: данные у всех пропадут безвозвратно.')) return;
+                api('POST', '/api/admin/reset', {}).then(function(res) {
+                    if (res.state) { applyServerState(res, false); showToast('База сброшена'); }
+                    else showToast(res.error || 'Не удалось сбросить базу');
+                });
+            };
+
+            window.renderDbPanel = function() {
+                var stats = document.getElementById('db-stats');
+                if (!stats) return;
+                var c = dbCounts(db);
+                function chip(t) { return '<span class="px-2.5 py-1 rounded bg-[#181822] border border-[#2c2c3a] text-zinc-200 text-[10px] font-heavy">' + t + '</span>'; }
+                stats.innerHTML = chip('Состав: ' + c.roster) + chip('Заявки: ' + c.apps) + chip('Повышения: ' + c.promo) + chip('Премии: ' + c.pay) + chip('Отпуска: ' + c.vac) + chip('Тесты: ' + c.tests) + chip('Новости: ' + c.news) + chip('Пунктов премий: ' + (db.payoutItems || []).length);
+            };
+
+            function renderAll() {
+                var vs = document.getElementById('vac-start');
+                var ve = document.getElementById('vac-end');
+                if (vs && !vs.value) {
+                    var now = new Date();
+                    var nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                    vs.value = formatDateToRu(now);
+                    if (ve) ve.value = formatDateToRu(nextWeek);
+                }
+                window.updateVacationDaysPreview();
+                renderUserBar();
+                renderContentSections();
+                renderAcademyAndTests();
+                renderPayoutRates();
+                renderSeniorPanels();
+                renderDbPanel();
+                bindCards();
+            }
+
+            function bindCards() {
+                var cards = document.querySelectorAll('.bento-card');
+                for (var i = 0; i < cards.length; i++) {
+                    cards[i].onmousemove = function(e) {
+                        var rect = this.getBoundingClientRect();
+                        this.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
+                        this.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
+                    };
+                }
+            }
+
+            // Smooth cursor follower initialization
+            var ring = document.getElementById('cursor-follower-ring');
+            var dot = document.getElementById('cursor-follower-dot');
+            var mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+            var ringX = mouseX, ringY = mouseY;
+
+            window.addEventListener('mousemove', function(e) {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                document.documentElement.style.setProperty('--cursor-x', mouseX + 'px');
+                document.documentElement.style.setProperty('--cursor-y', mouseY + 'px');
+                if (dot) {
+                    dot.style.transform = 'translate3d(' + (mouseX - 3) + 'px, ' + (mouseY - 3) + 'px, 0)';
+                }
+                var t = e.target;
+                if (ring) {
+                    if (t && (t.tagName === 'BUTTON' || t.tagName === 'A' || t.closest('button') || t.closest('.bento-card'))) {
+                        ring.classList.add('cursor-hover');
+                    } else {
+                        ring.classList.remove('cursor-hover');
+                    }
+                }
+            });
+
+            function animateCursor() {
+                ringX += (mouseX - ringX) * 0.18;
+                ringY += (mouseY - ringY) * 0.18;
+                if (ring) {
+                    ring.style.transform = 'translate3d(' + (ringX - 17) + 'px, ' + (ringY - 17) + 'px, 0)';
+                }
+                requestAnimationFrame(animateCursor);
+            }
+            requestAnimationFrame(animateCursor);
+
+            renderAll();
+            renderDbPanel();
+            startSession();
+        })();
+    </script>
+</body>
+</html>
