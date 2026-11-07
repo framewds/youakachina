@@ -548,12 +548,7 @@ async function finalizeLogin(code, from) {
   const av = await Promise.race([fetchAvatar(from.id), new Promise(r => setTimeout(() => r(null), 4000))]);
   if (av) users[uid].avatar = av;
   // аватар и актуальный ник/static в составе
-  let entry = findRoster(state, handle);
-  if (!entry && L.mode === 'MEMBER' && AUTO_JOIN && !sameTg(handle, OWNER_TG)) {
-    entry = { id: nextId(new Set(state.roster.map(r => r.id))), nick: users[uid].nick, staticId: users[uid].staticId, tg: handle, rank: '1. Контракт', avatar: av || PLACEHOLDER };
-    state.roster.push(entry); state.rev += 1; markDirty('state.json');
-    leaderChats().forEach(c => send(c, '👤 <b>Новый участник вошёл как игрок семьи</b>\n' + esc(entry.nick) + ' (' + esc(entry.staticId) + ', ' + esc(handle) + ') — 1. Контракт'));
-  }
+  const entry = findRoster(state, handle);
   if (entry && av && entry.avatar !== av) { entry.avatar = av; state.rev += 1; markDirty('state.json'); }
   if (sameTg(handle, OWNER_TG)) { ensureOwner(state); markDirty('state.json'); }
   const token = crypto.randomBytes(32).toString('hex');
@@ -679,7 +674,7 @@ async function handleApi(req, res, url) {
     if (Object.keys(logins).length > 500) throw new HttpError(429, 'Слишком много попыток входа, подождите');
     const code = 'auth_' + crypto.randomBytes(8).toString('hex');
     let sid = cleanStr(b.staticId, 12).replace(/[^\d]/g, '');
-    logins[code] = { created: Date.now(), status: 'pending', nick: cleanStr(b.nick, 32), staticId: sid ? '#' + sid : '', mode: b.mode === 'MEMBER' ? 'MEMBER' : 'GUEST' };
+    logins[code] = { created: Date.now(), status: 'pending', nick: cleanStr(b.nick, 32), staticId: sid ? '#' + sid : '' };
     return json(res, 200, { code: code, link: 'https://t.me/' + BOT_USERNAME + '?start=' + code });
   }
   if (p === '/api/auth/status' && req.method === 'GET') {
@@ -719,6 +714,16 @@ async function handleApi(req, res, url) {
       }
       throw e;
     }
+  }
+
+  if (p === '/api/claim-member' && req.method === 'POST') {
+    if (me.level >= LEVELS.MEMBER) return json(res, 200, stateResponse(me, true));
+    if (!AUTO_JOIN) throw new HttpError(403, 'Вступление только по заявлению: нажмите «Подать заявление в семью»');
+    const u = users[me.uid];
+    const entry = { id: nextId(new Set(state.roster.map(r => r.id))), nick: u.nick, staticId: u.staticId, tg: u.tg, rank: '1. Контракт', avatar: u.avatar || PLACEHOLDER };
+    state.roster.push(entry); state.rev += 1; markDirty('state.json');
+    leaderChats().forEach(c => send(c, '👤 <b>Новый участник: «Уже игрок семьи»</b>\n' + esc(entry.nick) + ' (' + esc(entry.staticId) + ', ' + esc(entry.tg) + ') — 1. Контракт'));
+    return json(res, 200, stateResponse(resolveMe(me.uid), true));
   }
 
   if (p === '/api/profile' && req.method === 'POST') {

@@ -367,7 +367,7 @@
             </div>
 
             <div class="space-y-4 bento-card p-6">
-                <div>
+                <div class="hidden">
                     <label class="block text-[10px] text-zinc-400 uppercase mb-2">КТО ВЫ?</label>
                     <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-[#0a0a0d] border border-[#24242f]">
                         <button type="button" id="reg-mode-guest" onclick="setRegMode('GUEST')" class="py-2.5 px-3 rounded-lg bg-white text-black text-[11px] font-heavy transition-all">
@@ -862,11 +862,15 @@
                 <!-- 11. JOIN FAMILY -->
                 <section id="sec-join-family" class="page-sec hidden space-y-6">
                     <div class="bento-card p-6 sm:p-8 space-y-2">
-                        <h2 class="text-2xl sm:text-3xl font-heavy text-white">Подать заявку в семью DRUGHILL</h2>
-                        <p class="text-xs text-zinc-400">Ваш игровой Никнейм, Static ID, аватарка и @юз берутся из профиля автоматически.</p>
+                        <h2 class="text-2xl sm:text-3xl font-heavy text-white">Добро пожаловать в DRUGHILL</h2>
+                        <p class="text-xs text-zinc-400">Вы вошли как гость. Выберите, что вам нужно. Ваш игровой Никнейм, Static ID, аватарка и @юз берутся из профиля автоматически.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
+                            <button type="button" onclick="claimFamilyMember()" class="py-3.5 px-4 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Уже игрок семьи</button>
+                            <button type="button" onclick="showJoinForm()" class="py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] hover:border-white text-white text-xs font-heavy transition-all">Подать заявление в семью</button>
+                        </div>
                     </div>
 
-                    <div class="bento-card p-6 sm:p-8 space-y-6">
+                    <div id="join-form-card" class="hidden bento-card p-6 sm:p-8 space-y-6">
                         <div class="p-4 rounded-2xl topo-bg border border-[#2b2b38] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-3.5">
                                 <div class="relative shrink-0">
@@ -1731,12 +1735,25 @@
                 }).catch(function() { renderAll(); showToast('Нет связи с сервером'); });
             }
 
+            window.showJoinForm = function() {
+                var f = document.getElementById('join-form-card');
+                if (f) f.classList.remove('hidden');
+            };
+
+            window.claimFamilyMember = function() {
+                if (!window.confirm('Вы уже состоите в семье DRUGHILL? Вас добавят в состав как 1. Контракт, Лидер и Зам получат уведомление.')) return;
+                api('POST', '/api/claim-member', {}).then(function(res) {
+                    if (res.state) { applyServerState(res, false); navigateTo('home'); showToast('Вы в составе семьи: ' + db.currentUser.rankTitle); }
+                    else showToast(res.error || 'Не удалось');
+                });
+            };
+
             window.startTelegramAuth = function() {
                 var nickInput = document.getElementById('auth-nick-input');
                 var staticInput = document.getElementById('auth-static-input');
                 var nick = nickInput ? nickInput.value.trim() : '';
                 var stat = staticInput ? staticInput.value.trim() : '';
-                fetch('/api/auth/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick: nick, staticId: stat, mode: selectedRegMode }) })
+                fetch('/api/auth/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick: nick, staticId: stat }) })
                     .then(function(r) { return r.json(); })
                     .then(function(j) {
                         if (!j.code) { showToast(j.error || 'Не удалось начать вход'); return; }
