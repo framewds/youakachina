@@ -566,12 +566,16 @@ function siteProfile(it) {
     passed: tests.filter(t => t.passed).length
   };
 }
+// ── оформление сообщений бота: тексты прежние, меняется только начертание ──
+function head(emoji, title) { return emoji + ' <b><u>' + title + '</u></b>'; }
+function who(it) { return '<b>' + esc(it.nick) + '</b> (<code>' + esc(it.staticId) + '</code>, ' + esc(it.tg) + ')'; }
+function fld(label, val) { return '\n<b>' + label + ':</b> ' + val; }
 function profileLine(it, ev) {
   const p = siteProfile(it);
   if (ev && ev.type === 'kick') p.rank = 'исключён (был: ' + ev.from + ')';
-  return '\n\n🌐 <b>Профиль на сайте</b>\nНик: <b>' + esc(p.nick) + '</b> · Static ID: ' + esc(p.staticId) +
-    '\nРанг на сайте: <b>' + esc(p.rank) + '</b>\nTelegram: ' + esc(p.tg) +
-    (p.tests ? '\nТесты: ' + p.tests + ' (сдано ' + p.passed + ')' : '');
+  return '\n\n🌐 <b><u>Профиль на сайте</u></b>\n<b>Ник:</b> ' + esc(p.nick) + ' · <b>Static ID:</b> <code>' + esc(p.staticId) +
+    '</code>\n<b>Ранг на сайте:</b> <u>' + esc(p.rank) + '</u>\n<b>Telegram:</b> ' + esc(p.tg) +
+    (p.tests ? '\n<b>Тесты:</b> ' + p.tests + ' (сдано ' + p.passed + ')' : '');
 }
 function profileButtons(it, site) {
   if (!/^https:\/\//.test(site)) return null; // Telegram не принимает http/localhost в кнопках
@@ -588,20 +592,20 @@ function chatOf(tgHandle) {
 const COLL_TITLE = { promoClaims: 'заявка «Награда за промокод»', applications: 'заявка в семью', vacations: 'заявка на отпуск', promoReports: 'рапорт на повышение', payoutReports: 'заявка на премию', rollbacks: 'заявка с видео' };
 function eventText(ev, site) {
   const it = ev.item;
-  const who = '<b>' + esc(it.nick) + '</b> (' + esc(it.staticId) + ', ' + esc(it.tg) + ')';
+  const w = who(it);
   let body = '';
-  if (ev.coll === 'applications' && it.kind === 'Уже игрок семьи') body = '👤 <b>Запрос доступа: «Игрок семьи»</b>\n' + who + '\nПроверьте и примите в состав.';
-  else if (ev.coll === 'applications') body = '📝 <b>Новая заявка в семью</b>\n' + who + '\nВозраст: ' + esc(it.age) + '\nПрайм: ' + esc(it.prime) + '\nОпыт: ' + esc(it.exp) + '\nОткаты: ' + esc(it.rolls);
-  else if (ev.coll === 'vacations') body = '🏖 <b>Заявка на отпуск</b>\n' + who + ' · ' + esc(it.rank) + '\n' + esc(it.startDate) + ' — ' + esc(it.endDate) + ' (' + it.daysCount + ' дн.)\nПричина: ' + esc(it.reason);
-  else if (ev.coll === 'promoReports') body = '⬆️ <b>Рапорт на повышение</b>\n' + who + '\n' + esc(it.fromRank) + ' → ' + esc(it.toRank) + '\nВыполнено: ' + esc(it.tasks) + '\nДок-ва: ' + esc(it.proofs);
-  else if (ev.coll === 'payoutReports') body = '💰 <b>Заявка на премию</b>\n' + who + '\nСумма: ' + Number(it.total).toLocaleString('ru-RU') + ' ₽\n' + (it.items || []).map(l => esc(l.name) + ' × ' + l.qty).join(', ') + (it.proofs ? '\nДок-ва: ' + esc(it.proofs) : '');
-  else if (ev.coll === 'rollbacks') body = '🎬 <b>' + (it.kind === 'Аттестация' ? 'Видео для аттестации' : 'Новый откат') + '</b>\n' + who + '\n' + esc(it.title) + (it.comment ? '\nКомментарий: ' + esc(it.comment) : '') + '\n' + esc(it.link);
-  else if (ev.coll === 'promoClaims') body = '🎟 <b>Награда за промокод</b>\n' + who + '\nИгрок активировал промокод в игре и просит награду. Проверьте и выдайте.';
-  else if (ev.coll === 'testSubmissions' && it.proof) body = '📎 <b>Тест с докой: ' + esc(it.testTitle) + '</b>\n' + who + '\nРезультат: ' + it.scorePct + '%\nДоки: ' + esc(it.proof) + (it.proofComment ? '\nКомментарий: ' + esc(it.proofComment) : '');
-  else if (ev.coll === 'roster' && ev.type === 'rank') body = '🎖 <b>Смена ранга</b>\n' + who + '\n' + esc(ev.from) + ' → <b>' + esc(ev.to) + '</b>\nИзменил: ' + esc(ev.by.nick);
-  else if (ev.coll === 'roster' && ev.type === 'kick') body = '🚪 <b>Участник исключён</b>\n' + who + '\nРанг был: ' + esc(ev.from) + '\nИсключил: ' + esc(ev.by.nick);
+  if (ev.coll === 'applications' && it.kind === 'Уже игрок семьи') body = head('👤', 'Запрос доступа: «Игрок семьи»') + '\n' + w + '\n<i>Проверьте и примите в состав.</i>';
+  else if (ev.coll === 'applications') body = head('📝', 'Новая заявка в семью') + '\n' + w + fld('Возраст', esc(it.age)) + fld('Прайм', esc(it.prime)) + fld('Опыт', esc(it.exp)) + fld('Откаты', esc(it.rolls));
+  else if (ev.coll === 'vacations') body = head('🏖', 'Заявка на отпуск') + '\n' + w + ' · <u>' + esc(it.rank) + '</u>\n<b>' + esc(it.startDate) + ' — ' + esc(it.endDate) + '</b> (' + esc(it.daysCount) + ' дн.)' + fld('Причина', esc(it.reason));
+  else if (ev.coll === 'promoReports') body = head('⬆️', 'Рапорт на повышение') + '\n' + w + '\n<u>' + esc(it.fromRank) + '</u> → <b><u>' + esc(it.toRank) + '</u></b>' + fld('Выполнено', esc(it.tasks)) + fld('Док-ва', esc(it.proofs));
+  else if (ev.coll === 'payoutReports') body = head('💰', 'Заявка на премию') + '\n' + w + fld('Сумма', '<b><u>' + Number(it.total).toLocaleString('ru-RU') + ' ₽</u></b>') + '\n' + (it.items || []).map(l => esc(l.name) + ' × <b>' + esc(l.qty) + '</b>').join(', ') + (it.proofs ? fld('Док-ва', esc(it.proofs)) : '');
+  else if (ev.coll === 'rollbacks') body = head('🎬', it.kind === 'Аттестация' ? 'Видео для аттестации' : 'Новый откат') + '\n' + w + '\n<b>' + esc(it.title) + '</b>' + (it.comment ? fld('Комментарий', esc(it.comment)) : '') + '\n' + esc(it.link);
+  else if (ev.coll === 'promoClaims') body = head('🎟', 'Награда за промокод') + '\n' + w + '\n<i>Игрок активировал промокод в игре и просит награду. Проверьте и выдайте.</i>';
+  else if (ev.coll === 'testSubmissions' && it.proof) body = head('📎', 'Тест с докой: ' + esc(it.testTitle)) + '\n' + w + fld('Результат', '<b>' + esc(it.scorePct) + '%</b>') + fld('Доки', esc(it.proof)) + (it.proofComment ? fld('Комментарий', esc(it.proofComment)) : '');
+  else if (ev.coll === 'roster' && ev.type === 'rank') body = head('🎖', 'Смена ранга') + '\n' + w + '\n<s>' + esc(ev.from) + '</s> → <b><u>' + esc(ev.to) + '</u></b>' + fld('Изменил', esc(ev.by.nick));
+  else if (ev.coll === 'roster' && ev.type === 'kick') body = head('🚪', 'Участник исключён') + '\n' + w + fld('Ранг был', '<u>' + esc(ev.from) + '</u>') + fld('Исключил', esc(ev.by.nick));
   else return '';
-  return body + profileLine(it, ev) + '\n\nРассмотреть: ' + site;
+  return body + profileLine(it, ev) + '\n\n<b>Рассмотреть:</b> ' + esc(site);
 }
 function dispatchEvents(events, site) {
   events.forEach(ev => {
@@ -616,7 +620,7 @@ function dispatchEvents(events, site) {
       const title = COLL_TITLE[ev.coll];
       if (!title) return;
       const chat = chatOf(ev.item.tg);
-      if (chat) send(chat, (ok ? '✅ Ваша ' : '❌ Ваша ') + title + (ok ? ' одобрена.' : ' отклонена.') + '\nРешение: ' + esc(ev.by.nick));
+      if (chat) send(chat, (ok ? '✅ Ваша ' : '❌ Ваша ') + '<b><u>' + esc(title) + '</u></b> ' + (ok ? '<b>одобрена</b>.' : '<b>отклонена</b>.') + '\n<b>Решение:</b> ' + esc(ev.by.nick));
     }
   });
 }
@@ -679,16 +683,16 @@ async function handleUpdate(u) {
     if (mm) {
       sweepLogins();
       const L = logins[mm[1]];
-      if (!L || L.status !== 'pending') return send(m.chat.id, 'Ссылка для входа устарела. Вернитесь на сайт и нажмите «Войти через Telegram» ещё раз.');
+      if (!L || L.status !== 'pending') return send(m.chat.id, 'Ссылка для входа устарела. Вернитесь на сайт и нажмите <b>«Войти через Telegram»</b> ещё раз.');
       L.from = from;
       if (!users[uid]) { users[uid] = { id: uid, tg: tgHandleOf(from), chatId: m.chat.id, nick: L.nick || cleanStr(from.first_name || '', 40), staticId: L.staticId || '—', avatar: null }; markDirty('users.json'); }
       else if (users[uid].chatId !== m.chat.id) { users[uid].chatId = m.chat.id; markDirty('users.json'); }
       return send(m.chat.id,
-        '🔐 <b>Вход на портал DRUGHILL</b>\nЗапрос от имени: <b>' + esc(L.nick || tgHandleOf(from)) + '</b>\nЭто вы?',
+        '🔐 <b><u>Вход на портал DRUGHILL</u></b>\nЗапрос от имени: <b>' + esc(L.nick || tgHandleOf(from)) + '</b>\n<b>Это вы?</b>',
         { reply_markup: { inline_keyboard: [[{ text: '✅ Да, это я', callback_data: 'ok:' + mm[1] }, { text: '❌ Нет, не я', callback_data: 'no:' + mm[1] }]] } });
     }
     if (/^\/start/.test(m.text || '')) {
-      return send(m.chat.id, 'Это бот портала DRUGHILL. Чтобы войти, откройте сайт и нажмите «Войти через Telegram». Сюда же будут приходить уведомления по заявкам.');
+      return send(m.chat.id, 'Это бот портала <b><u>DRUGHILL</u></b>. Чтобы войти, откройте сайт и нажмите <b>«Войти через Telegram»</b>. Сюда же будут приходить <u>уведомления по заявкам</u>.');
     }
     return;
   }
@@ -699,12 +703,12 @@ async function handleUpdate(u) {
     const L = logins[mm[2]];
     const done = txt => Promise.all([
       tg('answerCallbackQuery', { callback_query_id: cq.id }).catch(() => {}),
-      cq.message ? tg('editMessageText', { chat_id: cq.message.chat.id, message_id: cq.message.message_id, text: txt }).catch(() => {}) : null
+      cq.message ? tg('editMessageText', { chat_id: cq.message.chat.id, message_id: cq.message.message_id, text: txt, parse_mode: 'HTML' }).catch(() => {}) : null
     ]);
-    if (!L || L.status !== 'pending' || !L.from || L.from.id !== cq.from.id) return done('Запрос входа устарел.');
-    if (mm[1] === 'no') { L.status = 'denied'; return done('❌ Вход отклонён.'); }
+    if (!L || L.status !== 'pending' || !L.from || L.from.id !== cq.from.id) return done('<b>Запрос входа устарел.</b>');
+    if (mm[1] === 'no') { L.status = 'denied'; return done('❌ <b><u>Вход отклонён.</u></b>'); }
     await finalizeLogin(mm[2], cq.from);
-    return done('✅ Вход выполнен. Вернитесь на сайт.');
+    return done('✅ <b><u>Вход выполнен.</u></b> Вернитесь на сайт.');
   }
 }
 
