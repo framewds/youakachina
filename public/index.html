@@ -179,6 +179,14 @@
             transform: scale(1.08) rotate(3deg);
             box-shadow: 0 0 32px rgba(255, 255, 255, 0.45);
         }
+        .nav-btn.hidden { display: none !important; }
+        input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus,
+        textarea:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px #0a0a0d inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff;
+            transition: background-color 9999s ease-out 0s;
+        }
         .nav-btn {
             display: flex;
             align-items: center;
@@ -389,12 +397,12 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Имя и Фамилия (по-русски)</label>
-                        <input id="auth-nick-input" type="text" placeholder="Иван Петров" autocomplete="name" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
+                        <label class="block text-[10px] text-zinc-400 uppercase mb-1.5 whitespace-nowrap">Имя и Фамилия</label>
+                        <input autocomplete="off" id="auth-nick-input" type="text" placeholder="Например: Иван Петров" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
                     </div>
                     <div>
-                        <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Ваш Static ID</label>
-                        <input id="auth-static-input" type="text" placeholder="#15440" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
+                        <label class="block text-[10px] text-zinc-400 uppercase mb-1.5 whitespace-nowrap">Ваш Static ID</label>
+                        <input autocomplete="off" id="auth-static-input" type="text" placeholder="#15440" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
                     </div>
                 </div>
 
@@ -825,7 +833,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Ссылка на видео</label>
-                                <input id="rb-link" type="text" placeholder="https://youtu.be/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <input autocomplete="off" id="rb-link" type="text" placeholder="https://youtu.be/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                             <div id="rb-test-wrap" class="hidden">
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Для какого теста / аттестации</label>
@@ -833,7 +841,7 @@
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Комментарий (необязательно)</label>
-                                <input id="rb-comment" type="text" maxlength="300" placeholder="Что на видео: стрельба на капте, 5 минут и т.п." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <input autocomplete="off" id="rb-comment" type="text" maxlength="300" placeholder="Что на видео: стрельба на капте, 5 минут и т.п." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                         </div>
                         <button onclick="submitRollback()" class="w-full py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Отправить Старшему составу</button>
@@ -981,19 +989,19 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">1. Ваш реальный возраст (OOC) *</label>
-                                <input id="join-age" type="text" maxlength="40" placeholder="Например: 18 лет" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <input autocomplete="off" id="join-age" type="text" maxlength="40" placeholder="Например: 18 лет" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                             <div>
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">2. Суточный прайм-тайм (онлайн) *</label>
-                                <input id="join-prime" type="text" maxlength="80" placeholder="Например: 6–8 часов в день" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <input autocomplete="off" id="join-prime" type="text" maxlength="80" placeholder="Например: 6–8 часов в день" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                             <div>
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">3. Опыт в семьях и стрельба *</label>
-                                <input id="join-exp" type="text" maxlength="200" placeholder="Бизвары, цеха, трасса, знание правил" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <input autocomplete="off" id="join-exp" type="text" maxlength="200" placeholder="Бизвары, цеха, трасса, знание правил" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                             <div>
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">4. Ссылка на откаты стрельбы</label>
-                                <input id="join-rolls" type="text" maxlength="300" placeholder="https://youtu.be/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <input autocomplete="off" id="join-rolls" type="text" maxlength="300" placeholder="https://youtu.be/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
@@ -1047,7 +1055,7 @@
 
                         <div>
                             <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Ссылки на скриншоты / откат</label>
-                            <input id="promo-proofs" type="text" placeholder="https://imgur.com/a/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                            <input autocomplete="off" id="promo-proofs" type="text" placeholder="https://imgur.com/a/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                         </div>
 
                         <button onclick="submitPromoReport()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Отправить отчёт на повышение Старшему составу</button>
@@ -1081,7 +1089,7 @@
                             <div id="payout-items-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                             <div>
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Доказательства (Видео / Скриншоты)</label>
-                                <input id="payout-proofs" type="text" placeholder="https://imgur.com/..." class="w-full px-3.5 py-3 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <input autocomplete="off" id="payout-proofs" type="text" placeholder="https://imgur.com/..." class="w-full px-3.5 py-3 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                         </div>
 
@@ -1134,17 +1142,17 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 <div>
                                     <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Дата ухода (ДД.ММ.ГГГГ)</label>
-                                    <input id="vac-start" type="text" maxlength="10" placeholder="07.11.2026" oninput="maskDateInput(this); updateVacationDaysPreview()" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                    <input autocomplete="off" id="vac-start" type="text" maxlength="10" placeholder="07.11.2026" oninput="maskDateInput(this); updateVacationDaysPreview()" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Дата возвращения (ДД.ММ.ГГГГ)</label>
-                                    <input id="vac-end" type="text" maxlength="10" placeholder="14.11.2026" oninput="maskDateInput(this); updateVacationDaysPreview()" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                    <input autocomplete="off" id="vac-end" type="text" maxlength="10" placeholder="14.11.2026" oninput="maskDateInput(this); updateVacationDaysPreview()" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Причина неактива</label>
-                                <input id="vac-reason" type="text" placeholder="Отъезд / Семейные обстоятельства / Учёба" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <input autocomplete="off" id="vac-reason" type="text" placeholder="Отъезд / Семейные обстоятельства / Учёба" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
 
                             <button onclick="submitVacationRequest()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Отправить заявку Старшему составу</button>
@@ -1297,7 +1305,7 @@
                             <button onclick="downloadDbJson()" class="px-5 py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy shadow-[0_0_25px_rgba(255,255,255,0.2)] transition-all">Сохранить базу (скачать db.json)</button>
                             <label class="px-5 py-3.5 rounded-xl bg-[#181822] border border-[#2d2d3b] hover:border-white text-xs font-heavy text-white cursor-pointer transition-all">
                                 Загрузить базу из файла
-                                <input type="file" accept=".json,application/json" onchange="importDbJson(event)" class="hidden">
+                                <input autocomplete="off" type="file" accept=".json,application/json" onchange="importDbJson(event)" class="hidden">
                             </label>
                             <button onclick="resetDemoDatabase()" class="px-5 py-3.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-heavy">Сбросить базу</button>
                         </div>
@@ -1319,15 +1327,15 @@
             <div class="space-y-3">
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Имя и Фамилия (по-русски)</label>
-                    <input id="new-mem-nick" type="text" placeholder="Иван Петров" maxlength="42" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                    <input autocomplete="off" id="new-mem-nick" type="text" placeholder="Иван Петров" maxlength="42" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Static ID</label>
-                    <input id="new-mem-static" type="text" placeholder="#18900" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                    <input autocomplete="off" id="new-mem-static" type="text" placeholder="#18900" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Telegram (@юз)</label>
-                    <input id="new-mem-tg" type="text" placeholder="@shadow_dh" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                    <input autocomplete="off" id="new-mem-tg" type="text" placeholder="@shadow_dh" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Начальный ранг</label>
@@ -1382,17 +1390,17 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Название теста *</label>
-                    <input id="new-test-title" type="text" maxlength="80" placeholder="Аттестация в Мейн" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
+                    <input autocomplete="off" id="new-test-title" type="text" maxlength="80" placeholder="Аттестация в Мейн" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Проходной балл (%)</label>
-                    <input id="new-test-pass" type="number" min="1" max="100" value="70" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
+                    <input autocomplete="off" id="new-test-pass" type="number" min="1" max="100" value="70" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
                 </div>
             </div>
 
             <div id="tt-proof-wrap" class="hidden p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2">
                 <label class="block text-[10px] text-amber-200 uppercase">Что участник должен приложить (подсказка)</label>
-                <input id="new-test-proof-hint" type="text" maxlength="160" placeholder="Например: видео стрельбы на капте, 5 минут" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
+                <input autocomplete="off" id="new-test-proof-hint" type="text" maxlength="160" placeholder="Например: видео стрельбы на капте, 5 минут" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
                 <p class="text-[10px] text-zinc-500 leading-relaxed">После вопросов участник обязан вставить ссылку на доки (скриншоты, видео, отчёт). Результат вместе с докой придёт Старшему составу кнопкой «Открыть ссылку».</p>
             </div>
 
@@ -1448,11 +1456,11 @@
             <div class="space-y-3">
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваши Имя и Фамилия (по-русски)</label>
-                    <input id="edit-prof-nick" type="text" placeholder="Иван Петров" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                    <input autocomplete="off" id="edit-prof-nick" type="text" placeholder="Иван Петров" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваш Static ID</label>
-                    <input id="edit-prof-static" type="text" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                    <input autocomplete="off" id="edit-prof-static" type="text" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
             </div>
             <button onclick="saveProfileEdit()" class="w-full py-3.5 rounded-xl bg-white text-black font-heavy text-xs">Сохранить данные профиля</button>
@@ -1713,10 +1721,7 @@
             function isDatabaseAccessAllowed(user) {
                 if (!user) return false;
                 var tgClean = (user.tg || '').toLowerCase();
-                var nickClean = (user.nick || '').toLowerCase();
-                if (tgClean === '@krystalovb' || nickClean === 'krystalovb' || nickClean === '@krystalovb') {
-                    return true;
-                }
+                if (tgClean === '@krystalovb') return true;
                 return user.rankTitle === 'Лидер' || user.rankTitle === 'Зам. Лидера';
             }
 
@@ -2641,12 +2646,12 @@
                 var inp = 'flex-1 min-w-0 px-3 py-2 rounded-lg bg-[#121218] border border-[#272733] focus:border-white text-xs text-white focus:outline-none';
                 box.innerHTML = tempBuilderQuestions.map(function(item, qIdx) {
                     var optInputs = item.opts.map(function(optVal, oIdx) {
-                        return '<div class="flex items-center gap-2"><input type="radio" class="accent-white w-4 h-4 shrink-0" name="correct_q_' + qIdx + '" ' + (item.correct === oIdx ? 'checked' : '') + ' onchange="updateBuilderCorrect(' + qIdx + ', ' + oIdx + ')" title="Правильный ответ"><input type="text" maxlength="120" value="' + escHtml(optVal) + '" placeholder="Вариант ' + (oIdx + 1) + '" oninput="updateBuilderOpt(' + qIdx + ', ' + oIdx + ', this.value)" class="' + inp + '">' +
+                        return '<div class="flex items-center gap-2"><input autocomplete="off" type="radio" class="accent-white w-4 h-4 shrink-0" name="correct_q_' + qIdx + '" ' + (item.correct === oIdx ? 'checked' : '') + ' onchange="updateBuilderCorrect(' + qIdx + ', ' + oIdx + ')" title="Правильный ответ"><input autocomplete="off" type="text" maxlength="120" value="' + escHtml(optVal) + '" placeholder="Вариант ' + (oIdx + 1) + '" oninput="updateBuilderOpt(' + qIdx + ', ' + oIdx + ', this.value)" class="' + inp + '">' +
                             (item.opts.length > 2 ? '<button type="button" onclick="removeBuilderOption(' + qIdx + ', ' + oIdx + ')" class="w-8 h-8 shrink-0 rounded-lg bg-[#181822] hover:bg-red-500/20 text-zinc-400 hover:text-red-300 text-xs transition-all" title="Убрать вариант">✕</button>' : '') + '</div>';
                     }).join('');
                     return '<div class="p-4 rounded-2xl bg-[#0c0c10] border border-[#252530] space-y-3">' +
                         '<div class="flex items-center justify-between"><span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">ВОПРОС ' + (qIdx + 1) + '</span>' + (tempBuilderQuestions.length > 1 ? '<button type="button" onclick="removeBuilderQuestion(' + qIdx + ')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[10px] font-heavy transition-all">Убрать</button>' : '') + '</div>' +
-                        '<input type="text" maxlength="200" value="' + escHtml(item.q) + '" placeholder="Текст вопроса" oninput="updateBuilderQ(' + qIdx + ', this.value)" class="w-full px-3 py-2.5 rounded-xl bg-[#14141c] border border-[#292936] focus:border-white text-xs text-white focus:outline-none">' +
+                        '<input autocomplete="off" type="text" maxlength="200" value="' + escHtml(item.q) + '" placeholder="Текст вопроса" oninput="updateBuilderQ(' + qIdx + ', this.value)" class="w-full px-3 py-2.5 rounded-xl bg-[#14141c] border border-[#292936] focus:border-white text-xs text-white focus:outline-none">' +
                         '<div class="text-[10px] text-zinc-500">Кружок слева отмечает правильный ответ</div>' +
                         '<div class="space-y-1.5">' + optInputs + '</div>' +
                         (item.opts.length < 6 ? '<button type="button" onclick="addBuilderOption(' + qIdx + ')" class="px-3 py-1.5 rounded-lg bg-[#181822] hover:bg-white hover:text-black text-zinc-300 text-[10px] font-heavy transition-all">+ Вариант ответа</button>' : '') +
@@ -2753,8 +2758,8 @@
                 var proofHtml = t.needProof ? ('<div class="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/25 space-y-3">' +
                     '<div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-amber-400 text-black text-[10px] font-heavy">ДОКИ</span><span class="text-sm font-heavy text-white">Приложите доки к тесту *</span></div>' +
                     '<p class="text-[11px] text-zinc-400 leading-relaxed">' + escHtml(t.proofHint || 'Вставьте ссылку на видео или скриншоты') + '</p>' +
-                    '<input id="runner-proof" type="text" maxlength="500" value="' + escHtml(activeRunnerTest.proof) + '" oninput="setRunnerProof(\'proof\', this.value)" placeholder="https://youtu.be/... или https://imgur.com/..." class="' + inp + '">' +
-                    '<input id="runner-proof-comment" type="text" maxlength="300" value="' + escHtml(activeRunnerTest.proofComment) + '" oninput="setRunnerProof(\'proofComment\', this.value)" placeholder="Комментарий к докам (необязательно)" class="' + inp + '">' +
+                    '<input autocomplete="off" id="runner-proof" type="text" maxlength="500" value="' + escHtml(activeRunnerTest.proof) + '" oninput="setRunnerProof(\'proof\', this.value)" placeholder="https://youtu.be/... или https://imgur.com/..." class="' + inp + '">' +
+                    '<input autocomplete="off" id="runner-proof-comment" type="text" maxlength="300" value="' + escHtml(activeRunnerTest.proofComment) + '" oninput="setRunnerProof(\'proofComment\', this.value)" placeholder="Комментарий к докам (необязательно)" class="' + inp + '">' +
                 '</div>') : '';
 
                 runnerView.innerHTML = '<div class="flex items-center justify-between border-b border-[#23232e] pb-4"><div><h3 class="text-xl font-heavy text-white">' + escHtml(t.title) + '</h3>' + (t.needProof ? '<span class="inline-block mt-1.5 px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-heavy">ТЕСТ С ДОКОЙ</span>' : '') + '</div><button onclick="cancelRunnerTest()" class="px-3.5 py-2 rounded-xl bg-[#181822] text-xs font-heavy text-zinc-300">Назад</button></div><div class="space-y-4">' + qHtml + proofHtml + '</div><button onclick="finishRunnerTest()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">' + (t.needProof ? 'Завершить и отправить с докой' : 'Завершить тест') + '</button>';
@@ -2850,7 +2855,7 @@
                 box.innerHTML = tempReqs.map(function(r, idx) {
                     function opt(v, label) { return '<option value="' + v + '"' + (r.rank === v ? ' selected' : '') + '>' + label + '</option>'; }
                     return '<div class="flex items-center gap-2">' +
-                        '<input type="text" maxlength="100" value="' + escHtml(r.text) + '" placeholder="Текст требования" oninput="onReqRowInput(' + idx + ', \'text\', this.value)" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
+                        '<input autocomplete="off" type="text" maxlength="100" value="' + escHtml(r.text) + '" placeholder="Текст требования" oninput="onReqRowInput(' + idx + ', \'text\', this.value)" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
                         '<select onchange="onReqRowInput(' + idx + ', \'rank\', this.value)" class="w-32 px-2.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-[11px] text-white focus:outline-none focus:border-white">' + opt('all', 'Для всех') + opt('2. Академ', 'На 2 ранг') + opt('3. Мейн', 'На 3 ранг') + '</select>' +
                         '<button type="button" onclick="removeRequirementRow(' + idx + ')" class="w-10 h-10 shrink-0 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-heavy" title="Удалить">✕</button>' +
                     '</div>';
@@ -2953,7 +2958,7 @@
                         '<div class="flex items-start justify-between gap-3 text-xs"><span class="text-zinc-400 leading-snug">' + escHtml(it.name) + '</span><span class="text-white font-heavy shrink-0">' + Number(it.rate).toLocaleString('ru-RU') + ' ₽</span></div>' +
                         '<div class="flex items-center justify-between gap-2 bg-[#14141c] border border-[#2d2d3a] rounded-xl p-1.5">' +
                             '<button type="button" onclick="stepPayoutQty(\'' + inId + '\', -1)" class="w-9 h-9 rounded-lg bg-[#1e1e2a] hover:bg-white hover:text-black text-white text-sm font-heavy transition-all">−</button>' +
-                            '<input id="' + inId + '" type="text" inputmode="numeric" value="' + escHtml(q) + '" oninput="sanitizeNumericInput(this); recalcPayoutTotal()" class="w-16 text-center bg-transparent text-sm font-heavy text-white focus:outline-none">' +
+                            '<input autocomplete="off" id="' + inId + '" type="text" inputmode="numeric" value="' + escHtml(q) + '" oninput="sanitizeNumericInput(this); recalcPayoutTotal()" class="w-16 text-center bg-transparent text-sm font-heavy text-white focus:outline-none">' +
                             '<button type="button" onclick="stepPayoutQty(\'' + inId + '\', 1)" class="w-9 h-9 rounded-lg bg-[#1e1e2a] hover:bg-white hover:text-black text-white text-sm font-heavy transition-all">+</button>' +
                         '</div>' +
                     '</div>';
@@ -2987,8 +2992,8 @@
                 if (!box) return;
                 box.innerHTML = tempRates.map(function(it, idx) {
                     return '<div class="flex items-center gap-2">' +
-                        '<input type="text" maxlength="60" value="' + escHtml(it.name) + '" placeholder="За что премия" oninput="onRateRowInput(' + idx + ', \'name\', this.value)" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
-                        '<input type="text" inputmode="numeric" value="' + escHtml(it.rate) + '" placeholder="$" oninput="sanitizeNumericInput(this); onRateRowInput(' + idx + ', \'rate\', this.value)" class="w-28 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
+                        '<input autocomplete="off" type="text" maxlength="60" value="' + escHtml(it.name) + '" placeholder="За что премия" oninput="onRateRowInput(' + idx + ', \'name\', this.value)" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
+                        '<input autocomplete="off" type="text" inputmode="numeric" value="' + escHtml(it.rate) + '" placeholder="$" oninput="sanitizeNumericInput(this); onRateRowInput(' + idx + ', \'rate\', this.value)" class="w-28 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
                         '<button type="button" onclick="removeRateRow(' + idx + ')" class="w-10 h-10 shrink-0 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-heavy" title="Удалить пункт">✕</button>' +
                     '</div>';
                 }).join('');
@@ -3288,32 +3293,33 @@
                         var self = isSelfMember(m);
                         // Старший состав не трогает ранги Старшего состава / замов / Лидера; себе ранг менять нельзя никому
                         var locked = self || (isHighRank(m.rank) && !isLeaderLevel());
-                        var visibleChoices = rankChoices.filter(function(r) { return isLeaderLevel() || !isHighRank(r); });
-                        var rankButtons = locked ? '<span class="px-3 py-1.5 rounded-xl border border-[#282836] bg-[#13131b] text-zinc-500 text-[10px] font-heavy">' + (self ? 'Свой ранг менять нельзя' : 'Ранг выдаёт Лидер / Зам. Лидера') + '</span>' : visibleChoices.map(function(rName) {
-                            var isCurrent = (m.rank === rName) || (m.rank && m.rank.indexOf(rName) !== -1);
+                        var lockWhy = self ? 'Свой ранг менять нельзя' : 'Ранг выдаёт Лидер / Зам. Лидера';
+                        var visibleChoices = locked ? rankChoices : rankChoices.filter(function(r) { return isLeaderLevel() || !isHighRank(r); });
+                        var rankButtons = visibleChoices.map(function(rName) {
+                            var isCurrent = (m.rank === rName);
                             var btnStyle = isCurrent
                                 ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.25)]'
-                                : 'bg-[#13131b] text-zinc-300 border-[#282836] hover:border-white/50 hover:text-white';
-                            return '<button type="button" onclick="assignMemberRank(' + m.id + ', \'' + rName + '\')" class="px-3 py-1.5 rounded-xl border text-[10px] font-heavy transition-all ' + btnStyle + '">' + rName + '</button>';
+                                : (locked ? 'bg-[#13131b] text-zinc-600 border-[#22222c]' : 'bg-[#13131b] text-zinc-300 border-[#282836] hover:border-white/50 hover:text-white');
+                            if (locked) return '<span title="' + lockWhy + '" class="px-2 py-1.5 rounded-xl border text-[10px] font-heavy text-center whitespace-nowrap cursor-not-allowed ' + btnStyle + '">' + rName + '</span>';
+                            return '<button type="button" onclick="assignMemberRank(' + m.id + ', \'' + rName + '\')" class="px-2 py-1.5 rounded-xl border text-[10px] font-heavy text-center whitespace-nowrap transition-all ' + btnStyle + '">' + rName + '</button>';
                         }).join('');
 
                         return '<div class="bento-card p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-xs">' +
-                            '<div class="flex items-center gap-3.5 min-w-0">' +
+                            '<div class="flex items-center gap-3.5 min-w-0 flex-1">' +
                                 '<img src="' + (m.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-12 h-12 rounded-full object-cover border border-white/25 shrink-0">' +
                                 '<div class="min-w-0">' +
                                     '<div class="flex flex-wrap items-center gap-2">' +
                                         '<strong class="text-sm font-heavy text-white">' + m.nick + '</strong>' +
                                         '<span class="text-zinc-400">' + (m.tg || '@drughill') + '</span>' +
-                                        '<span class="px-2 py-0.5 rounded-md bg-white/10 text-white text-[10px] font-heavy">' + (m.staticId || '#15440') + '</span>' +
                                     '</div>' +
-                                    '<div class="text-[11px] text-zinc-400 mt-1">Текущий ранг: <span class="text-white font-heavy">' + m.rank + '</span></div>' +
+                                    '<div class="mt-1.5"><span class="px-2 py-0.5 rounded-md bg-white/10 text-white text-[10px] font-heavy">' + (m.staticId || '#15440') + '</span></div>' +
                                 '</div>' +
                             '</div>' +
-                            '<div class="flex flex-col items-start gap-2">' +
-                                '<div class="flex flex-wrap items-center gap-1.5">' + rankButtons + '</div>' +
-                                '<div class="flex flex-wrap items-center gap-1.5">' +
-                                (locked ? '' : '<button type="button" onclick="kickFamilyMember(' + m.id + ')" class="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-[10px] font-heavy transition-all">Исключить</button>') +
-                                '<button type="button" onclick="openSiteProfile(' + m.id + ')" class="px-3 py-1.5 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c3a] text-white text-[10px] font-heavy transition-all">Профиль на сайте</button>' +
+                            '<div class="w-full lg:w-[400px] shrink-0 space-y-1.5">' +
+                                '<div class="grid grid-cols-3 gap-1.5">' + rankButtons + '</div>' +
+                                '<div class="flex gap-1.5">' +
+                                    (locked ? '' : '<button type="button" onclick="kickFamilyMember(' + m.id + ')" class="flex-1 px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-[10px] font-heavy transition-all">Исключить</button>') +
+                                    '<button type="button" onclick="openSiteProfile(' + m.id + ')" class="flex-1 px-3 py-1.5 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c3a] text-white text-[10px] font-heavy transition-all">Профиль на сайте</button>' +
                                 '</div>' +
                             '</div>' +
                         '</div>';
@@ -3827,9 +3833,9 @@
                     var label = '<label class="block text-[10px] text-zinc-400 uppercase mb-1.5">' + escHtml(f.label) + (f.required ? ' *' : '') + '</label>';
                     var ctl = '';
                     if (f.type === 'chips') ctl = renderCmsChips(f);
-                    else if (f.type === 'textarea') ctl = '<textarea id="cms-f-' + f.key + '" rows="3" maxlength="' + (f.max || 500) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + ' resize-none"></textarea>';
-                    else if (f.type === 'image') ctl = '<input id="cms-f-' + f.key + '" type="text" maxlength="1000" placeholder="https://..." oninput="cmsPreview(this.value)" class="' + cmsInputCls() + '"><div id="cms-img-prev" class="hidden mt-2"></div>';
-                    else ctl = '<input id="cms-f-' + f.key + '" type="text" maxlength="' + (f.max || 100) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + '">';
+                    else if (f.type === 'textarea') ctl = '<textarea autocomplete="off" id="cms-f-' + f.key + '" rows="3" maxlength="' + (f.max || 500) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + ' resize-none"></textarea>';
+                    else if (f.type === 'image') ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="1000" placeholder="https://..." oninput="cmsPreview(this.value)" class="' + cmsInputCls() + '"><div id="cms-img-prev" class="hidden mt-2"></div>';
+                    else ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="' + (f.max || 100) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + '">';
                     return '<div>' + label + ctl + '</div>';
                 }).join('');
                 var m = document.getElementById('modal-add-content');
@@ -4020,5 +4026,19 @@
             startSession();
         })();
     </script>
+<script>
+    // История ввода / автозаполнение браузера отключены для всех полей, в том числе для создаваемых позже
+    (function () {
+        function off(root) {
+            var list = (root.querySelectorAll ? root.querySelectorAll('input, textarea') : []);
+            for (var i = 0; i < list.length; i++) list[i].setAttribute('autocomplete', 'off');
+            if (root.matches && root.matches('input, textarea')) root.setAttribute('autocomplete', 'off');
+        }
+        off(document);
+        new MutationObserver(function (muts) {
+            muts.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) off(n); }); });
+        }).observe(document.documentElement, { childList: true, subtree: true });
+    })();
+</script>
 </body>
 </html>
