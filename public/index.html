@@ -1454,6 +1454,17 @@
         </div>
     </div>
 
+    <!-- ПРОФИЛЬ УЧАСТНИКА НА САЙТЕ (для Старшего состава) -->
+    <div id="modal-site-profile" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onmousedown="if (event.target === this) closeModal('modal-site-profile')">
+        <div class="bento-card max-w-lg w-full p-6 space-y-5">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-heavy text-white">Профиль на сайте</h3>
+                <button onclick="closeModal('modal-site-profile')" class="text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <div id="site-profile-body" class="space-y-5"></div>
+        </div>
+    </div>
+
     <!-- UI CONFIRM (вместо системного окна браузера) -->
     <div id="ui-confirm" class="hidden fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onmousedown="if (event.target === this) uiConfirmClose(false)">
         <div class="bento-card max-w-sm w-full p-6 space-y-5" role="dialog" aria-modal="true" aria-labelledby="ui-confirm-title">
@@ -1857,6 +1868,7 @@
                 takeSnap();
                 renderAll();
                 if (db.currentUser.loggedIn && db.currentUser.role === 'GUEST') navigateTo('join-family');
+                if (typeof handleProfileHash === 'function') handleProfileHash();
                 if (wasIn && prevRole === 'GUEST' && db.currentUser.role !== 'GUEST') {
                     navigateTo('home');
                     showToast('Вас приняли в семью: ' + db.currentUser.rankTitle);
@@ -3185,6 +3197,7 @@
                             '<div class="flex flex-wrap items-center gap-1.5">' +
                                 rankButtons +
                                 '<button type="button" onclick="kickFamilyMember(' + m.id + ')" class="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-[10px] font-heavy transition-all ml-1">Исключить</button>' +
+                                '<button type="button" onclick="openSiteProfile(' + m.id + ')" class="px-3 py-1.5 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c3a] text-white text-[10px] font-heavy transition-all">Профиль на сайте</button>' +
                             '</div>' +
                         '</div>';
                     }).join('');
@@ -3343,6 +3356,70 @@
                 renderUserBar();
                 renderSeniorPanels();
             };
+
+            function siteProfileStats(tg) {
+                var t = String(tg || '').toLowerCase();
+                var mine = function(r) { return String(r.tg || '').toLowerCase() === t; };
+                var tests = (db.testSubmissions || []).filter(mine);
+                var scores = tests.map(function(x) { return Number(x.scorePct) || 0; });
+                return {
+                    tests: tests.length,
+                    passed: tests.filter(function(x) { return x.passed; }).length,
+                    avg: scores.length ? Math.round(scores.reduce(function(a, b) { return a + b; }, 0) / scores.length) : null,
+                    best: scores.length ? Math.max.apply(null, scores) : null,
+                    vacations: (db.vacations || []).filter(mine).length,
+                    rollbacks: (db.rollbacks || []).filter(mine).length
+                };
+            }
+            window.openSiteProfile = function(memberId) {
+                var m = (db.roster || []).filter(function(r) { return r.id === memberId; })[0];
+                if (!m) { showToast('Участник не найден в составе'); return; }
+                renderSiteProfile(m.nick, m.tg, m.staticId, m.rank, m.avatar);
+            };
+            window.openSiteProfileByTg = function(tg) {
+                var t = String(tg || '').replace(/^@/, '').toLowerCase();
+                var same = function(r) { return String(r.tg || '').replace(/^@/, '').toLowerCase() === t; };
+                var m = (db.roster || []).filter(same)[0];
+                if (m) return renderSiteProfile(m.nick, m.tg, m.staticId, m.rank, m.avatar);
+                var a = (db.applications || []).filter(same)[0];
+                if (a) return renderSiteProfile(a.nick, a.tg, a.staticId, 'Гость (не в составе)', a.avatar);
+                showToast('Профиль не найден: @' + t);
+            };
+            function renderSiteProfile(nick, tg, staticId, rank, avatar) {
+                var st = siteProfileStats(tg);
+                var cell = function(label, val) {
+                    return '<div class="p-3.5 rounded-2xl bg-[#14141a] border border-[#23232e]"><div class="text-[10px] text-zinc-400">' + label + '</div><div class="text-lg font-heavy text-white mt-1">' + val + '</div></div>';
+                };
+                var all3 = nick + ' | ' + staticId + ' | ' + tg;
+                document.getElementById('site-profile-body').innerHTML =
+                    '<div class="flex items-center gap-4">' +
+                        '<img src="' + escHtml(avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-16 h-16 rounded-full object-cover border-2 border-white/30 shrink-0">' +
+                        '<div class="min-w-0 space-y-1.5">' +
+                            '<div class="flex flex-wrap items-center gap-2"><strong class="text-lg font-heavy text-white">' + escHtml(nick) + '</strong>' +
+                            '<span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-xs font-heavy text-zinc-200">' + escHtml(tg) + '</span>' +
+                            '<span class="px-3 py-1 rounded-lg bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(rank) + '</span></div>' +
+                            '<div class="text-xs text-zinc-400">Static ID: <strong class="text-white">' + escHtml(staticId) + '</strong></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">' +
+                        cell('Пройдено тестов', st.tests) + cell('Сдано', st.tests ? st.passed : '—') +
+                        cell('Средний результат', st.avg === null ? '—' : st.avg + '%') + cell('Лучший результат', st.best === null ? '—' : st.best + '%') +
+                        cell('Отпусков', st.vacations) + cell('Откатов / видео', st.rollbacks) +
+                    '</div>' +
+                    '<div class="flex flex-wrap gap-1.5">' + copyBtn('Скопировать ник', nick) + copyBtn('Скопировать Static', staticId) + copyBtn('Скопировать @юз', tg) + copyBtn('Скопировать всё', all3) + tgLinkBtn(tg) + '</div>';
+                document.getElementById('modal-site-profile').classList.remove('hidden');
+            }
+            // ссылка из Telegram-уведомления: https://сайт/#profile/<telegram>
+            function handleProfileHash() {
+                var h = String(location.hash || '');
+                if (h.indexOf('#profile/') !== 0) return;
+                if (!db.currentUser.loggedIn || db.currentUser.role !== 'SENIOR') return;
+                var tg = decodeURIComponent(h.slice(9));
+                history.replaceState(null, '', location.pathname + location.search);
+                navigateTo('senior-roster');
+                window.openSiteProfileByTg(tg);
+            }
+            window.addEventListener('hashchange', handleProfileHash);
 
             window.kickFamilyMember = function(memberId) {
                 if (db.currentUser.role !== 'SENIOR') return;

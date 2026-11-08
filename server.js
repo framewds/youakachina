@@ -414,6 +414,7 @@ function applyPatch(me, patch, events) {
         if (touchesLeader && clean.rank !== old.rank) need(me, LEVELS.LEADER, 'Ранги Лидера и замов меняет только Лидер или Зам. Лидера');
         if (sameTg(old.tg, OWNER_TG)) clean.rank = 'Лидер';
         W.roster[idx] = Object.assign({}, old, clean, { id: old.id });
+        if (clean.rank !== old.rank) events.push({ type: 'rank', coll: 'roster', item: W.roster[idx], from: old.rank, to: W.roster[idx].rank, by: me });
       }
     });
     (Array.isArray(p.del) ? p.del : []).slice(0, 50).forEach(id => {
@@ -424,6 +425,7 @@ function applyPatch(me, patch, events) {
       if (sameTg(old.tg, OWNER_TG)) throw new HttpError(403, 'Владельца семьи исключить нельзя');
       if (rankLevel(old.rank) === LEVELS.LEADER) need(me, LEVELS.LEADER, 'Лидера и замов исключает только Лидер или Зам. Лидера');
       W.roster.splice(idx, 1);
+      events.push({ type: 'kick', coll: 'roster', item: old, from: old.rank, by: me });
     });
   }
 
@@ -522,14 +524,59 @@ function send(chatId, text, extra) {
   return tg('sendMessage', Object.assign({ chat_id: chatId, text: text, parse_mode: 'HTML', disable_web_page_preview: true }, extra || {}))
     .catch(e => console.error('tg send failed', e.message));
 }
+function chatsOfHandle(handle, set) {
+  const h = String(handle || '');
+  const mId = /^@id(\d+)$/i.exec(h);
+  Object.keys(users).forEach(id => {
+    const u = users[id];
+    if (!u || !u.chatId) return;
+    if (sameTg(u.tg, h) || (mId && String(u.id || id) === mId[1])) set.add(String(u.chatId));
+  });
+}
+// все, у кого на сайте роль «Лидер» или «Зам. Лидера» (+ владелец + доп. чаты из NOTIFY_CHAT_IDS)
 function leaderChats() {
   const set = new Set(EXTRA_CHATS);
-  state.roster.forEach(m => {
-    if (rankLevel(m.rank) !== LEVELS.LEADER) return;
-    Object.keys(users).forEach(id => { if (sameTg(users[id].tg, m.tg) && users[id].chatId) set.add(String(users[id].chatId)); });
+  const missing = [];
+  const seen = new Set();
+  const leaders = state.roster.filter(m => rankLevel(m.rank) === LEVELS.LEADER).map(m => m.tg).concat([OWNER_TG])
+    .filter(h => { const k = String(h).toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+  leaders.forEach(h => {
+    const mine = new Set();
+    chatsOfHandle(h, mine);
+    if (!mine.size) missing.push(h);
+    mine.forEach(c => set.add(c));
   });
-  Object.keys(users).forEach(id => { if (sameTg(users[id].tg, OWNER_TG) && users[id].chatId) set.add(String(users[id].chatId)); });
+  if (missing.length) console.warn('Лидеры без чата с ботом (должны один раз войти через бота):', missing.join(', '));
   return Array.from(set);
+}
+// профиль человека на сайте: ник, Static ID, ранг в составе, статистика тестов
+function siteProfile(it) {
+  const entry = findRoster(state, it.tg);
+  const tests = state.testSubmissions.filter(t => sameTg(t.tg, it.tg));
+  return {
+    nick: entry ? entry.nick : it.nick,
+    staticId: entry ? entry.staticId : it.staticId,
+    tg: it.tg,
+    rank: entry ? entry.rank : 'Гость (не в составе)',
+    inRoster: !!entry,
+    tests: tests.length,
+    passed: tests.filter(t => t.passed).length
+  };
+}
+function profileLine(it, ev) {
+  const p = siteProfile(it);
+  if (ev && ev.type === 'kick') p.rank = 'исключён (был: ' + ev.from + ')';
+  return '\n\n🌐 <b>Профиль на сайте</b>\nНик: <b>' + esc(p.nick) + '</b> · Static ID: ' + esc(p.staticId) +
+    '\nРанг на сайте: <b>' + esc(p.rank) + '</b>\nTelegram: ' + esc(p.tg) +
+    (p.tests ? '\nТесты: ' + p.tests + ' (сдано ' + p.passed + ')' : '');
+}
+function profileButtons(it, site) {
+  if (!/^https:\/\//.test(site)) return null; // Telegram не принимает http/localhost в кнопках
+  const base = site.replace(/#.*$/, '');
+  const row = [{ text: '🌐 Профиль на сайте', url: base + '#profile/' + encodeURIComponent(String(it.tg || '').replace(/^@/, '')) }];
+  const h = String(it.tg || '').replace(/^@/, '');
+  if (/^[A-Za-z0-9_]{4,32}$/.test(h) && !/^id\d+$/.test(h)) row.push({ text: '✈️ Telegram', url: 'https://t.me/' + h });
+  return { inline_keyboard: [row] };
 }
 function chatOf(tgHandle) {
   const id = Object.keys(users).find(i => sameTg(users[i].tg, tgHandle) && users[i].chatId);
@@ -548,18 +595,21 @@ function eventText(ev, site) {
   else if (ev.coll === 'rollbacks') body = '🎬 <b>' + (it.kind === 'Аттестация' ? 'Видео для аттестации' : 'Новый откат') + '</b>\n' + who + '\n' + esc(it.title) + (it.comment ? '\nКомментарий: ' + esc(it.comment) : '') + '\n' + esc(it.link);
   else if (ev.coll === 'promoClaims') body = '🎟 <b>Награда за промокод</b>\n' + who + '\nИгрок активировал промокод в игре и просит награду. Проверьте и выдайте.';
   else if (ev.coll === 'testSubmissions' && it.proof) body = '📎 <b>Тест с докой: ' + esc(it.testTitle) + '</b>\n' + who + '\nРезультат: ' + it.scorePct + '%\nДоки: ' + esc(it.proof) + (it.proofComment ? '\nКомментарий: ' + esc(it.proofComment) : '');
+  else if (ev.coll === 'roster' && ev.type === 'rank') body = '🎖 <b>Смена ранга</b>\n' + who + '\n' + esc(ev.from) + ' → <b>' + esc(ev.to) + '</b>\nИзменил: ' + esc(ev.by.nick);
+  else if (ev.coll === 'roster' && ev.type === 'kick') body = '🚪 <b>Участник исключён</b>\n' + who + '\nРанг был: ' + esc(ev.from) + '\nИсключил: ' + esc(ev.by.nick);
   else return '';
-  return body + '\n\nРассмотреть: ' + site;
+  return body + profileLine(it, ev) + '\n\nРассмотреть: ' + site;
 }
 function dispatchEvents(events, site) {
   events.forEach(ev => {
-    if (ev.type === 'new') {
+    if (ev.type === 'new' || ev.type === 'rank' || ev.type === 'kick') {
       if (ev.coll === 'testSubmissions' && !ev.item.proof) return;
       const text = eventText(ev, site);
-      if (text) leaderChats().forEach(c => send(c, text));
+      if (!text) return;
+      const markup = profileButtons(ev.item, site);
+      leaderChats().forEach(c => send(c, text, markup ? { reply_markup: markup } : null));
     } else if (ev.type === 'decided') {
       const ok = ev.item.status === 'APPROVED';
-      if (ev.coll === 'vacations' && !ok) { /* отказ тоже сообщаем */ }
       const title = COLL_TITLE[ev.coll];
       if (!title) return;
       const chat = chatOf(ev.item.tg);
