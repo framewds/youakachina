@@ -206,6 +206,11 @@
             color: #09090b !important;
             stroke: #09090b !important;
         }
+        .nav-btn svg.nav-ico { width: 16px; height: 16px; flex-shrink: 0; opacity: .75; transition: opacity .2s, transform .2s; }
+        .nav-btn:hover svg.nav-ico, .nav-btn.active svg.nav-ico { opacity: 1; }
+        .nav-btn:hover svg.nav-ico { transform: scale(1.1); }
+        .empty-state.compact .empty-stack-wrap { zoom: .72; margin-bottom: 14px; }
+        .empty-state.compact { padding: 18px 8px; }
         .custom-check-card {
             cursor: pointer;
             border: 1px solid #24242e;
@@ -785,12 +790,12 @@
 
                     <div id="academy-empty-view" class="py-16 text-center space-y-3">
                         <div class="empty-stack-wrap animate-float">
-                            <div class="empty-floating-badge">★</div>
+                            <div class="empty-floating-badge"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
                             <div class="empty-stack-card-left"></div>
                             <div class="empty-stack-card-right"></div>
                             <div class="empty-stack-card-main">
                                 <div class="flex items-center gap-2.5">
-                                    <div class="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center font-heavy text-xs">?</div>
+                                    <div class="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center"><svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
                                     <div class="flex-1 space-y-1.5">
                                         <div class="h-2 rounded bg-[#343444] w-full"></div>
                                         <div class="h-2 rounded bg-[#252532] w-2/3"></div>
@@ -1582,6 +1587,79 @@
                 ];
             }
 
+            // ───── иконки (в стиле Lucide) ─────
+            var ICONS = {
+                home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+                user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+                users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+                userplus: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/>',
+                news: '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/>',
+                rules: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M8 7h8M8 11h6"/>',
+                ranks: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+                shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+                car: '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+                building: '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4M10 10h4M10 14h4M10 18h4"/>',
+                cap: '<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+                promo: '<circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="M12 16V8"/>',
+                banknote: '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+                sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+                clipcheck: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+                chart: '<line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>',
+                video: '<path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/>',
+                gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>',
+                calendar: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+                file: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8M16 17H8M10 9H8"/>',
+                db: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
+                hourglass: '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
+                inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+                check: '<path d="M20 6 9 17l-5-5"/>',
+                plus: '<path d="M12 5v14M5 12h14"/>'
+            };
+            function icon(key, cls) {
+                return '<svg class="' + (cls || 'w-4 h-4') + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">' + (ICONS[key] || ICONS.inbox) + '</svg>';
+            }
+            // единая красивая заглушка «пусто»: opts.compact — уменьшенная (внутри панелей), opts.cls — доп. классы (например bento-card md:col-span-2)
+            function emptyState(key, title, text, opts) {
+                opts = opts || {};
+                return '<div class="empty-state ' + (opts.compact ? 'compact ' : 'py-12 ') + 'text-center space-y-2 ' + (opts.cls || '') + '">' +
+                    '<div class="empty-stack-wrap animate-float">' +
+                        '<div class="empty-floating-badge">' + icon('plus', 'w-4 h-4') + '</div>' +
+                        '<div class="empty-stack-card-left"></div><div class="empty-stack-card-right"></div>' +
+                        '<div class="empty-stack-card-main">' +
+                            '<div class="flex items-center gap-2.5">' +
+                                '<div class="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center shrink-0">' + icon(key, 'w-[18px] h-[18px]') + '</div>' +
+                                '<div class="flex-1 space-y-1.5"><div class="h-2 rounded bg-[#343444] w-full"></div><div class="h-2 rounded bg-[#252532] w-2/3"></div></div>' +
+                            '</div>' +
+                            '<div class="h-9 rounded-lg bg-[#262630]"></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<h3 class="text-base font-heavy text-white">' + title + '</h3>' +
+                    '<p class="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">' + text + '</p>' +
+                '</div>';
+            }
+            var NAV_ICONS = {
+                'join-family': 'userplus', 'guest-status': 'hourglass', 'profile': 'user', 'home': 'home', 'news': 'news', 'rules': 'rules',
+                'ranks': 'ranks', 'diplomacy': 'shield', 'fleet': 'car', 'estates': 'building', 'academy': 'cap',
+                'report-promo': 'promo', 'report-payout': 'banknote', 'vacations': 'sun',
+                'senior-roster': 'users', 'senior-reviews': 'clipcheck', 'senior-test-results': 'chart', 'senior-rollbacks': 'video',
+                'senior-promoclaims': 'gift', 'senior-vacations': 'calendar', 'senior-logs': 'file', 'senior-db': 'db'
+            };
+            function decorateNav() {
+                var btns = document.querySelectorAll('.nav-btn[data-nav]');
+                for (var i = 0; i < btns.length; i++) {
+                    var b = btns[i];
+                    if (b.querySelector('svg.nav-ico')) continue;
+                    var key = NAV_ICONS[b.getAttribute('data-nav')];
+                    if (!key) continue;
+                    var first = b.firstElementChild;
+                    var wrap = document.createElement('span');
+                    wrap.className = 'flex items-center gap-2.5';
+                    wrap.innerHTML = icon(key, 'nav-ico');
+                    if (first && first.tagName === 'SPAN') { b.insertBefore(wrap, first); wrap.appendChild(first); }
+                }
+            }
+            decorateNav();
+
             // внешние фото идут через сервер (imgur и др. часто не грузятся напрямую: блокировки, referer, ссылки-страницы)
             function imgSrc(u) {
                 u = String(u || '');
@@ -2092,7 +2170,7 @@
                 if (badge) badge.textContent = String(pend.length);
                 var pEl = document.getElementById('admin-promoclaims-pending');
                 if (pEl) {
-                    pEl.innerHTML = pend.length === 0 ? '<div class="text-xs text-zinc-500">Новых заявок на награду нет.</div>' : pend.map(function(c) {
+                    pEl.innerHTML = pend.length === 0 ? emptyState('gift', 'Новых заявок на награду нет', 'Когда игрок запросит награду за промокод, заявка появится здесь.', { compact: true }) : pend.map(function(c) {
                         var av = escHtml(c.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH');
                         var all3 = c.nick + ' | ' + c.staticId + ' | ' + c.tg;
                         return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] space-y-3.5 text-xs">' +
@@ -2116,7 +2194,7 @@
                 var dEl = document.getElementById('admin-promoclaims-done');
                 if (dEl) {
                     var done = all.filter(function(c) { return !isPending(c); }).slice(0, 30);
-                    dEl.innerHTML = done.length === 0 ? '<div class="text-xs text-zinc-500">Пока пусто.</div>' : done.map(function(c) {
+                    dEl.innerHTML = done.length === 0 ? emptyState('check', 'Пока пусто', 'Здесь будут храниться уже рассмотренные заявки.', { compact: true }) : done.map(function(c) {
                         return '<div class="p-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] flex flex-wrap items-center justify-between gap-3 text-xs">' +
                             '<div class="flex items-center gap-3 min-w-0"><img src="' + escHtml(c.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-9 h-9 rounded-full object-cover border border-white/15 shrink-0"><div class="min-w-0"><span class="font-heavy text-white">' + escHtml(c.nick) + '</span> <span class="text-zinc-400">' + escHtml(c.staticId) + ' · ' + escHtml(c.tg) + (c.decidedBy ? ' · решил ' + escHtml(c.decidedBy) : '') + '</span></div></div>' + claimBadge(c.status) + '</div>';
                     }).join('');
@@ -2362,14 +2440,14 @@
             function renderContentSections() {
                 var newsEl = document.getElementById('news-grid');
                 if (newsEl) {
-                    newsEl.innerHTML = db.news.map(function(n, i) {
+                    newsEl.innerHTML = db.news.length === 0 ? emptyState('news', 'Новостей пока нет', 'Когда в семье появятся новости, они будут опубликованы здесь.', { cls: 'bento-card col-span-full' }) : db.news.map(function(n, i) {
                         return '<div class="bento-card overflow-hidden flex flex-col">' + (/^(https?:\/\/|\/avatars\/)/.test(String(n.image || '')) ? '<img src="' + escHtml(imgSrc(n.image)) + '" referrerpolicy="no-referrer" loading="lazy" alt="" class="w-full h-44 object-cover border-b border-[#23232d]">' : '') + '<div class="p-6 space-y-2.5"><div class="flex items-center justify-between"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(n.badge) + '</span><span class="text-[11px] text-zinc-500">' + escHtml(n.date || 'Сегодня') + '</span></div><h3 class="text-base font-heavy text-white pt-1">' + escHtml(n.title) + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(n.desc) + '</p>' + delBtn('news', i) + '</div></div>';
                     }).join('');
                 }
 
                 var rulesEl = document.getElementById('rules-list');
                 if (rulesEl) {
-                    rulesEl.innerHTML = db.rules.map(function(r, i) {
+                    rulesEl.innerHTML = db.rules.length === 0 ? emptyState('rules', 'Правил пока нет', 'Правила семьи появятся здесь после добавления.', { cls: 'bento-card col-span-full' }) : db.rules.map(function(r, i) {
                         return '<div class="bento-card p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(r.badge) + '</span><h3 class="text-base font-heavy text-white pt-1">' + escHtml(r.title) + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(r.desc) + '</p>' + delBtn('rules', i) + '</div>';
                     }).join('');
                 }
@@ -2392,7 +2470,7 @@
 
                 var dipEl = document.getElementById('diplomacy-grid');
                 if (dipEl) {
-                    dipEl.innerHTML = db.diplomacy.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500 md:col-span-2">Записей о дипломатии пока нет.</div>' : db.diplomacy.map(function(d, i) {
+                    dipEl.innerHTML = db.diplomacy.length === 0 ? emptyState('shield', 'Записей о дипломатии нет', 'Союзы, войны и перемирия семьи появятся здесь.', { cls: 'bento-card md:col-span-2' }) : db.diplomacy.map(function(d, i) {
                         var st = DIP_STYLE[String(d.badge || '').toUpperCase()] || 'bg-white text-black';
                         var emblem = okImg(d.image) && d.image.indexOf('placehold.co') === -1
                             ? '<img src="' + escHtml(imgSrc(d.image)) + '" referrerpolicy="no-referrer" alt="" class="w-12 h-12 rounded-xl object-cover border border-white/15 shrink-0">'
@@ -2403,14 +2481,14 @@
 
                 var flEl = document.getElementById('fleet-grid');
                 if (flEl) {
-                    flEl.innerHTML = db.fleet.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500 md:col-span-3">В автопарке пока пусто.</div>' : db.fleet.map(function(f, i) {
+                    flEl.innerHTML = db.fleet.length === 0 ? emptyState('car', 'В автопарке пока пусто', 'Когда в автопарк добавят транспорт, он появится здесь.', { cls: 'bento-card md:col-span-3' }) : db.fleet.map(function(f, i) {
                         return '<div class="bento-card overflow-hidden flex flex-col">' + (okImg(f.image) ? '<img src="' + escHtml(imgSrc(f.image)) + '" referrerpolicy="no-referrer" loading="lazy" alt="" class="w-full h-40 object-cover border-b border-[#23232d]">' : '') + '<div class="p-5 space-y-2"><div class="flex flex-wrap items-center gap-1.5"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(f.badge) + '</span>' + (f.meta ? '<span class="px-2.5 py-1 rounded-md bg-[#181822] border border-[#2c2c3a] text-zinc-200 text-[10px] font-heavy">' + escHtml(f.meta) + '</span>' : '') + '</div><h3 class="text-base font-heavy text-white pt-1">' + escHtml(f.title) + '</h3>' + (f.desc ? '<p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(f.desc) + '</p>' : '') + delBtn('fleet', i) + '</div></div>';
                     }).join('');
                 }
 
                 var estEl = document.getElementById('estates-grid');
                 if (estEl) {
-                    estEl.innerHTML = db.estates.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500 md:col-span-2">Недвижимость пока не добавлена.</div>' : db.estates.map(function(es, i) {
+                    estEl.innerHTML = db.estates.length === 0 ? emptyState('building', 'Недвижимость не добавлена', 'Дома и объекты семьи появятся здесь после добавления.', { cls: 'bento-card md:col-span-2' }) : db.estates.map(function(es, i) {
                         return '<div class="bento-card overflow-hidden flex flex-col">' + (okImg(es.image) ? '<img src="' + escHtml(imgSrc(es.image)) + '" referrerpolicy="no-referrer" loading="lazy" alt="" class="w-full h-48 object-cover border-b border-[#23232d]">' : '') + '<div class="p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(es.badge) + '</span><h3 class="text-lg font-heavy text-white pt-1">' + escHtml(es.title) + '</h3>' + (es.meta ? '<div class="text-[11px] text-zinc-400">Адрес: <span class="text-white">' + escHtml(es.meta) + '</span></div>' : '') + (es.desc ? '<p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(es.desc) + '</p>' : '') + delBtn('estates', i) + '</div></div>';
                     }).join('');
                 }
@@ -2492,7 +2570,7 @@
                 var senTestCont = document.getElementById('senior-test-results-list');
                 if (senTestCont) {
                     var allSubs = db.testSubmissions || [];
-                    senTestCont.innerHTML = allSubs.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500">Пока ни один участник не сдавал тесты Академии.</div>' : allSubs.map(function(s) {
+                    senTestCont.innerHTML = allSubs.length === 0 ? emptyState('chart', 'Итогов тестов пока нет', 'Пока ни один участник не сдавал тесты Академии.', { cls: 'bento-card' }) : allSubs.map(function(s) {
                         var rows = s.details.map(function(d, idx) {
                             return '<div class="p-2.5 rounded-lg bg-[#0a0a0e] border border-[#22222c] flex items-center justify-between text-[11px]"><span>' + (idx + 1) + '. ' + d.qText + ' — <strong class="text-white">' + d.chosenText + '</strong></span><span class="px-2 py-0.5 rounded text-[9px] font-heavy ' + (d.isCorrect ? 'bg-white text-black' : 'bg-red-500/20 text-red-300') + '">' + (d.isCorrect ? 'ВЕРНО' : 'ОШИБКА') + '</span></div>';
                         }).join('');
@@ -2706,7 +2784,7 @@
                 var box = document.getElementById('promo-req-list');
                 if (!box) return;
                 var list = (db.promoRequirements || []).filter(function(r) { return r.rank === 'all' || r.rank === currentPromoTarget; });
-                if (!list.length) { box.innerHTML = '<div class="text-xs text-zinc-500">Для этого ранга требования не заданы.</div>'; return; }
+                if (!list.length) { box.innerHTML = emptyState('rules', 'Требования не заданы', 'Для этого ранга требования пока не добавлены.', { compact: true }); return; }
                 box.innerHTML = list.map(function(r) {
                     var on = promoChecked[r.text] ? ' checked' : '';
                     return '<div onclick="togglePromoReq(this)" data-label="' + escHtml(r.text) + '" class="custom-check-card' + on + '">' +
@@ -3042,7 +3120,7 @@
 
                 var rbPendEl = document.getElementById('admin-rollbacks-pending');
                 if (rbPendEl) {
-                    rbPendEl.innerHTML = pendRb.length === 0 ? '<div class="text-xs text-zinc-500">Нет видео на проверке.</div>' : pendRb.map(function(r) {
+                    rbPendEl.innerHTML = pendRb.length === 0 ? emptyState('video', 'Нет видео на проверке', 'Новые откаты и видео для аттестации появятся здесь.', { compact: true }) : pendRb.map(function(r) {
                         return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
                             '<div class="flex items-center gap-3 min-w-0">' +
                                 '<img src="' + escHtml(r.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-11 h-11 rounded-full object-cover border border-white/20 shrink-0">' +
@@ -3062,7 +3140,7 @@
                 var rbDoneEl = document.getElementById('admin-rollbacks-done');
                 if (rbDoneEl) {
                     var doneRb = (db.rollbacks || []).filter(function(r) { return r.status !== 'PENDING'; }).slice(0, 30);
-                    rbDoneEl.innerHTML = doneRb.length === 0 ? '<div class="text-xs text-zinc-500">Пока пусто.</div>' : doneRb.map(function(r) {
+                    rbDoneEl.innerHTML = doneRb.length === 0 ? emptyState('check', 'Пока пусто', 'Здесь будут храниться уже рассмотренные заявки.', { compact: true }) : doneRb.map(function(r) {
                         return '<div class="p-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] flex flex-wrap items-center justify-between gap-3 text-xs">' +
                             '<div class="min-w-0"><span class="font-heavy text-white">' + escHtml(r.nick) + '</span> <span class="text-zinc-400">· ' + escHtml(r.kind) + (r.decidedBy ? ' · решил ' + escHtml(r.decidedBy) : '') + '</span>' + linkButtons(r.link) + '</div>' +
                             '<div class="flex items-center gap-2">' + statusBadge(r.status) + '<button onclick="deleteRollback(' + r.id + ')" class="px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 text-[10px] font-heavy">Удалить</button></div>' +
@@ -3078,7 +3156,7 @@
 
                 var pubVacEl = document.getElementById('public-vacations-list');
                 if (pubVacEl) {
-                    pubVacEl.innerHTML = db.vacations.length === 0 ? '<div class="text-xs text-zinc-500">Заявок на отпуск пока нет.</div>' : db.vacations.map(function(v) {
+                    pubVacEl.innerHTML = db.vacations.length === 0 ? emptyState('sun', 'Заявок на отпуск нет', 'Когда участник уйдёт в отпуск, это отобразится здесь.', { compact: true }) : db.vacations.map(function(v) {
                         var sDate = normalizeAnyDateString(v.startDate);
                         var eDate = normalizeAnyDateString(v.endDate);
                         var dCount = v.daysCount || calcVacationDays(sDate, eDate);
@@ -3110,7 +3188,7 @@
 
                 var pendVacEl = document.getElementById('admin-vacations-pending');
                 if (pendVacEl) {
-                    pendVacEl.innerHTML = pendVacs.length === 0 ? '<div class="text-xs text-zinc-500">Нет заявок на рассмотрении.</div>' : pendVacs.map(function(v) {
+                    pendVacEl.innerHTML = pendVacs.length === 0 ? emptyState('calendar', 'Нет заявок на рассмотрении', 'Новые заявки на отпуск появятся здесь.', { compact: true }) : pendVacs.map(function(v) {
                         var sDate = normalizeAnyDateString(v.startDate);
                         var eDate = normalizeAnyDateString(v.endDate);
                         var dCount = v.daysCount || calcVacationDays(sDate, eDate);
@@ -3156,7 +3234,7 @@
 
                 var actVacEl = document.getElementById('admin-vacations-active');
                 if (actVacEl) {
-                    actVacEl.innerHTML = actVacs.length === 0 ? '<div class="text-xs text-zinc-500">В данный момент никто не находится в отпуске.</div>' : actVacs.map(function(v) {
+                    actVacEl.innerHTML = actVacs.length === 0 ? emptyState('sun', 'Сейчас никто не в отпуске', 'Участники, ушедшие в отпуск, будут показаны здесь.', { compact: true }) : actVacs.map(function(v) {
                         var sDate = normalizeAnyDateString(v.startDate);
                         var eDate = normalizeAnyDateString(v.endDate);
                         var dCount = v.daysCount || calcVacationDays(sDate, eDate);
@@ -3180,7 +3258,7 @@
                 var rostEl = document.getElementById('admin-roster-list');
                 if (rostEl) {
                     var rankChoices = ['1. Контракт', '2. Академ', '3. Мейн', 'Старший состав', 'Зам. Лидера', 'Лидер'];
-                    rostEl.innerHTML = db.roster.length === 0 ? '<div class="bento-card p-6 text-center text-xs text-zinc-500">Список участников пуст.</div>' : db.roster.map(function(m) {
+                    rostEl.innerHTML = db.roster.length === 0 ? emptyState('users', 'Состав пуст', 'Добавьте участников или примите заявки гостей.', { cls: 'bento-card' }) : db.roster.map(function(m) {
                         var rankButtons = rankChoices.map(function(rName) {
                             var isCurrent = (m.rank === rName) || (m.rank && m.rank.indexOf(rName) !== -1);
                             var btnStyle = isCurrent
@@ -3214,7 +3292,7 @@
                 var rostPendingList = document.getElementById('roster-pending-apps-list');
                 if (rostPendingList && rostPendingWrap) {
                     if (pendApps.length === 0) {
-                        rostPendingList.innerHTML = '<div class="text-xs text-zinc-500">Новых заявок от гостей сейчас нет.</div>';
+                        rostPendingList.innerHTML = emptyState('userplus', 'Новых заявок от гостей нет', 'Заявки гостей на вступление появятся здесь.', { compact: true });
                     } else {
                         rostPendingList.innerHTML = pendApps.map(function(a) {
                             return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
@@ -3240,7 +3318,7 @@
 
                 var appEl = document.getElementById('admin-applications-list');
                 if (appEl) {
-                    appEl.innerHTML = pendApps.length === 0 ? '<div class="text-xs text-zinc-500">Новых заявок в семью нет.</div>' : pendApps.map(function(a) {
+                    appEl.innerHTML = pendApps.length === 0 ? emptyState('userplus', 'Новых заявок в семью нет', 'Когда гость подаст заявку, она появится здесь.', { compact: true }) : pendApps.map(function(a) {
                         return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
                             '<div class="flex items-center gap-3">' +
                                 '<img src="' + (a.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-11 h-11 rounded-full object-cover border border-white/20">' +
@@ -3263,7 +3341,7 @@
 
                 var prEl = document.getElementById('admin-promo-reports-list');
                 if (prEl) {
-                    prEl.innerHTML = pendPromos.length === 0 ? '<div class="text-xs text-zinc-500">Новых рапортов на повышение нет.</div>' : pendPromos.map(function(p) {
+                    prEl.innerHTML = pendPromos.length === 0 ? emptyState('promo', 'Новых рапортов нет', 'Рапорты на повышение появятся здесь.', { compact: true }) : pendPromos.map(function(p) {
                         return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
                             '<div class="flex items-center gap-3">' +
                                 '<img src="' + (p.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-11 h-11 rounded-full object-cover border border-white/20">' +
@@ -3288,7 +3366,7 @@
 
                 var payEl = document.getElementById('admin-payout-reports-list');
                 if (payEl) {
-                    payEl.innerHTML = pendPays.length === 0 ? '<div class="text-xs text-zinc-500">Заявок на выплату премии нет.</div>' : pendPays.map(function(py) {
+                    payEl.innerHTML = pendPays.length === 0 ? emptyState('banknote', 'Заявок на премию нет', 'Заявки на выплату премии появятся здесь.', { compact: true }) : pendPays.map(function(py) {
                         return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">' +
                             '<div class="flex items-center gap-3">' +
                                 '<img src="' + (py.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-11 h-11 rounded-full object-cover border border-white/20">' +
@@ -3314,7 +3392,7 @@
                     var logs = db.logs || [];
                     if (currentLogFilter !== 'ALL') logs = logs.filter(function(l) { return l.type === currentLogFilter; });
                     var logTypeRu = { 'AUTH': 'ВХОД', 'RANK': 'РАНГ / ОТПУСК', 'TEST': 'ТЕСТЫ' };
-                    logEl.innerHTML = logs.map(function(l) {
+                    logEl.innerHTML = logs.length === 0 ? emptyState('file', 'Логов пока нет', 'Действия участников и Старшего состава будут записываться сюда.', { cls: 'bento-card' }) : logs.map(function(l) {
                         return '<div class="bento-card p-4 flex items-center justify-between text-xs"><span class="px-2 py-0.5 rounded bg-white text-black text-[9px] font-heavy">' + (logTypeRu[l.type] || 'СИСТЕМА') + '</span><span><strong>' + l.actor + ':</strong> ' + l.action + '</span><span class="text-zinc-500 text-[10px]">' + l.time + '</span></div>';
                     }).join('');
                 }
@@ -3601,7 +3679,7 @@
                 var mine = document.getElementById('my-rollbacks-list');
                 if (mine) {
                     var my = (db.rollbacks || []).filter(function(r) { return String(r.tg || '').toLowerCase() === String(db.currentUser.tg || '').toLowerCase(); });
-                    mine.innerHTML = my.length === 0 ? '<div class="text-xs text-zinc-500">Вы ещё ничего не отправляли.</div>' : my.map(function(r) {
+                    mine.innerHTML = my.length === 0 ? emptyState('video', 'Вы ещё ничего не отправляли', 'Ваши откаты и видео появятся здесь после отправки.', { compact: true }) : my.map(function(r) {
                         return '<div class="p-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] text-xs"><div class="flex items-center justify-between gap-2"><div class="font-heavy text-white">' + escHtml(r.kind) + (r.title && r.title !== r.kind ? ' · ' + escHtml(r.title) : '') + '</div>' + statusBadge(r.status) + '</div>' +
                             (r.comment ? '<div class="text-[11px] text-zinc-400 mt-1">' + escHtml(r.comment) + '</div>' : '') + linkButtons(r.link) + '</div>';
                     }).join('');
