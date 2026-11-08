@@ -389,8 +389,8 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Игровой Никнейм</label>
-                        <input id="auth-nick-input" type="text" placeholder="Vortex_Drughill" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
+                        <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Имя и Фамилия (по-русски)</label>
+                        <input id="auth-nick-input" type="text" placeholder="Иван Петров" autocomplete="name" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
                     </div>
                     <div>
                         <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Ваш Static ID</label>
@@ -710,7 +710,7 @@
                             </div>
                         </div>
                         <div class="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
-                            <button onclick="openEditProfileModal()" class="px-4 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Изменить Ник / Static ID</button>
+                            <button onclick="openEditProfileModal()" class="px-4 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Изменить Имя и Фамилию / Static ID</button>
                             <button onclick="copyUserStaticId()" class="px-4 py-2.5 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c3a] text-xs font-heavy transition-all">Скопировать Static ID</button>
                         </div>
                     </div>
@@ -938,7 +938,7 @@
                                     <div class="text-[10px] text-zinc-400 mt-1">Данные из вашего профиля Telegram и игры</div>
                                 </div>
                             </div>
-                            <button type="button" onclick="openEditProfileModal()" class="px-3.5 py-2 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c38] text-[10px] font-heavy text-zinc-300 transition-all self-start sm:self-center">Изменить Ник / Static</button>
+                            <button type="button" onclick="openEditProfileModal()" class="px-3.5 py-2 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c38] text-[10px] font-heavy text-zinc-300 transition-all self-start sm:self-center">Изменить Имя / Static</button>
                         </div>
                         <div id="join-wait" class="hidden p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed"></div>
                     </div>
@@ -1029,7 +1029,7 @@
                                     <div class="text-[10px] text-zinc-400 mt-1">Текущий ранг: <span id="promo-preview-rank" class="text-white">2 ранг — Академ</span></div>
                                 </div>
                             </div>
-                            <button type="button" onclick="openEditProfileModal()" class="px-3.5 py-2 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c38] text-[10px] font-heavy text-zinc-300 transition-all self-start sm:self-center">Изменить Ник / Static</button>
+                            <button type="button" onclick="openEditProfileModal()" class="px-3.5 py-2 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c38] text-[10px] font-heavy text-zinc-300 transition-all self-start sm:self-center">Изменить Имя / Static</button>
                         </div>
 
                         <div>
@@ -1318,8 +1318,8 @@
             </div>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Игровой Никнейм</label>
-                    <input id="new-mem-nick" type="text" placeholder="Shadow_Drughill" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Имя и Фамилия (по-русски)</label>
+                    <input id="new-mem-nick" type="text" placeholder="Иван Петров" maxlength="42" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Static ID</label>
@@ -1447,8 +1447,8 @@
             </div>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваш игровой Никнейм</label>
-                    <input id="edit-prof-nick" type="text" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваши Имя и Фамилия (по-русски)</label>
+                    <input id="edit-prof-nick" type="text" placeholder="Иван Петров" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваш Static ID</label>
@@ -1825,6 +1825,10 @@
                 var nEl = document.getElementById('edit-prof-nick');
                 var sEl = document.getElementById('edit-prof-static');
                 var nick = nEl && nEl.value.trim() ? nEl.value.trim() : db.currentUser.nick;
+                if (nick !== db.currentUser.nick) {
+                    nick = normalizeFullName(nick);
+                    if (!nick) { showToast(FULLNAME_HINT); return; }
+                }
                 var stat = sEl && sEl.value.trim() ? sEl.value.trim() : db.currentUser.staticId;
                 api('POST', '/api/profile', { nick: nick, staticId: stat }).then(function(res) {
                     if (res.state) applyServerState(res, false);
@@ -2214,12 +2218,25 @@
                 showToast(ok ? 'Награда отмечена как выданная' : 'Заявка отклонена');
             };
 
+            // «Имя Фамилия» только кириллицей; возвращает аккуратную строку или ''
+            function normalizeFullName(s) {
+                s = String(s || '').replace(/\s+/g, ' ').trim();
+                var w = '[А-ЯЁа-яё]{2,20}(?:-[А-ЯЁа-яё]{2,20})?';
+                if (!new RegExp('^' + w + ' ' + w + '$').test(s)) return '';
+                return s.split(' ').map(function(x) {
+                    return x.split('-').map(function(y) { return y.charAt(0).toUpperCase() + y.slice(1).toLowerCase(); }).join('-');
+                }).join(' ');
+            }
+            var FULLNAME_HINT = 'Укажите Имя и Фамилию по-русски через пробел (например: Иван Петров)';
+
             window.startTelegramAuth = function() {
                 var nickInput = document.getElementById('auth-nick-input');
                 var staticInput = document.getElementById('auth-static-input');
                 var nick = nickInput ? nickInput.value.trim() : '';
                 var stat = staticInput ? staticInput.value.trim() : '';
-                if (nick.length < 2) { showToast('Укажите игровой никнейм'); return; }
+                nick = normalizeFullName(nick);
+                if (!nick) { showToast(FULLNAME_HINT); return; }
+                if (nickInput) nickInput.value = nick;
                 if (!/\d/.test(stat)) { showToast('Укажите Static ID (цифры)'); return; }
                 fetch('/api/auth/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick: nick, staticId: stat }) })
                     .then(function(r) { return r.json(); })
@@ -2412,6 +2429,15 @@
                     if (role === 'SENIOR') senBtns[i].classList.remove('hidden');
                     else senBtns[i].classList.add('hidden');
                 }
+            }
+
+            function isLeaderLevel() {
+                var r = db.currentUser && db.currentUser.rankTitle;
+                return r === 'Лидер' || r === 'Зам. Лидера';
+            }
+            function isHighRank(r) { return r === 'Старший состав' || r === 'Зам. Лидера' || r === 'Лидер'; }
+            function isSelfMember(m) {
+                return String(m.tg || '').toLowerCase() === String(db.currentUser.tg || '').toLowerCase();
             }
 
             function canManageContent() {
@@ -3259,7 +3285,11 @@
                 if (rostEl) {
                     var rankChoices = ['1. Контракт', '2. Академ', '3. Мейн', 'Старший состав', 'Зам. Лидера', 'Лидер'];
                     rostEl.innerHTML = db.roster.length === 0 ? emptyState('users', 'Состав пуст', 'Добавьте участников или примите заявки гостей.', { cls: 'bento-card' }) : db.roster.map(function(m) {
-                        var rankButtons = rankChoices.map(function(rName) {
+                        var self = isSelfMember(m);
+                        // Старший состав не трогает ранги Старшего состава / замов / Лидера; себе ранг менять нельзя никому
+                        var locked = self || (isHighRank(m.rank) && !isLeaderLevel());
+                        var visibleChoices = rankChoices.filter(function(r) { return isLeaderLevel() || !isHighRank(r); });
+                        var rankButtons = locked ? '<span class="px-3 py-1.5 rounded-xl border border-[#282836] bg-[#13131b] text-zinc-500 text-[10px] font-heavy">' + (self ? 'Свой ранг менять нельзя' : 'Ранг выдаёт Лидер / Зам. Лидера') + '</span>' : visibleChoices.map(function(rName) {
                             var isCurrent = (m.rank === rName) || (m.rank && m.rank.indexOf(rName) !== -1);
                             var btnStyle = isCurrent
                                 ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.25)]'
@@ -3279,10 +3309,12 @@
                                     '<div class="text-[11px] text-zinc-400 mt-1">Текущий ранг: <span class="text-white font-heavy">' + m.rank + '</span></div>' +
                                 '</div>' +
                             '</div>' +
-                            '<div class="flex flex-wrap items-center gap-1.5">' +
-                                rankButtons +
-                                '<button type="button" onclick="kickFamilyMember(' + m.id + ')" class="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-[10px] font-heavy transition-all ml-1">Исключить</button>' +
+                            '<div class="flex flex-col items-start gap-2">' +
+                                '<div class="flex flex-wrap items-center gap-1.5">' + rankButtons + '</div>' +
+                                '<div class="flex flex-wrap items-center gap-1.5">' +
+                                (locked ? '' : '<button type="button" onclick="kickFamilyMember(' + m.id + ')" class="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-[10px] font-heavy transition-all">Исключить</button>') +
                                 '<button type="button" onclick="openSiteProfile(' + m.id + ')" class="px-3 py-1.5 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c3a] text-white text-[10px] font-heavy transition-all">Профиль на сайте</button>' +
+                                '</div>' +
                             '</div>' +
                         '</div>';
                     }).join('');
@@ -3428,6 +3460,11 @@
                 }
                 for (var i = 0; i < db.roster.length; i++) {
                     if (db.roster[i].id === memberId) {
+                        if (isSelfMember(db.roster[i])) { showToast('Свой ранг менять нельзя'); return; }
+                        if ((isHighRank(db.roster[i].rank) || isHighRank(newRank)) && !isLeaderLevel()) {
+                            showToast('Ранги Старшего состава, замов и Лидера выдаёт только Лидер или Зам. Лидера');
+                            return;
+                        }
                         db.roster[i].rank = newRank;
                         if (db.roster[i].nick === db.currentUser.nick) {
                             db.currentUser.rankTitle = newRank;
@@ -3510,6 +3547,8 @@
                 if (db.currentUser.role !== 'SENIOR') return;
                 for (var i = 0; i < db.roster.length; i++) {
                     if (db.roster[i].id === memberId) {
+                        if (isSelfMember(db.roster[i])) { showToast('Себя исключить нельзя'); return; }
+                        if (isHighRank(db.roster[i].rank) && !isLeaderLevel()) { showToast('Старший состав и выше исключает только Лидер или Зам. Лидера'); return; }
                         var removedNick = db.roster[i].nick;
                         db.roster.splice(i, 1);
                         addLog('RANK', 'Исключён из семьи: ' + removedNick);
@@ -3524,6 +3563,11 @@
             window.openAddMemberModal = function() {
                 if (db.currentUser.role !== 'SENIOR') return;
                 var m = document.getElementById('modal-add-member');
+                var btns = document.querySelectorAll('.new-rk-btn');
+                for (var i = 0; i < btns.length; i++) {
+                    btns[i].classList.toggle('hidden', !isLeaderLevel() && isHighRank(btns[i].getAttribute('data-rk')));
+                }
+                if (!isLeaderLevel() && isHighRank(selectedNewMemRank)) selectNewMemRank('1. Контракт');
                 if (m) m.classList.remove('hidden');
             };
 
@@ -3543,11 +3587,13 @@
                 var nEl = document.getElementById('new-mem-nick');
                 var sEl = document.getElementById('new-mem-static');
                 var tEl = document.getElementById('new-mem-tg');
-                var nick = nEl && nEl.value.trim() ? nEl.value.trim() : 'Fighter_Drughill';
+                var nick = normalizeFullName(nEl ? nEl.value : '');
+                if (!nick) { showToast(FULLNAME_HINT); return; }
                 var stat = sEl && sEl.value.trim() ? sEl.value.trim() : '#19500';
                 if (stat.indexOf('#') !== 0) stat = '#' + stat;
                 var tg = tEl && tEl.value.trim() ? tEl.value.trim() : '@drughill_member';
                 if (tg.indexOf('@') !== 0) tg = '@' + tg;
+                if (isHighRank(selectedNewMemRank) && !isLeaderLevel()) { showToast('Старший состав, замов и Лидера назначает только Лидер или Зам. Лидера'); return; }
 
                 var initials = nick.substring(0, 2).toUpperCase();
                 db.roster.push({

@@ -104,6 +104,20 @@ function cleanStr(s, max) {
   s = s.replace(/</g, '‹').replace(/>/g, '›').replace(/"/g, '”').replace(/'/g, '’').replace(/`/g, '’').replace(/\\/g, '/');
   return s.trim().slice(0, max || 2000);
 }
+// «Имя Фамилия» только кириллицей (допускается дефис: Анна-Мария Иванова-Петрова)
+const RU_WORD = '[А-ЯЁа-яё]{2,20}(?:-[А-ЯЁа-яё]{2,20})?';
+const RU_FULLNAME_RE = new RegExp('^' + RU_WORD + '\\s+' + RU_WORD + '$');
+function capWord(w) {
+  return w.split('-').map(x => x.charAt(0).toUpperCase() + x.slice(1).toLowerCase()).join('-');
+}
+// возвращает аккуратно оформленное «Имя Фамилия» или '' если формат неверный
+function normalizeFullName(s) {
+  s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+  if (!RU_FULLNAME_RE.test(s)) return '';
+  return s.split(' ').map(capWord).join(' ');
+}
+const FULLNAME_ERR = 'Укажите Имя и Фамилию по-русски через пробел (например: Иван Петров)';
+
 function cleanUrl(s) {
   s = String(s == null ? '' : s).trim();
   return /^(https?:\/\/|\/avatars\/)[^\s"'<>`\\]{1,1000}$/.test(s) ? s : PLACEHOLDER;
@@ -277,6 +291,8 @@ const SUBS = {
   promoClaims: { min: LEVELS.GUEST, fields: [], del: LEVELS.LEADER, decide: LEVELS.SENIOR }
 };
 function rankIdx(rank) { return PROMO_RANKS.indexOf(rank); }
+// ранги, которые выдаёт и снимает только Лидер / Зам. Лидера
+function isHighRank(rank) { return rank === 'Старший состав' || LEADER_RANKS.indexOf(rank) !== -1; }
 
 function buildSubmission(coll, me, rec, W) {
   const cfg = SUBS[coll];
@@ -405,7 +421,7 @@ function applyPatch(me, patch, events) {
       const idx = W.roster.findIndex(r => r.id === (rec && rec.id));
       if (idx === -1) {
         if (W.roster.some(r => sameTg(r.tg, clean.tg))) return;
-        if (rankLevel(clean.rank) === LEVELS.LEADER) need(me, LEVELS.LEADER, 'Лидера и замов назначает только Лидер или Зам. Лидера');
+        if (isHighRank(clean.rank)) need(me, LEVELS.LEADER, 'Старший состав, замов и Лидера назначает только Лидер или Зам. Лидера');
         const taken = new Set(W.roster.map(r => r.id));
         clean.id = nextId(taken);
         clean.staticId = clean.staticId || '#0';
@@ -413,8 +429,11 @@ function applyPatch(me, patch, events) {
         W.roster.push(clean);
       } else {
         const old = W.roster[idx];
-        const touchesLeader = rankLevel(old.rank) === LEVELS.LEADER || rankLevel(clean.rank) === LEVELS.LEADER;
-        if (touchesLeader && clean.rank !== old.rank) need(me, LEVELS.LEADER, 'Ранги Лидера и замов меняет только Лидер или Зам. Лидера');
+        clean.tg = old.tg; // Telegram у существующего участника менять нельзя
+        if (clean.rank !== old.rank) {
+          if (sameTg(old.tg, me.tg)) throw new HttpError(403, 'Свой ранг менять нельзя');
+          if (isHighRank(old.rank) || isHighRank(clean.rank)) need(me, LEVELS.LEADER, 'Ранги Старшего состава, замов и Лидера меняет только Лидер или Зам. Лидера');
+        }
         if (sameTg(old.tg, OWNER_TG)) clean.rank = 'Лидер';
         W.roster[idx] = Object.assign({}, old, clean, { id: old.id });
         if (clean.rank !== old.rank) events.push({ type: 'rank', coll: 'roster', item: W.roster[idx], from: old.rank, to: W.roster[idx].rank, by: me });
@@ -426,7 +445,8 @@ function applyPatch(me, patch, events) {
       need(me, LEVELS.SENIOR, 'Исключать может только Старший состав');
       const old = W.roster[idx];
       if (sameTg(old.tg, OWNER_TG)) throw new HttpError(403, 'Владельца семьи исключить нельзя');
-      if (rankLevel(old.rank) === LEVELS.LEADER) need(me, LEVELS.LEADER, 'Лидера и замов исключает только Лидер или Зам. Лидера');
+      if (sameTg(old.tg, me.tg)) throw new HttpError(403, 'Себя исключить нельзя');
+      if (isHighRank(old.rank)) need(me, LEVELS.LEADER, 'Старший состав, замов и Лидера исключает только Лидер или Зам. Лидера');
       W.roster.splice(idx, 1);
       events.push({ type: 'kick', coll: 'roster', item: old, from: old.rank, by: me });
     });
@@ -789,8 +809,10 @@ async function handleApi(req, res, url) {
     if (Object.keys(logins).length > 500) throw new HttpError(429, 'Слишком много попыток входа, подождите');
     const code = 'auth_' + crypto.randomBytes(8).toString('hex');
     let sid = cleanStr(b.staticId, 12).replace(/[^\d]/g, '');
-    if (cleanStr(b.nick, 32).length < 2 || !sid) throw new HttpError(400, 'Укажите игровой ник и Static ID');
-    logins[code] = { created: Date.now(), status: 'pending', nick: cleanStr(b.nick, 32), staticId: sid ? '#' + sid : '' };
+    const fullName = normalizeFullName(b.nick);
+    if (!fullName) throw new HttpError(400, FULLNAME_ERR);
+    if (!sid) throw new HttpError(400, 'Укажите Static ID (цифры)');
+    logins[code] = { created: Date.now(), status: 'pending', nick: fullName, staticId: '#' + sid };
     return json(res, 200, { code: code, link: 'https://t.me/' + BOT_USERNAME + '?start=' + code });
   }
   if (p === '/api/auth/status' && req.method === 'GET') {
@@ -834,9 +856,15 @@ async function handleApi(req, res, url) {
 
   if (p === '/api/profile' && req.method === 'POST') {
     const b = await readBody(req, 4096);
-    const nick = cleanStr(b.nick, 32);
+    let nick = cleanStr(b.nick, 32);
     const sid = cleanStr(b.staticId, 12).replace(/[^\d]/g, '');
     const u = users[me.uid];
+    // имя менять можно только на корректное «Имя Фамилия»; старый ник без изменений пропускаем
+    if (nick && nick !== me.nick) {
+      const fullName = normalizeFullName(nick);
+      if (!fullName) throw new HttpError(400, FULLNAME_ERR);
+      nick = fullName;
+    }
     if (nick) u.nick = nick;
     if (sid) u.staticId = '#' + sid;
     markDirty('users.json');
