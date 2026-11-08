@@ -2447,7 +2447,7 @@
 
             function delBtn(sec, i) {
                 if (!canManageContent()) return '';
-                return '<div class="flex justify-end pt-2"><button type="button" onclick="deleteContentEntry(\'' + sec + '\', ' + i + ')" class="px-3.5 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 text-[10px] font-heavy transition-all">Удалить запись</button></div>';
+                return '<div class="flex justify-end gap-2 pt-2"><button type="button" onclick="editContentEntry(\'' + sec + '\', ' + i + ')" class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 text-[10px] font-heavy transition-all">Изменить</button><button type="button" onclick="deleteContentEntry(\'' + sec + '\', ' + i + ')" class="px-3.5 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 text-[10px] font-heavy transition-all">Удалить запись</button></div>';
             }
 
             window.deleteContentEntry = function(sec, i) {
@@ -3880,15 +3880,28 @@
                 } else { box.innerHTML = ''; box.classList.add('hidden'); }
             };
 
-            window.openAddContentModal = function(section) {
-                if (db.currentUser.role !== 'SENIOR') return;
+            window.editContentEntry = function(sec, i) {
+                if (!db[sec] || !db[sec][i]) return;
+                window.openAddContentModal(sec, i);
+            };
+
+            window.openAddContentModal = function(section, editIdx) {
+                var editing = typeof editIdx === 'number' && db[section] && db[section][editIdx];
+                if (db.currentUser.role !== 'SENIOR' && !(editing && canManageContent())) return;
                 var cfg = CMS_CONFIG[section];
                 if (!cfg) return;
-                cmsCur = { sec: section, values: {} };
+                cmsCur = { sec: section, values: {}, idx: editing ? editIdx : null };
                 cfg.fields.forEach(function(f) { if (f.type === 'chips') cmsCur.values[f.key] = f.def || ''; });
-                document.getElementById('modal-add-content-title').textContent = cfg.title;
-                document.getElementById('modal-add-content-sub').textContent = cfg.sub;
-                document.getElementById('cms-submit').textContent = cfg.cta;
+                var src = editing ? db[section][editIdx] : null;
+                var prefill = {};
+                if (src) {
+                    prefill = { title: src.title || '', desc: src.desc || '', meta: src.meta || '', image: /placehold\.co/.test(src.image || '') ? '' : (src.image || ''), badge: src.badge || '' };
+                    if (section === 'rules') { var mm = /^(\S+)\s+ПРАВИЛА$/.exec(src.badge || ''); prefill.num = mm ? mm[1] : ''; }
+                    cfg.fields.forEach(function(f) { if (f.type === 'chips' && prefill[f.key] !== undefined) cmsCur.values[f.key] = prefill[f.key]; });
+                }
+                document.getElementById('modal-add-content-title').textContent = editing ? 'Изменить запись' : cfg.title;
+                document.getElementById('modal-add-content-sub').textContent = editing ? 'Правки увидят все участники семьи сразу после сохранения' : cfg.sub;
+                document.getElementById('cms-submit').textContent = editing ? 'Сохранить изменения' : cfg.cta;
                 document.getElementById('cms-form-body').innerHTML = cfg.fields.map(function(f) {
                     var label = '<label class="block text-[10px] text-zinc-400 uppercase mb-1.5">' + escHtml(f.label) + (f.required ? ' *' : '') + '</label>';
                     var ctl = '';
@@ -3898,6 +3911,12 @@
                     else ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="' + (f.max || 100) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + '">';
                     return '<div>' + label + ctl + '</div>';
                 }).join('');
+                if (src) cfg.fields.forEach(function(f) {
+                    if (f.type === 'chips') return;
+                    var el = document.getElementById('cms-f-' + f.key);
+                    if (el) el.value = prefill[f.key] || '';
+                    if (f.type === 'image') cmsPreview(prefill[f.key] || '');
+                });
                 var m = document.getElementById('modal-add-content');
                 if (m) m.classList.remove('hidden');
                 var first = document.querySelector('#cms-form-body input[type=text], #cms-form-body textarea');
@@ -3922,21 +3941,22 @@
                         showToast('Заполните поле: ' + f.label);
                         return;
                     }
-                    if (f.type === 'image' && v && !/^https?:\/\/[^\s]{4,}$/.test(v)) { showToast('Ссылка на фото должна начинаться с https://'); return; }
+                    if (f.type === 'image' && v && v.indexOf('/avatars/') !== 0) { var nl = normLink(v); if (!nl) { showToast('Не похоже на ссылку на фото'); return; } v = nl; }
                     vals[f.key] = v;
                 }
-                var entry = { date: 'Сегодня', title: vals.title, desc: vals.desc || '' };
+                var isEdit = cmsCur.idx !== null && cmsCur.idx !== undefined && db[sec][cmsCur.idx];
+                var entry = { date: isEdit ? (db[sec][cmsCur.idx].date || 'Сегодня') : 'Сегодня', title: vals.title, desc: vals.desc || '' };
                 if (sec === 'rules') entry.badge = vals.num ? vals.num + ' ПРАВИЛА' : 'ПРАВИЛА';
                 else entry.badge = vals.badge || 'DRUGHILL';
                 if (vals.meta) entry.meta = vals.meta;
                 var ph = { news: 'https://placehold.co/800x420/121217/ffffff?text=DRUGHILL', fleet: 'https://placehold.co/600x360/121217/ffffff?text=АВТОПАРК', estates: 'https://placehold.co/800x450/14141c/ffffff?text=ОСОБНЯК' };
                 if (vals.image) entry.image = vals.image; else if (ph[sec]) entry.image = ph[sec];
-                db[sec].unshift(entry);
-                addLog('RANK', 'Опубликовано: ' + entry.title + ' (' + entry.badge + ')');
+                if (isEdit) db[sec][cmsCur.idx] = entry; else db[sec].unshift(entry);
+                addLog('RANK', (isEdit ? 'Изменено: ' : 'Опубликовано: ') + entry.title + ' (' + entry.badge + ')');
                 saveDb();
                 renderContentSections();
                 closeModal('modal-add-content');
-                showToast('Опубликовано!');
+                showToast(isEdit ? 'Изменения сохранены!' : 'Опубликовано!');
             };
 
             // ===== БАЗА ДАННЫХ (только Лидер / Зам. Лидера, только по нажатию кнопок) =====
