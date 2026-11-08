@@ -1085,7 +1085,7 @@
                                 <h3 class="text-base font-heavy text-white">Итоговая выплата</h3>
                                 <div class="p-6 rounded-2xl topo-bg border border-[#2c2c38] text-center space-y-2">
                                     <div class="text-xs text-zinc-400">СУММА К ВЫПЛАТЕ</div>
-                                    <div id="payout-total-sum" class="text-3xl font-heavy text-emerald-400">$0</div>
+                                    <div id="payout-total-sum" class="text-3xl font-heavy text-emerald-400">0 ₽</div>
                                 </div>
                             </div>
                             <button onclick="submitPayoutRequest()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Запросить премию</button>
@@ -2839,7 +2839,7 @@
                     var q = prev[it.id] != null ? prev[it.id] : '0';
                     var inId = 'qty-' + it.id;
                     return '<div class="p-4 rounded-xl bg-[#0b0b0f] border border-[#252530] space-y-3">' +
-                        '<div class="flex items-start justify-between gap-3 text-xs"><span class="text-zinc-400 leading-snug">' + escHtml(it.name) + '</span><span class="text-white font-heavy shrink-0">$' + Number(it.rate).toLocaleString('en-US') + '</span></div>' +
+                        '<div class="flex items-start justify-between gap-3 text-xs"><span class="text-zinc-400 leading-snug">' + escHtml(it.name) + '</span><span class="text-white font-heavy shrink-0">' + Number(it.rate).toLocaleString('ru-RU') + ' ₽</span></div>' +
                         '<div class="flex items-center justify-between gap-2 bg-[#14141c] border border-[#2d2d3a] rounded-xl p-1.5">' +
                             '<button type="button" onclick="stepPayoutQty(\'' + inId + '\', -1)" class="w-9 h-9 rounded-lg bg-[#1e1e2a] hover:bg-white hover:text-black text-white text-sm font-heavy transition-all">−</button>' +
                             '<input id="' + inId + '" type="text" inputmode="numeric" value="' + escHtml(q) + '" oninput="sanitizeNumericInput(this); recalcPayoutTotal()" class="w-16 text-center bg-transparent text-sm font-heavy text-white focus:outline-none">' +
@@ -2865,7 +2865,7 @@
                 var sum = 0;
                 collectPayoutLines().forEach(function(l) { sum += l.qty * l.rate; });
                 var sumEl = document.getElementById('payout-total-sum');
-                if (sumEl) sumEl.textContent = '$' + sum.toLocaleString('en-US');
+                if (sumEl) sumEl.textContent = sum.toLocaleString('ru-RU') + ' ₽';
                 return sum;
             };
 
@@ -3289,7 +3289,7 @@
                                     '<div class="flex items-center gap-2">' +
                                         '<span class="font-heavy text-white">' + py.nick + '</span>' +
                                         '<span class="text-zinc-300">' + (py.tg || '@drughill') + '</span>' +
-                                        '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-heavy">$' + py.total.toLocaleString('en-US') + '</span>' +
+                                        '<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-heavy">' + Number(py.total).toLocaleString('ru-RU') + ' ₽</span>' +
                                     '</div>' +
                                     '<div class="text-[10px] text-zinc-400 mt-1.5 leading-relaxed">' + payoutBreakdownHtml(py) + '</div>' +
                                 '</div>' +
@@ -3511,7 +3511,7 @@
                 for (var i = 0; i < db.payoutReports.length; i++) {
                     if (db.payoutReports[i].id === id) {
                         db.payoutReports[i].status = ok ? 'APPROVED' : 'REJECTED';
-                        addLog('RANK', (ok ? 'Одобрена премия $' : 'Отклонена премия $') + Number(db.payoutReports[i].total).toLocaleString('en-US') + ' для ' + db.payoutReports[i].nick);
+                        addLog('RANK', (ok ? 'Одобрена премия ' : 'Отклонена премия ') + Number(db.payoutReports[i].total).toLocaleString('ru-RU') + ' ₽ для ' + db.payoutReports[i].nick);
                         break;
                     }
                 }
