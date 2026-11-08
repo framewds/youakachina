@@ -2041,11 +2041,22 @@
             function startSession() {
                 takeSnap();
                 if (!apiToken) { renderAll(); return; }
-                api('GET', '/api/state?rev=0').then(function(res) {
-                    if (res._status === 401 || !res.state) { resetLocalSession(); renderAll(); return; }
-                    applyServerState(res, false);
-                    navigateTo(db.currentUser.role === 'GUEST' ? 'join-family' : 'home');
-                }).catch(function() { renderAll(); showToast('Нет связи с сервером'); });
+                var tries = 0;
+                (function attempt() {
+                    api('GET', '/api/state?rev=0').then(function(res) {
+                        if (res._status === 401) { resetLocalSession(); renderAll(); return; }
+                        if (!res.state) { retry(); return; }
+                        applyServerState(res, false);
+                        navigateTo(db.currentUser.role === 'GUEST' ? 'join-family' : 'home');
+                    }).catch(retry);
+                    // сервер перезапускается (деплой): сессию не сбрасываем, просто пробуем ещё раз
+                    function retry() {
+                        tries++;
+                        if (tries === 1) showToast('Сервер обновляется, подождите несколько секунд…');
+                        if (tries > 40) { renderAll(); return; }
+                        setTimeout(attempt, 3000);
+                    }
+                })();
             }
 
             // ===== Гостевой экран: заявка / игрок семьи / награда за промокод =====
@@ -2491,7 +2502,7 @@
                 var rulesEl = document.getElementById('rules-list');
                 if (rulesEl) {
                     rulesEl.innerHTML = db.rules.length === 0 ? emptyState('rules', 'Правил пока нет', 'Правила семьи появятся здесь после добавления.', { cls: 'bento-card col-span-full' }) : db.rules.map(function(r, i) {
-                        return '<div class="bento-card p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(r.badge) + '</span><h3 class="text-base font-heavy text-white pt-1">' + escHtml(r.title) + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(r.desc) + '</p>' + delBtn('rules', i) + '</div>';
+                        return '<div class="bento-card p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(r.badge) + '</span><h3 class="text-base font-heavy text-white pt-1">' + escHtml(r.title) + '</h3><p class="text-xs text-zinc-400 leading-relaxed whitespace-pre-line">' + escHtml(r.desc) + '</p>' + delBtn('rules', i) + '</div>';
                     }).join('');
                 }
 
@@ -3781,7 +3792,7 @@
                     fields: [
                         { key: 'num', label: 'Номер пункта', type: 'text', ph: 'Например: 1.2', max: 8 },
                         { key: 'title', label: 'Название правила', type: 'text', ph: 'Например: Запрет на слив информации', required: true, max: 90 },
-                        { key: 'desc', label: 'Что запрещено или обязательно', type: 'textarea', ph: 'Опишите правило и наказание за нарушение...', required: true, max: 600 }
+                        { key: 'desc', label: 'Что запрещено или обязательно', type: 'textarea', ph: 'Опишите правило и наказание. Enter: новая строка, пустая строка: новый абзац.', required: true, max: 1800, rows: 7 }
                     ]
                 },
                 diplomacy: {
@@ -3859,7 +3870,7 @@
                     var label = '<label class="block text-[10px] text-zinc-400 uppercase mb-1.5">' + escHtml(f.label) + (f.required ? ' *' : '') + '</label>';
                     var ctl = '';
                     if (f.type === 'chips') ctl = renderCmsChips(f);
-                    else if (f.type === 'textarea') ctl = '<textarea autocomplete="off" id="cms-f-' + f.key + '" rows="3" maxlength="' + (f.max || 500) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + ' resize-none"></textarea>';
+                    else if (f.type === 'textarea') ctl = '<textarea autocomplete="off" id="cms-f-' + f.key + '" rows="' + (f.rows || 3) + '" maxlength="' + (f.max || 500) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + ' resize-none"></textarea>';
                     else if (f.type === 'image') ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="1000" placeholder="https://..." oninput="cmsPreview(this.value)" class="' + cmsInputCls() + '"><div id="cms-img-prev" class="hidden mt-2"></div>';
                     else ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="' + (f.max || 100) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + '">';
                     return '<div>' + label + ctl + '</div>';

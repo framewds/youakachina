@@ -28,6 +28,28 @@ const DATA_DIR = process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH |
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const SEED_FILE = path.join(__dirname, 'seed', 'db.json');
 const SESSION_TTL = 30 * 24 * 3600 * 1000;
+// Подпись сессий: токен входа несёт данные пользователя и подписан секретом, поэтому после деплоя
+// (даже если файлы на сервере потерялись) человека не выкидывает с сайта. Секрет стабилен между деплоями:
+// берётся из SESSION_SECRET, иначе выводится из BOT_TOKEN.
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.createHash('sha256').update('drughill-session:' + (BOT_TOKEN || 'no-bot-token')).digest('hex');
+function b64u(buf) { return Buffer.from(buf).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function macOf(body) { return b64u(crypto.createHmac('sha256', SESSION_SECRET).update(body).digest()); }
+function signToken(u) {
+  const body = b64u(JSON.stringify({ uid: String(u.id), tg: u.tg, chatId: u.chatId || null, nick: u.nick, staticId: u.staticId, iat: Date.now() }));
+  return 's1.' + body + '.' + macOf('s1.' + body);
+}
+function verifyToken(token) {
+  const parts = String(token || '').split('.');
+  if (parts.length !== 3 || parts[0] !== 's1') return null;
+  const want = Buffer.from(macOf('s1.' + parts[1])), got = Buffer.from(parts[2]);
+  if (want.length !== got.length || !crypto.timingSafeEqual(want, got)) return null;
+  try {
+    const p = JSON.parse(Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+    if (!p || !p.uid || !p.tg || !(Date.now() - p.iat < SESSION_TTL)) return null;
+    return p;
+  } catch (e) { return null; }
+}
+function tokenId(token) { return crypto.createHash('sha256').update(String(token)).digest('hex').slice(0, 24); }
 const LOGIN_TTL = 10 * 60 * 1000;
 
 fs.mkdirSync(path.join(DATA_DIR, 'avatars'), { recursive: true });
@@ -114,6 +136,7 @@ function flush() {
 function cleanStr(s, max) {
   s = String(s == null ? '' : s).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
   s = s.replace(/</g, '‹').replace(/>/g, '›').replace(/"/g, '”').replace(/'/g, '’').replace(/`/g, '’').replace(/\\/g, '/');
+  s = s.replace(/\r\n?/g, '\n').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n');
   return s.trim().slice(0, max || 2000);
 }
 // «Имя Фамилия» только кириллицей (допускается дефис: Анна-Мария Иванова-Петрова)
@@ -700,7 +723,7 @@ async function finalizeLogin(code, from) {
   const entry = findRoster(state, handle);
   if (entry && av && entry.avatar !== av) { entry.avatar = av; state.rev += 1; markDirty('state.json'); }
   if (sameTg(handle, OWNER_TG)) { ensureOwner(state); markDirty('state.json'); }
-  const token = crypto.randomBytes(32).toString('hex');
+  const token = signToken(users[uid]);
   sessions[token] = { uid: uid, created: Date.now() };
   L.token = token;
   L.status = 'ok';
@@ -785,7 +808,15 @@ function json(res, code, obj) {
 function authMe(req) {
   const h = String(req.headers.authorization || '');
   const token = h.indexOf('Bearer ') === 0 ? h.slice(7) : '';
-  const s = token && sessions[token];
+  let s = token && sessions[token];
+  if (!s && token) {
+    const p = verifyToken(token);
+    if (p && (meta.revoked || []).indexOf(tokenId(token)) === -1) {
+      s = sessions[token] = { uid: p.uid, created: p.iat };
+      if (!users[p.uid]) users[p.uid] = { id: p.uid, tg: p.tg, chatId: p.chatId, nick: p.nick, staticId: p.staticId, avatar: null };
+      markDirty('users.json'); markDirty('sessions.json');
+    }
+  }
   if (!s || Date.now() - s.created > SESSION_TTL) return null;
   const me = resolveMe(s.uid);
   if (me) me.token = token;
@@ -840,7 +871,12 @@ async function handleApi(req, res, url) {
   const me = authMe(req);
   if (!me) throw new HttpError(401, 'Нужно войти');
 
-  if (p === '/api/logout' && req.method === 'POST') { delete sessions[me.token]; markDirty('sessions.json'); return json(res, 200, { ok: true }); }
+  if (p === '/api/logout' && req.method === 'POST') {
+      delete sessions[me.token];
+      meta.revoked = (meta.revoked || []).concat(tokenId(me.token)).slice(-500);
+      markDirty('sessions.json'); markDirty('meta.json');
+      return json(res, 200, { ok: true });
+    }
 
   if (p === '/api/state' && req.method === 'GET') {
     const rev = parseInt(url.searchParams.get('rev'), 10);
