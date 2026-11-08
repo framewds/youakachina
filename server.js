@@ -65,8 +65,8 @@ const SPEC = {
   promoReports: ['id', 'nick', 'staticId', 'tg', 'avatar', 'fromRank', 'toRank', 'tasks', 'proofs', 'status', 'createdAt'],
   payoutReports: ['id', 'nick', 'staticId', 'tg', 'avatar', 'total', 'items', 'proofs', 'status', 'createdAt'],
   vacations: ['id', 'nick', 'staticId', 'tg', 'avatar', 'rank', 'startDate', 'endDate', 'daysCount', 'reason', 'status', 'createdAt'],
-  testSubmissions: ['id', 'testTitle', 'nick', 'staticId', 'tg', 'scorePct', 'passed', 'time', 'details', 'proof', 'proofComment', 'createdAt'],
-  tests: ['id', 'title', 'passScore', 'questions', 'needProof', 'proofHint'],
+  testSubmissions: ['id', 'testTitle', 'nick', 'staticId', 'tg', 'scorePct', 'passed', 'time', 'details', 'proof', 'proofComment', 'proofs', 'createdAt'],
+  tests: ['id', 'title', 'passScore', 'questions', 'needProof', 'proofHint', 'proofCount'],
   news: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
   rules: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
   diplomacy: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
@@ -156,6 +156,15 @@ const FULLNAME_ERR = 'Укажите Имя и Фамилию по-русски 
 function cleanUrl(s) {
   s = String(s == null ? '' : s).trim();
   return /^(https?:\/\/|\/avatars\/)[^\s"'<>`\\]{1,1000}$/.test(s) ? s : PLACEHOLDER;
+}
+// любая ссылка: с https://, без протокола (youtu.be/abc, drive.google.com/...), с www. — всё приводим к https://...
+function normLink(s) {
+  s = String(s == null ? '' : s).trim().replace(/\s+/g, '');
+  if (!s) return '';
+  if (/^\/\//.test(s)) s = 'https:' + s;
+  else if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) s = 'https://' + s.replace(/^[a-z]+:(?!\d)/i, '');
+  if (!/^https?:\/\/[^\s\/]+/i.test(s) || s.length < 10) return '';
+  return cleanStr(s, 600);
 }
 function cleanVal(v, depth) {
   if (typeof v === 'string') return cleanStr(v, 2000);
@@ -323,7 +332,7 @@ const SUBS = {
   promoReports: { min: LEVELS.MEMBER, fields: ['toRank', 'tasks', 'proofs'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
   payoutReports: { min: LEVELS.MEMBER, fields: ['items', 'proofs'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
   vacations: { min: LEVELS.MEMBER, fields: ['startDate', 'endDate', 'reason'], del: LEVELS.SENIOR, decide: LEVELS.SENIOR },
-  testSubmissions: { min: LEVELS.MEMBER, fields: ['testTitle', 'scorePct', 'passed', 'time', 'details', 'proof', 'proofComment'], del: LEVELS.LEADER, decide: LEVELS.LEADER + 1 },
+  testSubmissions: { min: LEVELS.MEMBER, fields: ['testTitle', 'scorePct', 'passed', 'time', 'details', 'proof', 'proofComment', 'proofs'], del: LEVELS.LEADER, decide: LEVELS.LEADER + 1 },
   rollbacks: { min: LEVELS.MEMBER, fields: ['kind', 'title', 'link', 'comment'], del: LEVELS.SENIOR, decide: LEVELS.SENIOR },
   promoClaims: { min: LEVELS.GUEST, fields: [], del: LEVELS.LEADER, decide: LEVELS.SENIOR }
 };
@@ -394,10 +403,19 @@ function buildSubmission(coll, me, rec, W) {
     out.testTitle = cleanStr(out.testTitle || 'Тест', 100);
     const tst = W.tests.find(t => t.title === out.testTitle);
     if (tst && tst.needProof) {
-      out.proof = cleanStr(out.proof || '', 600);
-      out.proofComment = cleanStr(out.proofComment || '', 300);
-      if (!/^https?:\/\/[^\s]{4,}$/.test(out.proof)) throw new HttpError(400, 'Для этого теста нужна ссылка на доки (https://...)');
-    } else { delete out.proof; delete out.proofComment; }
+      const need = Math.max(1, Math.min(10, Math.round(Number(tst.proofCount) || 1)));
+      let list = Array.isArray(out.proofs) ? out.proofs : [];
+      if (!list.length && out.proof) list = [{ link: out.proof, comment: out.proofComment }];
+      const proofs = [];
+      list.slice(0, 20).forEach(x => {
+        const link = normLink(x && typeof x === 'object' ? x.link : x);
+        if (link) proofs.push({ link: link, comment: cleanStr(x && x.comment || '', 300) });
+      });
+      if (proofs.length < need) throw new HttpError(400, 'Нужно приложить ссылок на видео: ' + need);
+      out.proofs = proofs;
+      out.proof = proofs.map(x => x.link).join(' ');
+      out.proofComment = cleanStr(out.proofComment || proofs[0].comment || '', 300);
+    } else { delete out.proof; delete out.proofComment; delete out.proofs; }
   }
   if (coll === 'promoClaims') {
     if (W.promoClaims.some(r => sameTg(r.tg, me.tg) && r.status === 'PENDING')) throw new HttpError(400, 'Ваша заявка на награду уже на рассмотрении у Лидера');
@@ -500,6 +518,7 @@ function applyPatch(me, patch, events) {
       clean.passScore = Math.max(1, Math.min(100, Math.round(Number(clean.passScore) || 70)));
       clean.needProof = clean.needProof === true;
       clean.proofHint = clean.needProof ? cleanStr(clean.proofHint || 'Приложите ссылку на доки (скрин, видео, отчёт)', 200) : '';
+      clean.proofCount = clean.needProof ? Math.max(1, Math.min(10, Math.round(Number(clean.proofCount) || 1))) : 0;
       const idx = W.tests.findIndex(r => r.id === (rec && rec.id));
       if (idx === -1) { clean.id = nextId(new Set(W.tests.map(r => r.id))); W.tests.push(clean); }
       else W.tests[idx] = Object.assign({}, clean, { id: W.tests[idx].id });
@@ -658,7 +677,7 @@ function eventText(ev, site) {
   else if (ev.coll === 'payoutReports') body = head('💰', 'Заявка на премию') + '\n' + w + fld('Сумма', '<b><u>' + Number(it.total).toLocaleString('ru-RU') + ' ₽</u></b>') + '\n' + (it.items || []).map(l => esc(l.name) + ' × <b>' + esc(l.qty) + '</b>').join(', ') + (it.proofs ? fld('Док-ва', esc(it.proofs)) : '');
   else if (ev.coll === 'rollbacks') body = head('🎬', it.kind === 'Аттестация' ? 'Видео для аттестации' : 'Новый откат') + '\n' + w + '\n<b>' + esc(it.title) + '</b>' + (it.comment ? fld('Комментарий', esc(it.comment)) : '') + '\n' + esc(it.link);
   else if (ev.coll === 'promoClaims') body = head('🎟', 'Награда за промокод') + '\n' + w + '\n<i>Игрок активировал промокод в игре и просит награду. Проверьте и выдайте.</i>';
-  else if (ev.coll === 'testSubmissions' && it.proof) body = head('📎', 'Тест с докой: ' + esc(it.testTitle)) + '\n' + w + fld('Результат', '<b>' + esc(it.scorePct) + '%</b>') + fld('Доки', esc(it.proof)) + (it.proofComment ? fld('Комментарий', esc(it.proofComment)) : '');
+  else if (ev.coll === 'testSubmissions' && it.proof) body = head('📎', 'Тест с докой: ' + esc(it.testTitle)) + '\n' + w + fld('Результат', '<b>' + esc(it.scorePct) + '%</b>') + (Array.isArray(it.proofs) && it.proofs.length ? it.proofs.map((x, i) => fld('Видео ' + (i + 1), esc(x.link) + (x.comment ? ' — ' + esc(x.comment) : ''))).join('') : fld('Доки', esc(it.proof)) + (it.proofComment ? fld('Комментарий', esc(it.proofComment)) : ''));
   else if (ev.coll === 'roster' && ev.type === 'rank') body = head('🎖', 'Смена ранга') + '\n' + w + '\n<s>' + esc(ev.from) + '</s> → <b><u>' + esc(ev.to) + '</u></b>' + fld('Изменил', esc(ev.by.nick));
   else if (ev.coll === 'roster' && ev.type === 'kick') body = head('🚪', 'Участник исключён') + '\n' + w + fld('Ранг был', '<u>' + esc(ev.from) + '</u>') + fld('Исключил', esc(ev.by.nick));
   else return '';

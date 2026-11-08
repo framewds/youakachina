@@ -819,37 +819,6 @@
 
                     <div id="academy-list-view" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     <div id="academy-runner-view" class="hidden bento-card p-6 sm:p-8 space-y-6"></div>
-
-                    <!-- ОТКАТЫ И ВИДЕО-АТТЕСТАЦИЯ -->
-                    <div id="academy-rollbacks-card" class="bento-card p-6 sm:p-8 space-y-5">
-                        <div class="space-y-1">
-                            <h3 class="text-lg font-heavy text-white">Откаты и видео для аттестации</h3>
-                            <p class="text-xs text-zinc-400 leading-relaxed">Добавьте ссылку на видео (YouTube, Rutube, Google Drive и т.п.). Старший состав откроет её кнопкой и примет или отклонит.</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" id="rb-kind-0" onclick="selectRollbackKind('Откат')" class="py-3 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all">Откат</button>
-                            <button type="button" id="rb-kind-1" onclick="selectRollbackKind('Аттестация')" class="py-3 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all">Видео для аттестации</button>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Ссылка на видео</label>
-                                <input autocomplete="off" id="rb-link" type="text" placeholder="https://youtu.be/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
-                            </div>
-                            <div id="rb-test-wrap" class="hidden">
-                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Для какого теста / аттестации</label>
-                                <select id="rb-test" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none"></select>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Комментарий (необязательно)</label>
-                                <input autocomplete="off" id="rb-comment" type="text" maxlength="300" placeholder="Что на видео: стрельба на капте, 5 минут и т.п." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
-                            </div>
-                        </div>
-                        <button onclick="submitRollback()" class="w-full py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Отправить Старшему составу</button>
-                        <div class="space-y-2 pt-2">
-                            <div class="text-[10px] text-zinc-500 uppercase">Мои отправки</div>
-                            <div id="my-rollbacks-list" class="space-y-2.5"></div>
-                        </div>
-                    </div>
                 </section>
 
                 <!-- 5. NEWS -->
@@ -1401,7 +1370,11 @@
             <div id="tt-proof-wrap" class="hidden p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2">
                 <label class="block text-[10px] text-amber-200 uppercase">Что участник должен приложить (подсказка)</label>
                 <input autocomplete="off" id="new-test-proof-hint" type="text" maxlength="160" placeholder="Например: видео стрельбы на капте, 5 минут" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
-                <p class="text-[10px] text-zinc-500 leading-relaxed">После вопросов участник обязан вставить ссылку на доки (скриншоты, видео, отчёт). Результат вместе с докой придёт Старшему составу кнопкой «Открыть ссылку».</p>
+                <div class="flex items-center gap-3 pt-1">
+                    <label for="new-test-proof-count" class="text-[10px] text-amber-200 uppercase">Обязательных блоков со ссылками</label>
+                    <input autocomplete="off" id="new-test-proof-count" type="number" min="1" max="10" value="1" class="w-20 px-3 py-2 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
+                </div>
+                <p class="text-[10px] text-zinc-500 leading-relaxed">После вопросов участник обязан заполнить столько блоков со ссылками на видео (YouTube, Rutube, Google Drive и любые другие, с https:// или без). Дополнительные блоки он может добавить сам. Всё придёт Старшему составу кнопками «Открыть ссылку».</p>
             </div>
 
             <div class="space-y-2">
@@ -2549,8 +2522,21 @@
             }
 
             function proofBlock(sub) {
-                if (!sub || !sub.proof) return '';
-                return '<div class="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 text-[11px]"><span class="px-2 py-0.5 rounded bg-amber-400 text-black text-[10px] font-heavy">ДОКИ К ТЕСТУ</span>' + linkButtons(sub.proof) + (sub.proofComment ? '<div class="text-zinc-400 mt-1.5">' + escHtml(sub.proofComment) + '</div>' : '') + '</div>';
+                if (!sub) return '';
+                var list = Array.isArray(sub.proofs) && sub.proofs.length ? sub.proofs : (sub.proof ? [{ link: sub.proof, comment: sub.proofComment }] : []);
+                if (!list.length) return '';
+                return '<div class="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 text-[11px] space-y-2"><span class="px-2 py-0.5 rounded bg-amber-400 text-black text-[10px] font-heavy">ДОКИ К ТЕСТУ</span>' + list.map(function(x, i) {
+                    return '<div class="p-2.5 rounded-lg bg-[#0a0a0e] border border-[#22222c]">' + (list.length > 1 ? '<div class="text-[10px] text-zinc-500 uppercase">Видео ' + (i + 1) + '</div>' : '') + linkButtons(x.link) + (x.comment ? '<div class="text-zinc-400 mt-1.5">' + escHtml(x.comment) + '</div>' : '') + '</div>';
+                }).join('') + '</div>';
+            }
+
+            // любая ссылка: без https:// тоже принимаем (youtu.be/abc, drive.google.com/...)
+            function normLink(v) {
+                var s = String(v == null ? '' : v).trim().replace(/\s+/g, '');
+                if (!s) return '';
+                if (/^\/\//.test(s)) s = 'https:' + s;
+                else if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) s = 'https://' + s;
+                return /^https?:\/\/[^\/]{3,}/i.test(s) ? s : '';
             }
 
             function renderAcademyAndTests() {
@@ -2578,7 +2564,7 @@
                         listView.classList.remove('hidden');
                         listView.innerHTML = tests.map(function(t) {
                             var proofBadge = t.needProof ? '<span class="px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-heavy uppercase">С докой</span>' : '';
-                            var hint = t.needProof ? '<p class="text-[11px] text-amber-200/80 leading-relaxed">Нужно приложить: ' + escHtml(t.proofHint || 'ссылку на доки') + '</p>' : '';
+                            var hint = t.needProof ? '<p class="text-[11px] text-amber-200/80 leading-relaxed">Нужно приложить: ' + escHtml(t.proofHint || 'ссылку на доки') + ' · блоков со ссылками: ' + (t.proofCount || 1) + '</p>' : '';
                             return '<div class="bento-card p-6 flex flex-col justify-between gap-4"><div class="space-y-2"><div class="flex flex-wrap items-center gap-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">Проходной балл: ' + t.passScore + '%</span>' + proofBadge + '</div><h3 class="text-lg font-heavy text-white pt-1">' + escHtml(t.title) + '</h3><p class="text-xs text-zinc-400">Вопросов: ' + t.questions.length + '</p>' + hint + '</div><div class="space-y-2"><button onclick="startAcademyTest(' + t.id + ')" class="w-full py-3 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Начать тест</button>' + (db.currentUser.role === 'SENIOR' ? '<button onclick="deleteTest(' + t.id + ')" class="w-full py-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 font-heavy text-[11px] transition-all">Удалить тест</button>' : '') + '</div></div>';
                         }).join('');
                     }
@@ -2654,6 +2640,7 @@
             window.openCreateTestModal = function() {
                 tempBuilderQuestions = [{ q: '', opts: ['', ''], correct: 0 }];
                 var t = document.getElementById('new-test-title'), ps = document.getElementById('new-test-pass'), h = document.getElementById('new-test-proof-hint');
+                var pc = document.getElementById('new-test-proof-count'); if (pc) pc.value = '1';
                 if (t) t.value = '';
                 if (ps) ps.value = '70';
                 if (h) h.value = '';
@@ -2710,7 +2697,11 @@
                 }
                 var questions = tempBuilderQuestions.map(function(q) { return { q: q.q.trim(), opts: q.opts.map(function(o) { return o.trim(); }), correct: q.correct }; });
                 var test = { id: Date.now(), title: title, passScore: pass, questions: questions, needProof: newTestNeedsProof, proofHint: '' };
-                if (newTestNeedsProof) test.proofHint = (hintEl && hintEl.value.trim()) || 'Приложите ссылку на доки (скрин, видео, отчёт)';
+                if (newTestNeedsProof) {
+                    test.proofHint = (hintEl && hintEl.value.trim()) || 'Приложите ссылку на доки (скрин, видео, отчёт)';
+                    var pcEl = document.getElementById('new-test-proof-count');
+                    test.proofCount = Math.max(1, Math.min(10, parseInt(pcEl && pcEl.value, 10) || 1));
+                }
                 db.tests.push(test);
                 addLog('TEST', 'Опубликован ' + (newTestNeedsProof ? 'тест с докой: ' : 'тест: ') + title);
                 saveDb();
@@ -2760,7 +2751,9 @@
             window.startAcademyTest = function(testId) {
                 var found = db.tests.filter(function(t) { return t.id === testId; })[0];
                 if (!found) return;
-                activeRunnerTest = { test: found, answers: {}, proof: '', proofComment: '' };
+                var need = found.needProof ? Math.max(1, Math.min(10, Number(found.proofCount) || 1)) : 0;
+                var blocks = []; for (var bi = 0; bi < need; bi++) blocks.push({ link: '', comment: '' });
+                activeRunnerTest = { test: found, answers: {}, proofs: blocks };
                 renderRunnerUI();
                 renderAcademyAndTests();
             };
@@ -2778,17 +2771,39 @@
                 }).join('');
 
                 var inp = 'w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none';
-                var proofHtml = t.needProof ? ('<div class="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/25 space-y-3">' +
-                    '<div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-amber-400 text-black text-[10px] font-heavy">ДОКИ</span><span class="text-sm font-heavy text-white">Приложите доки к тесту *</span></div>' +
-                    '<p class="text-[11px] text-zinc-400 leading-relaxed">' + escHtml(t.proofHint || 'Вставьте ссылку на видео или скриншоты') + '</p>' +
-                    '<input autocomplete="off" id="runner-proof" type="text" maxlength="500" value="' + escHtml(activeRunnerTest.proof) + '" oninput="setRunnerProof(\'proof\', this.value)" placeholder="https://youtu.be/... или https://imgur.com/..." class="' + inp + '">' +
-                    '<input autocomplete="off" id="runner-proof-comment" type="text" maxlength="300" value="' + escHtml(activeRunnerTest.proofComment) + '" oninput="setRunnerProof(\'proofComment\', this.value)" placeholder="Комментарий к докам (необязательно)" class="' + inp + '">' +
-                '</div>') : '';
+                var needN = Math.max(1, Math.min(10, Number(t.proofCount) || 1));
+                var proofHtml = '';
+                if (t.needProof) {
+                    var rows = activeRunnerTest.proofs.map(function(pb, i) {
+                        var req = i < needN;
+                        return '<div class="p-4 rounded-xl bg-[#0b0b0f] border border-[#252530] space-y-2"><div class="flex items-center justify-between"><span class="text-[10px] text-zinc-400 uppercase">Видео ' + (i + 1) + (req ? ' *' : ' (доп.)') + '</span>' + (req ? '' : '<button type="button" onclick="removeProofBlock(' + i + ')" class="text-[10px] text-red-300 hover:text-red-200 font-heavy">Убрать</button>') + '</div>' +
+                            '<input autocomplete="off" data-proof-link="' + i + '" type="text" maxlength="600" value="' + escHtml(pb.link) + '" oninput="setProofField(' + i + ', \'link\', this.value)" placeholder="Ссылка на видео (youtu.be/..., rutube.ru/..., drive.google.com/...)" class="' + inp + '">' +
+                            '<input autocomplete="off" type="text" maxlength="300" value="' + escHtml(pb.comment) + '" oninput="setProofField(' + i + ', \'comment\', this.value)" placeholder="Комментарий (необязательно)" class="' + inp + '"></div>';
+                    }).join('');
+                    proofHtml = '<div class="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/25 space-y-3">' +
+                        '<div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-amber-400 text-black text-[10px] font-heavy">ДОКИ</span><span class="text-sm font-heavy text-white">Ссылки на видео: обязательно ' + needN + ' шт. *</span></div>' +
+                        '<p class="text-[11px] text-zinc-400 leading-relaxed">' + escHtml(t.proofHint || 'Вставьте ссылку на видео или скриншоты') + '. Принимаются любые ссылки, https:// можно не писать.</p>' +
+                        rows +
+                        (activeRunnerTest.proofs.length < 10 ? '<button type="button" onclick="addProofBlock()" class="w-full py-2.5 rounded-xl bg-[#181822] border border-dashed border-[#3a3a4a] hover:border-white text-xs font-heavy text-white transition-all">+ Добавить ещё ссылку</button>' : '') +
+                    '</div>';
+                }
 
                 runnerView.innerHTML = '<div class="flex items-center justify-between border-b border-[#23232e] pb-4"><div><h3 class="text-xl font-heavy text-white">' + escHtml(t.title) + '</h3>' + (t.needProof ? '<span class="inline-block mt-1.5 px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-heavy">ТЕСТ С ДОКОЙ</span>' : '') + '</div><button onclick="cancelRunnerTest()" class="px-3.5 py-2 rounded-xl bg-[#181822] text-xs font-heavy text-zinc-300">Назад</button></div><div class="space-y-4">' + qHtml + proofHtml + '</div><button onclick="finishRunnerTest()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">' + (t.needProof ? 'Завершить и отправить с докой' : 'Завершить тест') + '</button>';
             }
 
-            window.setRunnerProof = function(field, val) { if (activeRunnerTest) activeRunnerTest[field] = val; };
+            window.setProofField = function(i, field, val) { if (activeRunnerTest && activeRunnerTest.proofs[i]) activeRunnerTest.proofs[i][field] = val; };
+            window.addProofBlock = function() {
+                if (!activeRunnerTest || activeRunnerTest.proofs.length >= 10) return;
+                activeRunnerTest.proofs.push({ link: '', comment: '' });
+                renderRunnerUI();
+            };
+            window.removeProofBlock = function(i) {
+                if (!activeRunnerTest) return;
+                var need = Math.max(1, Math.min(10, Number(activeRunnerTest.test.proofCount) || 1));
+                if (i < need) return;
+                activeRunnerTest.proofs.splice(i, 1);
+                renderRunnerUI();
+            };
 
             window.chooseTestAnswer = function(qIdx, oIdx) {
                 if (!activeRunnerTest) return;
@@ -2801,12 +2816,20 @@
             window.finishRunnerTest = function() {
                 if (!activeRunnerTest) return;
                 var t = activeRunnerTest.test;
-                var proof = String(activeRunnerTest.proof || '').trim();
-                if (t.needProof && !/^https?:\/\/[^\s]{4,}$/.test(proof)) {
-                    var pe = document.getElementById('runner-proof');
-                    if (pe) { pe.focus(); pe.classList.add('border-red-400'); }
-                    showToast('Вставьте ссылку на доки (https://...)');
-                    return;
+                var proofList = [];
+                if (t.needProof) {
+                    var needN = Math.max(1, Math.min(10, Number(t.proofCount) || 1));
+                    for (var pi = 0; pi < activeRunnerTest.proofs.length; pi++) {
+                        var pb = activeRunnerTest.proofs[pi];
+                        var lnk = normLink(pb.link);
+                        if (lnk) proofList.push({ link: lnk, comment: String(pb.comment || '').trim() });
+                        else if (pi < needN) {
+                            var pe = document.querySelector('[data-proof-link="' + pi + '"]');
+                            if (pe) { pe.focus(); pe.classList.add('border-red-400'); }
+                            showToast('Заполните ссылку в блоке «Видео ' + (pi + 1) + '»');
+                            return;
+                        }
+                    }
                 }
                 var correctCount = 0;
                 var details = [];
@@ -2820,7 +2843,7 @@
                 var pct = Math.round((correctCount / t.questions.length) * 100);
                 var passed = pct >= t.passScore;
                 var sub = { id: Date.now(), testTitle: t.title, nick: db.currentUser.nick, staticId: db.currentUser.staticId, tg: db.currentUser.tg, scorePct: pct, passed: passed, time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }), details: details };
-                if (t.needProof) { sub.proof = proof; sub.proofComment = String(activeRunnerTest.proofComment || '').trim(); }
+                if (t.needProof) { sub.proofs = proofList; sub.proof = proofList.map(function(x) { return x.link; }).join(' '); sub.proofComment = proofList[0].comment; }
                 db.testSubmissions.unshift(sub);
                 addLog('TEST', 'Сдал тест «' + t.title + '» на ' + pct + '%');
                 activeRunnerTest = null;
