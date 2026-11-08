@@ -482,7 +482,10 @@
                         <span>Откаты и видео</span>
                         <span id="sidebar-rollbacks-badge" class="px-2 py-0.5 rounded-full bg-[#24242f] text-white text-[10px] font-heavy">0</span>
                     </button>
-                    <button onclick="navigateTo('senior-promocodes')" data-nav="senior-promocodes" class="nav-btn"><span>Промокоды</span></button>
+                    <button onclick="navigateTo('senior-promoclaims')" data-nav="senior-promoclaims" class="nav-btn justify-between">
+                        <span>Награды за промокод</span>
+                        <span id="sidebar-promoclaims-badge" class="px-2 py-0.5 rounded-full bg-[#24242f] text-white text-[10px] font-heavy">0</span>
+                    </button>
                     <button onclick="navigateTo('senior-vacations')" data-nav="senior-vacations" class="nav-btn justify-between">
                         <span>Контроль отпусков</span>
                         <span id="sidebar-vacations-badge" class="px-2 py-0.5 rounded-full bg-[#24242f] text-white text-[10px] font-heavy">0</span>
@@ -741,13 +744,15 @@
                         <div id="prof-test-answers-box" class="space-y-3 pt-2"></div>
                     </div>
 
-                    <div class="bento-card p-6 sm:p-8 space-y-3">
-                        <h3 class="text-base font-heavy text-white">Промокод</h3>
-                        <p class="text-xs text-zinc-400">Введите промокод, выданный Старшим составом. Каждый код можно активировать один раз на аккаунт, пока не кончился лимит.</p>
-                        <div class="flex flex-col sm:flex-row gap-2.5">
-                            <input id="prof-promo-input" type="text" maxlength="30" placeholder="DH-A1B2C3" oninput="this.value = this.value.toUpperCase()" onkeydown="if (event.key === 'Enter') redeemPromo('prof-promo-input')" class="flex-1 px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white tracking-widest focus:outline-none">
-                            <button type="button" onclick="redeemPromo('prof-promo-input')" class="px-6 py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Активировать</button>
+                    <div class="bento-card p-6 sm:p-8 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="space-y-1">
+                                <h3 class="text-base font-heavy text-white">Награда за промокод</h3>
+                                <p class="text-xs text-zinc-400 leading-relaxed">Активировали промокод в игре? Нажмите кнопку: Лидер получит ваши данные (ник, Static ID, @юз, аватар) и выдаст награду после проверки.</p>
+                            </div>
+                            <button type="button" id="prof-promo-btn" onclick="requestPromoReward()" class="px-6 py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed">Получить награду</button>
                         </div>
+                        <div id="prof-promo-claims" class="space-y-2"></div>
                     </div>
                 </section>
 
@@ -877,7 +882,7 @@
                             <h2 class="text-2xl sm:text-3xl font-heavy text-white">Дипломатия и Война</h2>
                             <p class="text-xs text-zinc-400 mt-1">Актуальные союзы и враждебные семьи на сервере Region RP</p>
                         </div>
-                        <button onclick="openAddContentModal('diplomacy')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Добавить дипломатию</button>
+                        <button onclick="openAddContentModal('diplomacy')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Новый статус</button>
                     </div>
                     <div id="diplomacy-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                 </section>
@@ -901,33 +906,18 @@
                             <h2 class="text-2xl sm:text-3xl font-heavy text-white">Недвижимость</h2>
                             <p class="text-xs text-zinc-400 mt-1">Штаб-квартиры, семейные особняки и склады DRUGHILL</p>
                         </div>
-                        <button onclick="openAddContentModal('estates')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Добавить дом</button>
+                        <button onclick="openAddContentModal('estates')" class="senior-only hidden px-4 py-2.5 rounded-full bg-white text-black text-xs font-heavy">+ Добавить объект</button>
                     </div>
                     <div id="estates-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
                 </section>
 
-                <!-- 11. JOIN FAMILY -->
+                <!-- 11. JOIN FAMILY (гость видит только три действия) -->
                 <section id="sec-join-family" class="page-sec hidden space-y-6">
-                    <div class="bento-card p-6 sm:p-8 space-y-2">
-                        <h2 class="text-2xl sm:text-3xl font-heavy text-white">Добро пожаловать в DRUGHILL</h2>
-                        <p class="text-xs text-zinc-400">Вы вошли через Telegram. Выберите, что вам нужно: после этого Лидер или Старший состав должны одобрить ваш доступ. Ваш игровой Никнейм, Static ID, аватарка и @юз берутся из профиля автоматически.</p>
-                        <div id="join-choice-btns" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
-                            <button type="button" onclick="claimFamilyMember()" class="py-3.5 px-4 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Игрок семьи</button>
-                            <button type="button" onclick="showJoinForm()" class="py-3.5 px-4 rounded-xl bg-[#14141c] border border-[#282834] hover:border-white text-white text-xs font-heavy transition-all">Подать заявку в семью</button>
+                    <div class="bento-card p-6 sm:p-8 space-y-5">
+                        <div class="space-y-1.5">
+                            <h2 class="text-2xl sm:text-3xl font-heavy text-white">Добро пожаловать в DRUGHILL</h2>
+                            <p class="text-xs text-zinc-400 leading-relaxed">Выберите, что вам нужно. Ваш ник, Static ID, аватар и @юз подставляются автоматически, Лидер увидит их в вашей заявке и ответит вам в Telegram.</p>
                         </div>
-                        <div id="join-wait" class="hidden p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed"></div>
-                    </div>
-
-                    <div class="bento-card p-6 sm:p-8 space-y-3">
-                        <h3 class="text-base font-heavy text-white">Есть промокод?</h3>
-                        <p class="text-xs text-zinc-400">Промокод выдаёт Старший состав. Количество активаций ограничено: когда лимит закончится, код перестанет работать.</p>
-                        <div class="flex flex-col sm:flex-row gap-2.5">
-                            <input id="join-promo-input" type="text" maxlength="30" placeholder="DH-A1B2C3" oninput="this.value = this.value.toUpperCase()" onkeydown="if (event.key === 'Enter') redeemPromo('join-promo-input')" class="flex-1 px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white tracking-widest focus:outline-none">
-                            <button type="button" onclick="redeemPromo('join-promo-input')" class="px-6 py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Активировать</button>
-                        </div>
-                    </div>
-
-                    <div id="join-form-card" class="hidden bento-card p-6 sm:p-8 space-y-6">
                         <div class="p-4 rounded-2xl topo-bg border border-[#2b2b38] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-3.5">
                                 <div class="relative shrink-0">
@@ -940,32 +930,71 @@
                                         <span id="join-preview-tg" class="px-2 py-0.5 rounded-md bg-white/10 text-[11px] text-zinc-200">@vortex_dh</span>
                                         <span id="join-preview-static" class="px-2 py-0.5 rounded-md bg-white text-black text-[10px] font-heavy">#15440</span>
                                     </div>
-                                    <div class="text-[10px] text-zinc-400 mt-1">Профиль кандидата синхронизирован</div>
+                                    <div class="text-[10px] text-zinc-400 mt-1">Данные из вашего профиля Telegram и игры</div>
                                 </div>
                             </div>
                             <button type="button" onclick="openEditProfileModal()" class="px-3.5 py-2 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c38] text-[10px] font-heavy text-zinc-300 transition-all self-start sm:self-center">Изменить Ник / Static</button>
                         </div>
+                        <div id="join-wait" class="hidden p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed"></div>
+                    </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div id="join-card-apply" class="bento-card p-6 flex flex-col gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg></div>
+                                <h3 class="text-base font-heavy text-white leading-snug">Подать заявку в семью</h3>
+                            </div>
+                            <p class="text-xs text-zinc-400 leading-relaxed flex-1">Хотите вступить в DRUGHILL? Заполните короткую анкету, Старший состав рассмотрит её и ответит вам.</p>
+                            <div id="join-state-apply" class="hidden"></div>
+                            <button type="button" id="join-btn-apply" onclick="showJoinForm()" class="w-full py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all disabled:opacity-40 disabled:cursor-not-allowed">Заполнить анкету</button>
+                        </div>
+                        <div id="join-card-member" class="bento-card p-6 flex flex-col gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg></div>
+                                <h3 class="text-base font-heavy text-white leading-snug">Игрок семьи</h3>
+                            </div>
+                            <p class="text-xs text-zinc-400 leading-relaxed flex-1">Вы уже состоите в DRUGHILL? Одна кнопка, и Лидер откроет вам доступ к порталу.</p>
+                            <div id="join-state-member" class="hidden"></div>
+                            <button type="button" id="join-btn-member" onclick="claimFamilyMember()" class="w-full py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all disabled:opacity-40 disabled:cursor-not-allowed">Я игрок семьи</button>
+                        </div>
+                        <div id="join-card-promo" class="bento-card p-6 flex flex-col gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shrink-0"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg></div>
+                                <h3 class="text-base font-heavy text-white leading-snug">Награда за промокод</h3>
+                            </div>
+                            <p class="text-xs text-zinc-400 leading-relaxed flex-1">Активировали промокод в игре? Нажмите кнопку: Лидер получит ваши данные и выдаст награду после проверки.</p>
+                            <div id="join-state-promo" class="hidden"></div>
+                            <button type="button" id="join-btn-promo" onclick="requestPromoReward()" class="w-full py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all disabled:opacity-40 disabled:cursor-not-allowed">Получить награду</button>
+                        </div>
+                    </div>
+
+                    <div id="join-form-card" class="hidden bento-card p-6 sm:p-8 space-y-6">
+                        <div>
+                            <h3 class="text-lg font-heavy text-white">Анкета в семью</h3>
+                            <p class="text-[11px] text-zinc-400 mt-1">Поля со звёздочкой обязательны. Отвечайте честно: заявку читает Старший состав.</p>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">1. Ваш реальный возраст (OOC)</label>
-                                <input id="join-age" type="text" placeholder="Например: 18 лет" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">1. Ваш реальный возраст (OOC) *</label>
+                                <input id="join-age" type="text" maxlength="40" placeholder="Например: 18 лет" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                             <div>
-                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">2. Ваш суточный прайм-тайм (онлайн)</label>
-                                <input id="join-prime" type="text" placeholder="Например: 6–8 часов в день" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">2. Суточный прайм-тайм (онлайн) *</label>
+                                <input id="join-prime" type="text" maxlength="80" placeholder="Например: 6–8 часов в день" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                             <div>
-                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">3. Опыт в семьях и стрельба</label>
-                                <input id="join-exp" type="text" placeholder="Бизвары, цеха, трасса, знание правил" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">3. Опыт в семьях и стрельба *</label>
+                                <input id="join-exp" type="text" maxlength="200" placeholder="Бизвары, цеха, трасса, знание правил" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                             <div>
                                 <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">4. Ссылка на откаты стрельбы</label>
-                                <input id="join-rolls" type="text" placeholder="https://youtu.be/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
+                                <input id="join-rolls" type="text" maxlength="300" placeholder="https://youtu.be/..." class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
                             </div>
                         </div>
-
-                        <button onclick="submitJoinApplication()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all shadow-[0_0_25px_rgba(255,255,255,0.2)]">Отправить заявку на рассмотрение Старшему составу</button>
+                        <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+                            <button type="button" onclick="submitJoinApplication()" class="py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all shadow-[0_0_25px_rgba(255,255,255,0.2)]">Отправить заявку Старшему составу</button>
+                            <button type="button" onclick="document.getElementById('join-form-card').classList.add('hidden')" class="px-6 py-4 rounded-xl bg-[#181822] border border-[#2c2c38] hover:border-white text-zinc-200 text-xs font-heavy transition-all">Скрыть</button>
+                        </div>
                     </div>
                 </section>
 
@@ -1228,39 +1257,23 @@
                     </div>
                 </section>
 
-                <!-- 19b. SENIOR STAFF: PROMO CODES -->
-                <section id="sec-senior-promocodes" class="page-sec hidden space-y-6">
+                <!-- 19b. SENIOR STAFF: PROMO REWARD CLAIMS -->
+                <section id="sec-senior-promoclaims" class="page-sec hidden space-y-6">
                     <div class="bento-card p-6 sm:p-8">
                         <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
-                        <h2 class="text-2xl font-heavy text-white mt-2">Промокоды</h2>
-                        <p class="text-xs text-zinc-400 mt-1">Каждый код работает ограниченное число раз («по счёту»). Активировать код может гость и участник, по одному разу на аккаунт.</p>
+                        <h2 class="text-2xl font-heavy text-white mt-2">Награды за промокод</h2>
+                        <p class="text-xs text-zinc-400 mt-1 leading-relaxed">Игроки активировали промокод в игре и просят награду. Сверьте данные, выдайте награду в игре и нажмите «Выдано». Игрок получит ответ в Telegram.</p>
                     </div>
                     <div class="bento-card p-6 space-y-4">
-                        <h3 class="text-base font-heavy text-white">Создать промокод</h3>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" id="pc-type-0" onclick="selectPromoType('invite')" class="py-3 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all">Приглашение (гость → 1. Контракт)</button>
-                            <button type="button" id="pc-type-1" onclick="selectPromoType('bonus')" class="py-3 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all">Бонус (только уведомление)</button>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div>
-                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Код (пусто = случайный)</label>
-                                <input id="pc-code" type="text" maxlength="24" placeholder="DRUG2026" oninput="this.value = this.value.toUpperCase()" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white tracking-widest focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Сколько активаций (1–100)</label>
-                                <input id="pc-uses" type="text" inputmode="numeric" value="5" oninput="sanitizeNumericInput(this)" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Награда / заметка</label>
-                                <input id="pc-reward" type="text" maxlength="100" placeholder="Например: $50 000" class="w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none">
-                            </div>
-                        </div>
-                        <button onclick="createPromoCode()" class="w-full py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Создать промокод</button>
+                        <h3 class="text-base font-heavy text-white">Ждут ответа</h3>
+                        <div id="admin-promoclaims-pending" class="space-y-3"></div>
                     </div>
-                    <div id="promo-codes-list" class="space-y-3"></div>
+                    <div class="bento-card p-6 space-y-4">
+                        <h3 class="text-base font-heavy text-white">Обработанные</h3>
+                        <div id="admin-promoclaims-done" class="space-y-2.5"></div>
+                    </div>
                 </section>
-
-                <!-- 20. SENIOR STAFF: DB (ONLY FOR @krystalovb / LEADER & DEPUTY) -->
+<!-- 20. SENIOR STAFF: DB (ONLY FOR @krystalovb / LEADER & DEPUTY) -->
                 <section id="sec-senior-db" class="page-sec hidden space-y-6">
                     <div class="bento-card p-6 sm:p-8 space-y-3">
                         <div class="flex flex-wrap items-center gap-2">
@@ -1327,57 +1340,66 @@
         </div>
     </div>
 
-    <!-- MODAL: ADD CONTENT -->
-    <div id="modal-add-content" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bento-card max-w-lg w-full p-6 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 id="modal-add-content-title" class="text-lg font-heavy text-white">Добавить запись</h3>
+    <!-- MODAL: ADD CONTENT (форма собирается под раздел) -->
+    <div id="modal-add-content" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bento-card max-w-lg w-full p-6 space-y-5 my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h3 id="modal-add-content-title" class="text-lg font-heavy text-white">Добавить запись</h3>
+                    <p id="modal-add-content-sub" class="text-[11px] text-zinc-400 mt-1"></p>
+                </div>
                 <button onclick="closeModal('modal-add-content')" class="text-zinc-400 hover:text-white">✕</button>
             </div>
-            <input id="cms-target-section" type="hidden" value="news">
-            <div>
-                <label class="block text-[10px] text-zinc-400 uppercase mb-1">Бейдж / Категория</label>
-                <input id="cms-badge" type="text" placeholder="ВАЖНО" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
-            </div>
-            <div>
-                <label class="block text-[10px] text-zinc-400 uppercase mb-1">Заголовок</label>
-                <input id="cms-title" type="text" placeholder="Название..." class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
-            </div>
-            <div>
-                <label class="block text-[10px] text-zinc-400 uppercase mb-1">Описание</label>
-                <textarea id="cms-desc" rows="3" placeholder="Текст..." class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white"></textarea>
-            </div>
-            <div>
-                <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ссылка на фото</label>
-                <input id="cms-image" type="text" placeholder="https://..." class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
-            </div>
-            <button onclick="saveCmsContent()" class="w-full py-3.5 rounded-xl bg-white text-black font-heavy text-xs">Опубликовать</button>
+            <div id="cms-form-body" class="space-y-4"></div>
+            <button id="cms-submit" onclick="saveCmsContent()" class="w-full py-3.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Опубликовать</button>
         </div>
     </div>
 
     <!-- MODAL: CREATE TEST -->
     <div id="modal-create-test" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bento-card max-w-2xl w-full p-6 space-y-4 my-8 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between">
-                <h3 class="text-lg font-heavy text-white">Создать тест Академии</h3>
+        <div class="bento-card max-w-2xl w-full p-6 space-y-5 my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-heavy text-white">Создать тест Академии</h3>
+                    <p class="text-[11px] text-zinc-400 mt-1">Выберите тип теста, задайте вопросы и отметьте правильные ответы.</p>
+                </div>
                 <button onclick="closeModal('modal-create-test')" class="text-zinc-400 hover:text-white">✕</button>
             </div>
+
+            <div>
+                <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Тип теста</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button type="button" id="tt-kind-0" onclick="selectTestKind(false)" class="text-left p-3.5 rounded-xl transition-all"></button>
+                    <button type="button" id="tt-kind-1" onclick="selectTestKind(true)" class="text-left p-3.5 rounded-xl transition-all"></button>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Название теста</label>
-                    <input id="new-test-title" type="text" placeholder="Аттестация в Мейн" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Название теста *</label>
+                    <input id="new-test-title" type="text" maxlength="80" placeholder="Аттестация в Мейн" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Проходной балл (%)</label>
-                    <input id="new-test-pass" type="number" value="70" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white">
+                    <input id="new-test-pass" type="number" min="1" max="100" value="70" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
                 </div>
             </div>
-            <div id="builder-questions-list" class="space-y-4"></div>
-            <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-                <button onclick="addBuilderQuestion()" class="px-4 py-2.5 rounded-xl bg-[#181822] text-xs font-heavy text-white">+ Вопрос</button>
+
+            <div id="tt-proof-wrap" class="hidden p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2">
+                <label class="block text-[10px] text-amber-200 uppercase">Что участник должен приложить (подсказка)</label>
+                <input id="new-test-proof-hint" type="text" maxlength="160" placeholder="Например: видео стрельбы на капте, 5 минут" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
+                <p class="text-[10px] text-zinc-500 leading-relaxed">После вопросов участник обязан вставить ссылку на доки (скриншоты, видео, отчёт). Результат вместе с докой придёт Старшему составу кнопкой «Открыть ссылку».</p>
+            </div>
+
+            <div class="space-y-2">
+                <div class="text-[10px] text-zinc-400 uppercase">Вопросы</div>
+                <div id="builder-questions-list" class="space-y-4"></div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <button onclick="addBuilderQuestion()" class="px-4 py-2.5 rounded-xl bg-[#181822] border border-dashed border-[#3a3a4a] hover:border-white text-xs font-heavy text-white transition-all">+ Вопрос</button>
                 <div class="flex items-center gap-2">
                     <button onclick="clearAllTests()" class="px-4 py-2.5 rounded-xl bg-red-500/15 text-red-300 text-xs font-heavy">Очистить все тесты</button>
-                    <button onclick="saveBuiltTest()" class="px-5 py-2.5 rounded-xl bg-white text-black text-xs font-heavy">Сохранить</button>
+                    <button onclick="saveBuiltTest()" class="px-5 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">Сохранить тест</button>
                 </div>
             </div>
         </div>
@@ -1432,7 +1454,24 @@
         </div>
     </div>
 
-    <div id="toast-box" class="fixed bottom-5 right-5 z-50 hidden px-5 py-3.5 rounded-2xl bg-white text-black font-heavy text-xs shadow-2xl"></div>
+    <!-- UI CONFIRM (вместо системного окна браузера) -->
+    <div id="ui-confirm" class="hidden fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onmousedown="if (event.target === this) uiConfirmClose(false)">
+        <div class="bento-card max-w-sm w-full p-6 space-y-5" role="dialog" aria-modal="true" aria-labelledby="ui-confirm-title">
+            <div class="flex items-start gap-4">
+                <div id="ui-confirm-icon" class="w-11 h-11 rounded-2xl shrink-0 flex items-center justify-center text-lg font-heavy">!</div>
+                <div class="space-y-1.5 min-w-0 pt-0.5">
+                    <h3 id="ui-confirm-title" class="text-base font-heavy text-white leading-snug"></h3>
+                    <p id="ui-confirm-text" class="text-xs text-zinc-400 leading-relaxed"></p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+                <button type="button" id="ui-confirm-cancel" onclick="uiConfirmClose(false)" class="py-3 rounded-xl bg-[#181822] border border-[#2c2c38] hover:border-white text-zinc-200 text-xs font-heavy transition-all">Отмена</button>
+                <button type="button" id="ui-confirm-ok" onclick="uiConfirmClose(true)" class="py-3 rounded-xl text-xs font-heavy transition-all">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-box" class="fixed bottom-5 right-5 z-[80] hidden px-5 py-3.5 rounded-2xl bg-white text-black font-heavy text-xs shadow-2xl"></div>
 
     <script>
         (function() {
@@ -1442,7 +1481,6 @@
             var currentPromoTarget = '2. Академ';
             var promoChecked = {};
             var currentRollbackKind = 'Откат';
-            var currentPromoType = 'invite';
             var tempReqs = [];
             var currentLogFilter = 'ALL';
             var tempBuilderQuestions = [];
@@ -1465,6 +1503,7 @@
                 testSubmissions: [],
                 rollbacks: [],
                 promoCodes: [],
+                promoClaims: [],
                 promoRequirements: makeDefaultRequirements(),
                 news: [
                     { badge: 'ВАЖНО', date: 'Сегодня', title: 'Полная доминация DRUGHILL на бизварах Region RP', desc: 'Синдикат удерживает ключевые предприятия штата.', image: 'https://placehold.co/800x420/121217/ffffff?text=DRUGHILL' }
@@ -1704,6 +1743,37 @@
                 saveDb();
             }
 
+            // ===== Красивое окно подтверждения (замена window.confirm) =====
+            var confirmCb = null;
+            window.uiConfirm = function(o, cb) {
+                o = o || {};
+                var danger = o.tone !== 'info';
+                var icon = document.getElementById('ui-confirm-icon');
+                var ok = document.getElementById('ui-confirm-ok');
+                document.getElementById('ui-confirm-title').textContent = o.title || 'Подтвердите действие';
+                document.getElementById('ui-confirm-text').textContent = o.text || '';
+                icon.textContent = danger ? '!' : '?';
+                icon.className = 'w-11 h-11 rounded-2xl shrink-0 flex items-center justify-center text-lg font-heavy ' + (danger ? 'bg-red-500/15 border border-red-500/30 text-red-300' : 'bg-white/10 border border-white/25 text-white');
+                ok.textContent = o.ok || (danger ? 'Удалить' : 'Подтвердить');
+                ok.className = 'py-3 rounded-xl text-xs font-heavy transition-all ' + (danger ? 'bg-red-500 hover:bg-red-400 text-white' : 'bg-white hover:bg-zinc-200 text-black');
+                confirmCb = typeof cb === 'function' ? cb : null;
+                document.getElementById('ui-confirm').classList.remove('hidden');
+                setTimeout(function() { ok.focus(); }, 30);
+            };
+            window.uiConfirmClose = function(yes) {
+                var box = document.getElementById('ui-confirm');
+                if (!box || box.classList.contains('hidden')) return;
+                box.classList.add('hidden');
+                var cb = confirmCb;
+                confirmCb = null;
+                if (yes && cb) cb();
+            };
+            document.addEventListener('keydown', function(e) {
+                var box = document.getElementById('ui-confirm');
+                if (!box || box.classList.contains('hidden')) return;
+                if (e.key === 'Escape') { e.preventDefault(); uiConfirmClose(false); }
+            });
+
             window.showToast = function(msg) {
                 var box = document.getElementById('toast-box');
                 if (!box) return;
@@ -1730,7 +1800,7 @@
             var TOKEN_KEY = 'drughill_session';
             var apiToken = null;
             try { apiToken = localStorage.getItem(TOKEN_KEY); } catch (e) {}
-            var ID_KEYS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests', 'rollbacks'];
+            var ID_KEYS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests', 'rollbacks', 'promoClaims'];
             var SET_KEYS = ['news', 'rules', 'diplomacy', 'fleet', 'estates', 'payoutItems', 'promoRequirements'];
             var ALL_KEYS = ID_KEYS.concat(SET_KEYS, ['promoCodes', 'logs']);
             var snap = {}, syncRev = 0, lastVsig = '', pushTimer = null, pushing = false, pushAgain = false;
@@ -1771,7 +1841,7 @@
 
             function pendingCount() {
                 function n(a) { return (a || []).filter(function(x) { return x.status === 'PENDING'; }).length; }
-                return n(db.applications) + n(db.promoReports) + n(db.payoutReports) + n(db.vacations) + n(db.rollbacks);
+                return n(db.applications) + n(db.promoReports) + n(db.payoutReports) + n(db.vacations) + n(db.rollbacks) + n(db.promoClaims);
             }
 
             function applyServerState(res, fromPoll) {
@@ -1860,41 +1930,192 @@
                 }).catch(function() { renderAll(); showToast('Нет связи с сервером'); });
             }
 
+            // ===== Гостевой экран: заявка / игрок семьи / награда за промокод =====
+            function mineOf(list) {
+                var me = String(db.currentUser.tg || '').toLowerCase();
+                return (list || []).filter(function(x) { return me && String(x.tg || '').toLowerCase() === me; });
+            }
+            function isPending(x) { return x.status === 'PENDING'; }
+
             window.showJoinForm = function() {
+                var pend = mineOf(db.applications).filter(isPending)[0];
+                if (pend) { showToast('Ваша заявка уже на рассмотрении'); return; }
                 var f = document.getElementById('join-form-card');
-                if (f) f.classList.remove('hidden');
+                if (!f) return;
+                f.classList.remove('hidden');
+                setTimeout(function() { f.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 40);
             };
 
             window.claimFamilyMember = function() {
-                if (!window.confirm('Вы уже состоите в семье DRUGHILL? Заявка уйдёт Лидеру и Старшему составу, доступ откроется после одобрения.')) return;
-                var u = db.currentUser;
-                db.applications.unshift({ id: Date.now(), kind: 'Уже игрок семьи', nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, age: '—', prime: '—', exp: '—', rolls: '—', status: 'PENDING' });
-                addLog('AUTH', 'Запрос доступа: уже игрок семьи (' + u.nick + ')');
-                saveDb();
-                renderJoinState();
-                showToast('Запрос отправлен. Ожидайте одобрения.');
+                if (mineOf(db.applications).filter(isPending)[0]) { showToast('Ваша заявка уже на рассмотрении'); return; }
+                uiConfirm({
+                    title: 'Вы игрок семьи DRUGHILL?',
+                    text: 'Лидер и Старший состав получат ваши данные и откроют доступ после проверки. Отправлять запрос нужно только тем, кто уже состоит в семье.',
+                    ok: 'Да, я игрок семьи', tone: 'info'
+                }, function() {
+                    var u = db.currentUser;
+                    db.applications.unshift({ id: Date.now(), kind: 'Уже игрок семьи', nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, age: '—', prime: '—', exp: '—', rolls: '—', status: 'PENDING' });
+                    addLog('AUTH', 'Запрос доступа: уже игрок семьи (' + u.nick + ')');
+                    saveDb();
+                    renderJoinState();
+                    showToast('Запрос отправлен. Ждите ответа Лидера.');
+                });
             };
 
+            window.requestPromoReward = function() {
+                if (mineOf(db.promoClaims).filter(isPending)[0]) { showToast('Ваша заявка на награду уже на рассмотрении'); return; }
+                uiConfirm({
+                    title: 'Получить награду за промокод?',
+                    text: 'Нажимайте, только если уже активировали промокод в игре. Лидер увидит ваш ник, Static ID, @юз и аватар, проверит и выдаст награду.',
+                    ok: 'Отправить Лидеру', tone: 'info'
+                }, function() {
+                    var u = db.currentUser;
+                    db.promoClaims.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, status: 'PENDING' });
+                    addLog('AUTH', 'Запрошена награда за промокод (' + u.nick + ')');
+                    saveDb();
+                    renderJoinState();
+                    renderMyPromoClaims();
+                    renderSeniorPanels();
+                    showToast('Заявка отправлена. Ждите ответа Лидера.');
+                });
+            };
+
+            function joinBadge(kind, text) {
+                var cls = kind === 'wait' ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+                    : kind === 'ok' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : kind === 'no' ? 'bg-red-500/10 border-red-500/30 text-red-300'
+                    : 'bg-white/5 border-white/10 text-zinc-400';
+                return '<div class="px-3.5 py-2.5 rounded-xl border text-[11px] leading-relaxed ' + cls + '">' + text + '</div>';
+            }
+            function joinCard(key, o) {
+                var st = document.getElementById('join-state-' + key);
+                var btn = document.getElementById('join-btn-' + key);
+                if (st) { st.className = o.badge ? '' : 'hidden'; st.innerHTML = o.badge || ''; }
+                if (btn) { btn.disabled = !!o.disabled; if (o.text) btn.textContent = o.text; }
+            }
+
             function renderJoinState() {
-                var btns = document.getElementById('join-choice-btns');
                 var wait = document.getElementById('join-wait');
+                if (!wait) return;
+                var apps = mineOf(db.applications), claims = mineOf(db.promoClaims);
+                var appPend = apps.filter(isPending)[0], lastApp = apps[0];
+                var claimPend = claims.filter(isPending)[0], lastClaim = claims[0];
+
+                [['apply', 'Заявка в семью', 'Заполнить анкету'], ['member', 'Уже игрок семьи', 'Я игрок семьи']].forEach(function(c) {
+                    if (appPend) {
+                        if (appPend.kind === c[1]) joinCard(c[0], { badge: joinBadge('wait', 'Отправлено. Ждите ответа Лидера.'), disabled: true, text: 'Ожидает ответа' });
+                        else joinCard(c[0], { badge: joinBadge('mute', 'Недоступно, пока рассматривается другая ваша заявка.'), disabled: true, text: c[2] });
+                    } else if (lastApp && lastApp.kind === c[1] && lastApp.status === 'REJECTED') {
+                        joinCard(c[0], { badge: joinBadge('no', 'Прошлая заявка отклонена. Можно отправить новую.'), disabled: false, text: c[2] });
+                    } else joinCard(c[0], { badge: '', disabled: false, text: c[2] });
+                });
+
+                if (claimPend) joinCard('promo', { badge: joinBadge('wait', 'Отправлено. Ждите ответа Лидера.'), disabled: true, text: 'Ожидает ответа' });
+                else if (lastClaim && lastClaim.status === 'APPROVED') joinCard('promo', { badge: joinBadge('ok', 'Награда выдана. Нашли ещё промокод? Можно запросить снова.'), disabled: false, text: 'Запросить ещё раз' });
+                else if (lastClaim && lastClaim.status === 'REJECTED') joinCard('promo', { badge: joinBadge('no', 'Прошлая заявка отклонена. Можно отправить снова.'), disabled: false, text: 'Получить награду' });
+                else joinCard('promo', { badge: '', disabled: false, text: 'Получить награду' });
+
+                var anyWait = appPend || claimPend;
+                wait.classList.toggle('hidden', !anyWait);
+                if (anyWait) wait.textContent = 'Заявка у Лидера и Старшего состава. Ждите ответа: страница обновится сама, а решение придёт вам в Telegram.';
                 var form = document.getElementById('join-form-card');
-                if (!btns || !wait) return;
-                var mine = (db.applications || []).filter(function(a) { return a.tg && db.currentUser.tg && a.tg.toLowerCase() === db.currentUser.tg.toLowerCase(); });
-                var last = mine[0];
-                if (last && last.status === 'PENDING') {
-                    btns.classList.add('hidden');
-                    if (form) form.classList.add('hidden');
-                    wait.classList.remove('hidden');
-                    wait.textContent = (last.kind === 'Уже игрок семьи' ? 'Ваш запрос «Игрок семьи» отправлен.' : 'Ваша заявка в семью отправлена.') + ' Ожидайте одобрения Лидера или Старшего состава. Страница обновится сама, как только вас примут.';
-                } else {
-                    btns.classList.remove('hidden');
-                    if (last && last.status === 'REJECTED') {
-                        wait.classList.remove('hidden');
-                        wait.textContent = 'Ваша прошлая заявка отклонена. Вы можете отправить новую.';
-                    } else wait.classList.add('hidden');
+                if (form && appPend) form.classList.add('hidden');
+            }
+
+            // ===== Награда за промокод: профиль участника =====
+            function claimBadge(st) {
+                if (st === 'APPROVED') return '<span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[9px] font-heavy">НАГРАДА ВЫДАНА</span>';
+                if (st === 'REJECTED') return '<span class="px-2.5 py-1 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 text-[9px] font-heavy">ОТКЛОНЕНО</span>';
+                return '<span class="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[9px] font-heavy">ЖДЁТ ОТВЕТА</span>';
+            }
+            function fmtWhen(iso) {
+                var d = new Date(iso);
+                if (!iso || isNaN(d.getTime())) return 'только что';
+                return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            }
+            function renderMyPromoClaims() {
+                var box = document.getElementById('prof-promo-claims');
+                var btn = document.getElementById('prof-promo-btn');
+                var mine = mineOf(db.promoClaims);
+                var pend = mine.filter(isPending)[0];
+                if (btn) { btn.disabled = !!pend; btn.textContent = pend ? 'Ожидает ответа Лидера' : 'Получить награду'; }
+                if (!box) return;
+                box.innerHTML = mine.slice(0, 5).map(function(c) {
+                    return '<div class="p-3 rounded-xl bg-[#0b0b0f] border border-[#252530] flex items-center justify-between gap-3 text-xs"><span class="text-zinc-300">Заявка на награду · <span class="text-zinc-500">' + escHtml(fmtWhen(c.createdAt)) + '</span></span>' + claimBadge(c.status) + '</div>';
+                }).join('');
+            }
+
+            // ===== Награда за промокод: разбор у Старшего состава =====
+            window.copyText = function(text, msg) {
+                var temp = document.createElement('textarea');
+                temp.value = text; document.body.appendChild(temp); temp.select();
+                try { document.execCommand('copy'); } catch (e) {}
+                document.body.removeChild(temp);
+                showToast(msg || ('Скопировано: ' + text));
+            };
+            function tgLinkBtn(tg) {
+                var h = String(tg || '').replace(/^@/, '');
+                if (!/^[A-Za-z0-9_]{4,32}$/.test(h) || /^id\d+$/.test(h)) return '';
+                return '<a href="https://t.me/' + h + '" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-[#181822] border border-[#2c2c3a] hover:border-white text-[10px] font-heavy text-white transition-all">Открыть Telegram ↗</a>';
+            }
+            function copyBtn(label, value) {
+                return '<button type="button" data-copy="' + escHtml(value) + '" onclick="copyText(this.getAttribute(\'data-copy\'))" class="px-3 py-1.5 rounded-lg bg-[#181822] border border-[#2c2c3a] hover:border-white text-[10px] font-heavy text-white transition-all">' + label + '</button>';
+            }
+            function rankOfTg(tg) {
+                var t = String(tg || '').toLowerCase();
+                var m = (db.roster || []).filter(function(r) { return String(r.tg || '').toLowerCase() === t; })[0];
+                return m ? m.rank : 'Гость';
+            }
+            function renderPromoClaimsAdmin() {
+                var all = db.promoClaims || [];
+                var pend = all.filter(isPending);
+                var badge = document.getElementById('sidebar-promoclaims-badge');
+                if (badge) badge.textContent = String(pend.length);
+                var pEl = document.getElementById('admin-promoclaims-pending');
+                if (pEl) {
+                    pEl.innerHTML = pend.length === 0 ? '<div class="text-xs text-zinc-500">Новых заявок на награду нет.</div>' : pend.map(function(c) {
+                        var av = escHtml(c.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH');
+                        var all3 = c.nick + ' | ' + c.staticId + ' | ' + c.tg;
+                        return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] space-y-3.5 text-xs">' +
+                            '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">' +
+                                '<div class="flex items-center gap-3.5 min-w-0">' +
+                                    '<img src="' + av + '" alt="" class="w-14 h-14 rounded-full object-cover border-2 border-white/20 shrink-0">' +
+                                    '<div class="min-w-0">' +
+                                        '<div class="flex flex-wrap items-center gap-2"><span class="text-sm font-heavy text-white">' + escHtml(c.nick) + '</span><span class="px-2 py-0.5 rounded-md bg-white text-black text-[10px] font-heavy">' + escHtml(c.staticId) + '</span><span class="px-2 py-0.5 rounded-md bg-white/10 text-[11px] text-zinc-200">' + escHtml(c.tg) + '</span><span class="px-2 py-0.5 rounded-md bg-[#181822] border border-[#2c2c3a] text-[10px] text-zinc-300">' + escHtml(rankOfTg(c.tg)) + '</span></div>' +
+                                        '<div class="text-[10px] text-zinc-500 mt-1">Просит награду за промокод · ' + escHtml(fmtWhen(c.createdAt)) + '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="flex items-center gap-2 shrink-0">' +
+                                    '<button onclick="decidePromoClaim(' + c.id + ', true)" class="px-5 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-[11px] font-heavy transition-all">Выдано</button>' +
+                                    '<button onclick="decidePromoClaim(' + c.id + ', false)" class="px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 text-[11px] font-heavy transition-all">Отклонить</button>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="flex flex-wrap gap-1.5">' + copyBtn('Скопировать ник', c.nick) + copyBtn('Скопировать Static', c.staticId) + copyBtn('Скопировать @юз', c.tg) + copyBtn('Скопировать всё', all3) + tgLinkBtn(c.tg) + '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+                var dEl = document.getElementById('admin-promoclaims-done');
+                if (dEl) {
+                    var done = all.filter(function(c) { return !isPending(c); }).slice(0, 30);
+                    dEl.innerHTML = done.length === 0 ? '<div class="text-xs text-zinc-500">Пока пусто.</div>' : done.map(function(c) {
+                        return '<div class="p-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] flex flex-wrap items-center justify-between gap-3 text-xs">' +
+                            '<div class="flex items-center gap-3 min-w-0"><img src="' + escHtml(c.avatar || 'https://placehold.co/100x100/1c1c24/ffffff?text=DH') + '" alt="" class="w-9 h-9 rounded-full object-cover border border-white/15 shrink-0"><div class="min-w-0"><span class="font-heavy text-white">' + escHtml(c.nick) + '</span> <span class="text-zinc-400">' + escHtml(c.staticId) + ' · ' + escHtml(c.tg) + (c.decidedBy ? ' · решил ' + escHtml(c.decidedBy) : '') + '</span></div></div>' + claimBadge(c.status) + '</div>';
+                    }).join('');
                 }
             }
+            window.decidePromoClaim = function(id, ok) {
+                if (db.currentUser.role !== 'SENIOR') return;
+                for (var i = 0; i < db.promoClaims.length; i++) {
+                    if (db.promoClaims[i].id === id) {
+                        db.promoClaims[i].status = ok ? 'APPROVED' : 'REJECTED';
+                        addLog('RANK', (ok ? 'Выдана награда за промокод: ' : 'Отклонена награда за промокод: ') + db.promoClaims[i].nick);
+                        break;
+                    }
+                }
+                saveDb();
+                renderSeniorPanels();
+                showToast(ok ? 'Награда отмечена как выданная' : 'Заявка отклонена');
+            };
 
             window.startTelegramAuth = function() {
                 var nickInput = document.getElementById('auth-nick-input');
@@ -1979,7 +2200,7 @@
                 'home': 'Главная', 'profile': 'Профиль', 'guest-status': 'Ожидание роли', 'news': 'Новости семьи',
                 'rules': 'Правила семьи', 'ranks': 'Система повышения', 'diplomacy': 'Дипломатия и Война', 'fleet': 'Автопарк',
                 'estates': 'Недвижимость', 'academy': 'Академия', 'join-family': 'Подать заявку в семью', 'report-promo': 'Отчёт на повышение',
-                'report-payout': 'Отчёт на премию', 'vacations': 'Система отпуска', 'senior-roster': 'Управление составом', 'senior-rollbacks': 'Откаты и видео', 'senior-promocodes': 'Промокоды',
+                'report-payout': 'Отчёт на премию', 'vacations': 'Система отпуска', 'senior-roster': 'Управление составом', 'senior-rollbacks': 'Откаты и видео', 'senior-promoclaims': 'Награды за промокод',
                 'senior-reviews': 'Проверка отчётов', 'senior-test-results': 'Итоги тестов', 'senior-vacations': 'Контроль отпусков',
                 'senior-logs': 'Логи действий', 'senior-db': 'База данных'
             };
@@ -2109,26 +2330,28 @@
                 if (!canManageContent()) { showToast('Удалять может только Лидер или Зам. Лидера'); return; }
                 if (!db[sec] || !db[sec][i]) return;
                 var title = db[sec][i].title || 'запись';
-                if (!window.confirm('Удалить запись «' + title + '»?')) return;
-                db[sec].splice(i, 1);
-                addLog('RANK', 'Удалена запись: ' + title);
-                saveDb();
-                renderContentSections();
-                showToast('Запись удалена');
+                uiConfirm({ title: 'Удалить запись?', text: '«' + title + '» исчезнет у всех участников семьи.', ok: 'Удалить' }, function() {
+                    if (!db[sec] || !db[sec][i]) return;
+                    db[sec].splice(i, 1);
+                    addLog('RANK', 'Удалена запись: ' + title);
+                    saveDb();
+                    renderContentSections();
+                    showToast('Запись удалена');
+                });
             };
 
             function renderContentSections() {
                 var newsEl = document.getElementById('news-grid');
                 if (newsEl) {
                     newsEl.innerHTML = db.news.map(function(n, i) {
-                        return '<div class="bento-card overflow-hidden flex flex-col"><img src="' + n.image + '" alt="" class="w-full h-44 object-cover border-b border-[#23232d]"><div class="p-6 space-y-2.5"><div class="flex items-center justify-between"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + n.badge + '</span><span class="text-[11px] text-zinc-500">' + (n.date || 'Сегодня') + '</span></div><h3 class="text-base font-heavy text-white pt-1">' + n.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + n.desc + '</p>' + delBtn('news', i) + '</div></div>';
+                        return '<div class="bento-card overflow-hidden flex flex-col">' + (/^(https?:\/\/|\/avatars\/)/.test(String(n.image || '')) ? '<img src="' + escHtml(n.image) + '" alt="" class="w-full h-44 object-cover border-b border-[#23232d]">' : '') + '<div class="p-6 space-y-2.5"><div class="flex items-center justify-between"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(n.badge) + '</span><span class="text-[11px] text-zinc-500">' + escHtml(n.date || 'Сегодня') + '</span></div><h3 class="text-base font-heavy text-white pt-1">' + escHtml(n.title) + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(n.desc) + '</p>' + delBtn('news', i) + '</div></div>';
                     }).join('');
                 }
 
                 var rulesEl = document.getElementById('rules-list');
                 if (rulesEl) {
                     rulesEl.innerHTML = db.rules.map(function(r, i) {
-                        return '<div class="bento-card p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + r.badge + '</span><h3 class="text-base font-heavy text-white pt-1">' + r.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + r.desc + '</p>' + delBtn('rules', i) + '</div>';
+                        return '<div class="bento-card p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(r.badge) + '</span><h3 class="text-base font-heavy text-white pt-1">' + escHtml(r.title) + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(r.desc) + '</p>' + delBtn('rules', i) + '</div>';
                     }).join('');
                 }
 
@@ -2145,26 +2368,38 @@
                     }).join('');
                 }
 
+                var DIP_STYLE = { 'СОЮЗ': 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300', 'ВОЙНА': 'bg-red-500/15 border border-red-500/30 text-red-300', 'ПЕРЕМИРИЕ': 'bg-amber-500/15 border border-amber-500/30 text-amber-300', 'НЕЙТРАЛИТЕТ': 'bg-white/10 border border-white/20 text-zinc-200' };
+                var okImg = function(u) { return /^(https?:\/\/|\/avatars\/)/.test(String(u || '')); };
+
                 var dipEl = document.getElementById('diplomacy-grid');
                 if (dipEl) {
-                    dipEl.innerHTML = db.diplomacy.map(function(d, i) {
-                        return '<div class="bento-card p-6 space-y-2.5"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + d.badge + '</span><h3 class="text-lg font-heavy text-white pt-1">' + d.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + d.desc + '</p>' + delBtn('diplomacy', i) + '</div>';
+                    dipEl.innerHTML = db.diplomacy.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500 md:col-span-2">Записей о дипломатии пока нет.</div>' : db.diplomacy.map(function(d, i) {
+                        var st = DIP_STYLE[String(d.badge || '').toUpperCase()] || 'bg-white text-black';
+                        var emblem = okImg(d.image) && d.image.indexOf('placehold.co') === -1
+                            ? '<img src="' + escHtml(d.image) + '" alt="" class="w-12 h-12 rounded-xl object-cover border border-white/15 shrink-0">'
+                            : '<div class="w-12 h-12 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-lg font-heavy text-white shrink-0">' + escHtml(String(d.title || '?').charAt(0).toUpperCase()) + '</div>';
+                        return '<div class="bento-card p-6 space-y-3"><div class="flex items-center gap-3.5">' + emblem + '<div class="min-w-0"><span class="inline-block px-2.5 py-1 rounded-md text-[10px] font-heavy uppercase ' + st + '">' + escHtml(d.badge) + '</span><h3 class="text-lg font-heavy text-white mt-1.5 break-words">' + escHtml(d.title) + '</h3></div></div>' + (d.desc ? '<p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(d.desc) + '</p>' : '') + delBtn('diplomacy', i) + '</div>';
                     }).join('');
                 }
 
                 var flEl = document.getElementById('fleet-grid');
                 if (flEl) {
-                    flEl.innerHTML = db.fleet.map(function(f, i) {
-                        return '<div class="bento-card overflow-hidden flex flex-col"><img src="' + f.image + '" alt="" class="w-full h-40 object-cover border-b border-[#23232d]"><div class="p-5 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + f.badge + '</span><h3 class="text-base font-heavy text-white pt-1">' + f.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + f.desc + '</p>' + delBtn('fleet', i) + '</div></div>';
+                    flEl.innerHTML = db.fleet.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500 md:col-span-3">В автопарке пока пусто.</div>' : db.fleet.map(function(f, i) {
+                        return '<div class="bento-card overflow-hidden flex flex-col">' + (okImg(f.image) ? '<img src="' + escHtml(f.image) + '" alt="" class="w-full h-40 object-cover border-b border-[#23232d]">' : '') + '<div class="p-5 space-y-2"><div class="flex flex-wrap items-center gap-1.5"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(f.badge) + '</span>' + (f.meta ? '<span class="px-2.5 py-1 rounded-md bg-[#181822] border border-[#2c2c3a] text-zinc-200 text-[10px] font-heavy">' + escHtml(f.meta) + '</span>' : '') + '</div><h3 class="text-base font-heavy text-white pt-1">' + escHtml(f.title) + '</h3>' + (f.desc ? '<p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(f.desc) + '</p>' : '') + delBtn('fleet', i) + '</div></div>';
                     }).join('');
                 }
 
                 var estEl = document.getElementById('estates-grid');
                 if (estEl) {
-                    estEl.innerHTML = db.estates.map(function(es, i) {
-                        return '<div class="bento-card overflow-hidden flex flex-col"><img src="' + es.image + '" alt="" class="w-full h-48 object-cover border-b border-[#23232d]"><div class="p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + es.badge + '</span><h3 class="text-lg font-heavy text-white pt-1">' + es.title + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + es.desc + '</p>' + delBtn('estates', i) + '</div></div>';
+                    estEl.innerHTML = db.estates.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500 md:col-span-2">Недвижимость пока не добавлена.</div>' : db.estates.map(function(es, i) {
+                        return '<div class="bento-card overflow-hidden flex flex-col">' + (okImg(es.image) ? '<img src="' + escHtml(es.image) + '" alt="" class="w-full h-48 object-cover border-b border-[#23232d]">' : '') + '<div class="p-6 space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(es.badge) + '</span><h3 class="text-lg font-heavy text-white pt-1">' + escHtml(es.title) + '</h3>' + (es.meta ? '<div class="text-[11px] text-zinc-400">Адрес: <span class="text-white">' + escHtml(es.meta) + '</span></div>' : '') + (es.desc ? '<p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(es.desc) + '</p>' : '') + delBtn('estates', i) + '</div></div>';
                     }).join('');
                 }
+            }
+
+            function proofBlock(sub) {
+                if (!sub || !sub.proof) return '';
+                return '<div class="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 text-[11px]"><span class="px-2 py-0.5 rounded bg-amber-400 text-black text-[10px] font-heavy">ДОКИ К ТЕСТУ</span>' + linkButtons(sub.proof) + (sub.proofComment ? '<div class="text-zinc-400 mt-1.5">' + escHtml(sub.proofComment) + '</div>' : '') + '</div>';
             }
 
             function renderAcademyAndTests() {
@@ -2191,7 +2426,9 @@
                     if (listView) {
                         listView.classList.remove('hidden');
                         listView.innerHTML = tests.map(function(t) {
-                            return '<div class="bento-card p-6 flex flex-col justify-between gap-4"><div class="space-y-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">Проходной балл: ' + t.passScore + '%</span><h3 class="text-lg font-heavy text-white pt-1">' + t.title + '</h3><p class="text-xs text-zinc-400">Вопросов: ' + t.questions.length + '</p></div><div class="space-y-2"><button onclick="startAcademyTest(' + t.id + ')" class="w-full py-3 rounded-xl bg-white text-black font-heavy text-xs">Начать тест</button>' + (db.currentUser.role === 'SENIOR' ? '<button onclick="deleteTest(' + t.id + ')" class="w-full py-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 font-heavy text-[11px] transition-all">Удалить тест</button>' : '') + '</div></div>';
+                            var proofBadge = t.needProof ? '<span class="px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-heavy uppercase">С докой</span>' : '';
+                            var hint = t.needProof ? '<p class="text-[11px] text-amber-200/80 leading-relaxed">Нужно приложить: ' + escHtml(t.proofHint || 'ссылку на доки') + '</p>' : '';
+                            return '<div class="bento-card p-6 flex flex-col justify-between gap-4"><div class="space-y-2"><div class="flex flex-wrap items-center gap-2"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">Проходной балл: ' + t.passScore + '%</span>' + proofBadge + '</div><h3 class="text-lg font-heavy text-white pt-1">' + escHtml(t.title) + '</h3><p class="text-xs text-zinc-400">Вопросов: ' + t.questions.length + '</p>' + hint + '</div><div class="space-y-2"><button onclick="startAcademyTest(' + t.id + ')" class="w-full py-3 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">Начать тест</button>' + (db.currentUser.role === 'SENIOR' ? '<button onclick="deleteTest(' + t.id + ')" class="w-full py-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 font-heavy text-[11px] transition-all">Удалить тест</button>' : '') + '</div></div>';
                         }).join('');
                     }
                 }
@@ -2228,7 +2465,7 @@
                             var rows = s.details.map(function(d, idx) {
                                 return '<div class="p-3 rounded-xl bg-[#0c0c10] border border-[#23232e] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"><div><div class="font-heavy text-white">' + (idx + 1) + '. ' + d.qText + '</div><div class="text-zinc-400 mt-0.5">Ваш ответ: <span class="text-white">' + d.chosenText + '</span> · Правильный: <span class="text-zinc-300">' + d.correctText + '</span></div></div><span class="px-2.5 py-1 rounded text-[10px] font-heavy shrink-0 ' + (d.isCorrect ? 'bg-white text-black' : 'bg-red-500/20 text-red-300') + '">' + (d.isCorrect ? 'ВЕРНО' : 'ОШИБКА') + '</span></div>';
                             }).join('');
-                            return '<div class="p-5 rounded-2xl bg-[#121218] border border-[#252532] space-y-3"><div class="flex items-center justify-between"><span class="text-sm font-heavy text-white">' + s.testTitle + '</span><span class="px-3 py-1 rounded-lg bg-white text-black text-xs font-heavy">' + s.scorePct + '% (' + (s.passed ? 'СДАНО' : 'НЕ СДАНО') + ')</span></div><div class="space-y-2">' + rows + '</div></div>';
+                            return '<div class="p-5 rounded-2xl bg-[#121218] border border-[#252532] space-y-3"><div class="flex items-center justify-between"><span class="text-sm font-heavy text-white">' + s.testTitle + '</span><span class="px-3 py-1 rounded-lg bg-white text-black text-xs font-heavy">' + s.scorePct + '% (' + (s.passed ? 'СДАНО' : 'НЕ СДАНО') + ')</span></div>' + proofBlock(s) + '<div class="space-y-2">' + rows + '</div></div>';
                         }).join('');
                     }
                 }
@@ -2240,15 +2477,36 @@
                         var rows = s.details.map(function(d, idx) {
                             return '<div class="p-2.5 rounded-lg bg-[#0a0a0e] border border-[#22222c] flex items-center justify-between text-[11px]"><span>' + (idx + 1) + '. ' + d.qText + ' — <strong class="text-white">' + d.chosenText + '</strong></span><span class="px-2 py-0.5 rounded text-[9px] font-heavy ' + (d.isCorrect ? 'bg-white text-black' : 'bg-red-500/20 text-red-300') + '">' + (d.isCorrect ? 'ВЕРНО' : 'ОШИБКА') + '</span></div>';
                         }).join('');
-                        return '<div class="bento-card p-6 space-y-4"><div class="flex items-center justify-between border-b border-[#23232e] pb-3"><div><div class="text-sm font-heavy text-white">' + s.nick + ' <span class="text-zinc-400">' + s.staticId + '</span> · ' + s.tg + '</div><div class="text-xs text-zinc-400 mt-0.5">' + s.testTitle + '</div></div><div class="flex items-center gap-2"><span class="px-3 py-1.5 rounded-xl bg-white text-black text-xs font-heavy">' + s.scorePct + '%</span>' + (canManageContent() ? '<button onclick="deleteTestSubmission(' + s.id + ')" class="px-3 py-1.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-[10px] font-heavy">Удалить</button>' : '') + '</div></div><div class="space-y-1.5">' + rows + '</div></div>';
+                        return '<div class="bento-card p-6 space-y-4"><div class="flex items-center justify-between border-b border-[#23232e] pb-3"><div><div class="text-sm font-heavy text-white">' + s.nick + ' <span class="text-zinc-400">' + s.staticId + '</span> · ' + s.tg + '</div><div class="text-xs text-zinc-400 mt-0.5">' + s.testTitle + '</div></div><div class="flex items-center gap-2"><span class="px-3 py-1.5 rounded-xl bg-white text-black text-xs font-heavy">' + s.scorePct + '%</span>' + (canManageContent() ? '<button onclick="deleteTestSubmission(' + s.id + ')" class="px-3 py-1.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-[10px] font-heavy">Удалить</button>' : '') + '</div></div>' + proofBlock(s) + '<div class="space-y-1.5">' + rows + '</div></div>';
                     }).join('');
                 }
             }
 
+            var newTestNeedsProof = false;
+            window.selectTestKind = function(withProof) {
+                newTestNeedsProof = !!withProof;
+                var on = 'text-left p-3.5 rounded-xl transition-all bg-white text-black';
+                var off = 'text-left p-3.5 rounded-xl transition-all bg-[#14141c] border border-[#282834] hover:border-white text-zinc-200';
+                var b0 = document.getElementById('tt-kind-0'), b1 = document.getElementById('tt-kind-1');
+                if (b0) {
+                    b0.className = withProof ? off : on;
+                    b0.innerHTML = '<div class="text-xs font-heavy">Обычный тест</div><div class="text-[10px] mt-1 ' + (withProof ? 'text-zinc-500' : 'text-zinc-600') + '">Только вопросы с вариантами ответа</div>';
+                }
+                if (b1) {
+                    b1.className = withProof ? on : off;
+                    b1.innerHTML = '<div class="text-xs font-heavy">Тест с докой</div><div class="text-[10px] mt-1 ' + (withProof ? 'text-zinc-600' : 'text-zinc-500') + '">Вопросы и обязательные доки (ссылка на видео / скрины)</div>';
+                }
+                var w = document.getElementById('tt-proof-wrap');
+                if (w) w.classList.toggle('hidden', !withProof);
+            };
+
             window.openCreateTestModal = function() {
-                tempBuilderQuestions = [
-                    { q: 'До какого ранга доступно повышение на сайте?', opts: ['До 3 ранга (Мейн)', 'До 10 ранга', 'Только 1 ранг'], correct: 0 }
-                ];
+                tempBuilderQuestions = [{ q: '', opts: ['', ''], correct: 0 }];
+                var t = document.getElementById('new-test-title'), ps = document.getElementById('new-test-pass'), h = document.getElementById('new-test-proof-hint');
+                if (t) t.value = '';
+                if (ps) ps.value = '70';
+                if (h) h.value = '';
+                selectTestKind(false);
                 renderBuilderQuestions();
                 var m = document.getElementById('modal-create-test');
                 if (m) m.classList.remove('hidden');
@@ -2257,71 +2515,101 @@
             function renderBuilderQuestions() {
                 var box = document.getElementById('builder-questions-list');
                 if (!box) return;
+                var inp = 'flex-1 min-w-0 px-3 py-2 rounded-lg bg-[#121218] border border-[#272733] focus:border-white text-xs text-white focus:outline-none';
                 box.innerHTML = tempBuilderQuestions.map(function(item, qIdx) {
                     var optInputs = item.opts.map(function(optVal, oIdx) {
-                        return '<div class="flex items-center gap-2"><input type="radio" name="correct_q_' + qIdx + '" ' + (item.correct === oIdx ? 'checked' : '') + ' onchange="updateBuilderCorrect(' + qIdx + ', ' + oIdx + ')"><input type="text" value="' + optVal + '" oninput="updateBuilderOpt(' + qIdx + ', ' + oIdx + ', this.value)" class="flex-1 px-3 py-2 rounded-lg bg-[#121218] border border-[#272733] text-xs text-white"></div>';
+                        return '<div class="flex items-center gap-2"><input type="radio" class="accent-white w-4 h-4 shrink-0" name="correct_q_' + qIdx + '" ' + (item.correct === oIdx ? 'checked' : '') + ' onchange="updateBuilderCorrect(' + qIdx + ', ' + oIdx + ')" title="Правильный ответ"><input type="text" maxlength="120" value="' + escHtml(optVal) + '" placeholder="Вариант ' + (oIdx + 1) + '" oninput="updateBuilderOpt(' + qIdx + ', ' + oIdx + ', this.value)" class="' + inp + '">' +
+                            (item.opts.length > 2 ? '<button type="button" onclick="removeBuilderOption(' + qIdx + ', ' + oIdx + ')" class="w-8 h-8 shrink-0 rounded-lg bg-[#181822] hover:bg-red-500/20 text-zinc-400 hover:text-red-300 text-xs transition-all" title="Убрать вариант">✕</button>' : '') + '</div>';
                     }).join('');
-                    return '<div class="p-4 rounded-2xl bg-[#0c0c10] border border-[#252530] space-y-2.5"><input type="text" value="' + item.q + '" oninput="updateBuilderQ(' + qIdx + ', this.value)" class="w-full px-3 py-2 rounded-xl bg-[#14141c] border border-[#292936] text-xs text-white"><div class="space-y-1.5">' + optInputs + '</div></div>';
+                    return '<div class="p-4 rounded-2xl bg-[#0c0c10] border border-[#252530] space-y-3">' +
+                        '<div class="flex items-center justify-between"><span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">ВОПРОС ' + (qIdx + 1) + '</span>' + (tempBuilderQuestions.length > 1 ? '<button type="button" onclick="removeBuilderQuestion(' + qIdx + ')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[10px] font-heavy transition-all">Убрать</button>' : '') + '</div>' +
+                        '<input type="text" maxlength="200" value="' + escHtml(item.q) + '" placeholder="Текст вопроса" oninput="updateBuilderQ(' + qIdx + ', this.value)" class="w-full px-3 py-2.5 rounded-xl bg-[#14141c] border border-[#292936] focus:border-white text-xs text-white focus:outline-none">' +
+                        '<div class="text-[10px] text-zinc-500">Кружок слева отмечает правильный ответ</div>' +
+                        '<div class="space-y-1.5">' + optInputs + '</div>' +
+                        (item.opts.length < 6 ? '<button type="button" onclick="addBuilderOption(' + qIdx + ')" class="px-3 py-1.5 rounded-lg bg-[#181822] hover:bg-white hover:text-black text-zinc-300 text-[10px] font-heavy transition-all">+ Вариант ответа</button>' : '') +
+                    '</div>';
                 }).join('');
             }
 
             window.updateBuilderQ = function(qIdx, val) { tempBuilderQuestions[qIdx].q = val; };
             window.updateBuilderOpt = function(qIdx, oIdx, val) { tempBuilderQuestions[qIdx].opts[oIdx] = val; };
             window.updateBuilderCorrect = function(qIdx, oIdx) { tempBuilderQuestions[qIdx].correct = oIdx; };
-            window.addBuilderQuestion = function() { tempBuilderQuestions.push({ q: 'Новый вопрос?', opts: ['Вариант 1', 'Вариант 2'], correct: 0 }); renderBuilderQuestions(); };
+            window.addBuilderQuestion = function() { tempBuilderQuestions.push({ q: '', opts: ['', ''], correct: 0 }); renderBuilderQuestions(); };
+            window.removeBuilderQuestion = function(qIdx) { if (tempBuilderQuestions.length > 1) { tempBuilderQuestions.splice(qIdx, 1); renderBuilderQuestions(); } };
+            window.addBuilderOption = function(qIdx) { var q = tempBuilderQuestions[qIdx]; if (q.opts.length < 6) { q.opts.push(''); renderBuilderQuestions(); } };
+            window.removeBuilderOption = function(qIdx, oIdx) {
+                var q = tempBuilderQuestions[qIdx];
+                if (q.opts.length <= 2) return;
+                q.opts.splice(oIdx, 1);
+                if (q.correct === oIdx) q.correct = 0; else if (q.correct > oIdx) q.correct--;
+                renderBuilderQuestions();
+            };
 
             window.saveBuiltTest = function() {
                 var titleEl = document.getElementById('new-test-title');
                 var passEl = document.getElementById('new-test-pass');
-                var title = titleEl && titleEl.value.trim() ? titleEl.value.trim() : 'Аттестация';
-                var pass = passEl ? (parseInt(passEl.value, 10) || 70) : 70;
-                db.tests.push({ id: Date.now(), title: title, passScore: pass, questions: JSON.parse(JSON.stringify(tempBuilderQuestions)) });
-                addLog('TEST', 'Опубликован тест: ' + title);
+                var hintEl = document.getElementById('new-test-proof-hint');
+                var title = titleEl ? titleEl.value.trim() : '';
+                if (!title) { if (titleEl) titleEl.focus(); showToast('Введите название теста'); return; }
+                var pass = Math.max(1, Math.min(100, passEl ? (parseInt(passEl.value, 10) || 70) : 70));
+                for (var i = 0; i < tempBuilderQuestions.length; i++) {
+                    var q = tempBuilderQuestions[i];
+                    if (!q.q.trim()) { showToast('Вопрос ' + (i + 1) + ': введите текст вопроса'); return; }
+                    if (q.opts.length < 2 || q.opts.some(function(o) { return !o.trim(); })) { showToast('Вопрос ' + (i + 1) + ': заполните все варианты ответа'); return; }
+                }
+                var questions = tempBuilderQuestions.map(function(q) { return { q: q.q.trim(), opts: q.opts.map(function(o) { return o.trim(); }), correct: q.correct }; });
+                var test = { id: Date.now(), title: title, passScore: pass, questions: questions, needProof: newTestNeedsProof, proofHint: '' };
+                if (newTestNeedsProof) test.proofHint = (hintEl && hintEl.value.trim()) || 'Приложите ссылку на доки (скрин, видео, отчёт)';
+                db.tests.push(test);
+                addLog('TEST', 'Опубликован ' + (newTestNeedsProof ? 'тест с докой: ' : 'тест: ') + title);
                 saveDb();
                 closeModal('modal-create-test');
                 renderAcademyAndTests();
-                showToast('Тест успешно опубликован!');
+                showToast(newTestNeedsProof ? 'Тест с докой опубликован!' : 'Тест успешно опубликован!');
             };
 
             window.deleteTest = function(id) {
                 if (db.currentUser.role !== 'SENIOR') return;
                 var t = (db.tests || []).filter(function(x) { return x.id === id; })[0];
                 if (!t) return;
-                if (!window.confirm('Удалить тест «' + t.title + '»? Результаты, которые уже сданы, останутся.')) return;
-                db.tests = db.tests.filter(function(x) { return x.id !== id; });
-                if (activeRunnerTest && activeRunnerTest.test.id === id) activeRunnerTest = null;
-                addLog('TEST', 'Удалён тест: ' + t.title);
-                saveDb();
-                renderAcademyAndTests();
-                showToast('Тест удалён');
+                uiConfirm({ title: 'Удалить тест «' + t.title + '»?', text: 'Результаты, которые уже сданы, останутся в итогах.', ok: 'Удалить тест' }, function() {
+                    db.tests = db.tests.filter(function(x) { return x.id !== id; });
+                    if (activeRunnerTest && activeRunnerTest.test.id === id) activeRunnerTest = null;
+                    addLog('TEST', 'Удалён тест: ' + t.title);
+                    saveDb();
+                    renderAcademyAndTests();
+                    showToast('Тест удалён');
+                });
             };
 
             window.deleteTestSubmission = function(id) {
                 if (!canManageContent()) { showToast('Удалять результаты может только Лидер или Зам. Лидера'); return; }
-                if (!window.confirm('Удалить этот результат теста?')) return;
-                db.testSubmissions = db.testSubmissions.filter(function(x) { return x.id !== id; });
-                saveDb();
-                renderAcademyAndTests();
-                showToast('Результат удалён');
+                uiConfirm({ title: 'Удалить результат теста?', text: 'Запись о прохождении пропадёт из итогов безвозвратно.', ok: 'Удалить' }, function() {
+                    db.testSubmissions = db.testSubmissions.filter(function(x) { return x.id !== id; });
+                    saveDb();
+                    renderAcademyAndTests();
+                    showToast('Результат удалён');
+                });
             };
 
             window.clearAllTests = function() {
                 if (db.currentUser.role !== 'SENIOR') return;
                 if (!(db.tests || []).length) { showToast('Тестов нет'); return; }
-                if (!window.confirm('Удалить ВСЕ тесты Академии?')) return;
-                db.tests = [];
-                activeRunnerTest = null;
-                addLog('TEST', 'Все тесты очищены');
-                saveDb();
-                closeModal('modal-create-test');
-                renderAcademyAndTests();
-                showToast('Тесты удалены.');
+                uiConfirm({ title: 'Удалить ВСЕ тесты Академии?', text: 'Будет удалено тестов: ' + db.tests.length + '. Уже сданные результаты останутся.', ok: 'Удалить все' }, function() {
+                    db.tests = [];
+                    activeRunnerTest = null;
+                    addLog('TEST', 'Все тесты очищены');
+                    saveDb();
+                    closeModal('modal-create-test');
+                    renderAcademyAndTests();
+                    showToast('Тесты удалены.');
+                });
             };
 
             window.startAcademyTest = function(testId) {
                 var found = db.tests.filter(function(t) { return t.id === testId; })[0];
                 if (!found) return;
-                activeRunnerTest = { test: found, answers: {} };
+                activeRunnerTest = { test: found, answers: {}, proof: '', proofComment: '' };
                 renderRunnerUI();
                 renderAcademyAndTests();
             };
@@ -2333,13 +2621,23 @@
                 var qHtml = t.questions.map(function(q, qIdx) {
                     var optsHtml = q.opts.map(function(optText, oIdx) {
                         var selected = activeRunnerTest.answers[qIdx] === oIdx;
-                        return '<button type="button" onclick="chooseTestAnswer(' + qIdx + ', ' + oIdx + ')" class="w-full text-left p-3.5 rounded-xl border text-xs font-heavy transition-all ' + (selected ? 'bg-white text-black border-white' : 'bg-[#0e0e13] text-zinc-300 border-[#262632]') + '">' + optText + '</button>';
+                        return '<button type="button" onclick="chooseTestAnswer(' + qIdx + ', ' + oIdx + ')" class="w-full text-left p-3.5 rounded-xl border text-xs font-heavy transition-all ' + (selected ? 'bg-white text-black border-white' : 'bg-[#0e0e13] text-zinc-300 border-[#262632] hover:border-white/50') + '">' + escHtml(optText) + '</button>';
                     }).join('');
-                    return '<div class="p-5 rounded-2xl bg-[#111117] border border-[#24242f] space-y-3"><div class="text-sm font-heavy text-white">' + (qIdx + 1) + '. ' + q.q + '</div><div class="space-y-2">' + optsHtml + '</div></div>';
+                    return '<div class="p-5 rounded-2xl bg-[#111117] border border-[#24242f] space-y-3"><div class="text-sm font-heavy text-white">' + (qIdx + 1) + '. ' + escHtml(q.q) + '</div><div class="space-y-2">' + optsHtml + '</div></div>';
                 }).join('');
 
-                runnerView.innerHTML = '<div class="flex items-center justify-between border-b border-[#23232e] pb-4"><h3 class="text-xl font-heavy text-white">' + t.title + '</h3><button onclick="cancelRunnerTest()" class="px-3.5 py-2 rounded-xl bg-[#181822] text-xs font-heavy text-zinc-300">Назад</button></div><div class="space-y-4">' + qHtml + '</div><button onclick="finishRunnerTest()" class="w-full py-4 rounded-xl bg-white text-black font-heavy text-xs">Завершить тест</button>';
+                var inp = 'w-full px-4 py-3.5 rounded-xl bg-[#0b0b0f] border border-[#252530] focus:border-white text-xs text-white focus:outline-none';
+                var proofHtml = t.needProof ? ('<div class="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/25 space-y-3">' +
+                    '<div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-amber-400 text-black text-[10px] font-heavy">ДОКИ</span><span class="text-sm font-heavy text-white">Приложите доки к тесту *</span></div>' +
+                    '<p class="text-[11px] text-zinc-400 leading-relaxed">' + escHtml(t.proofHint || 'Вставьте ссылку на видео или скриншоты') + '</p>' +
+                    '<input id="runner-proof" type="text" maxlength="500" value="' + escHtml(activeRunnerTest.proof) + '" oninput="setRunnerProof(\'proof\', this.value)" placeholder="https://youtu.be/... или https://imgur.com/..." class="' + inp + '">' +
+                    '<input id="runner-proof-comment" type="text" maxlength="300" value="' + escHtml(activeRunnerTest.proofComment) + '" oninput="setRunnerProof(\'proofComment\', this.value)" placeholder="Комментарий к докам (необязательно)" class="' + inp + '">' +
+                '</div>') : '';
+
+                runnerView.innerHTML = '<div class="flex items-center justify-between border-b border-[#23232e] pb-4"><div><h3 class="text-xl font-heavy text-white">' + escHtml(t.title) + '</h3>' + (t.needProof ? '<span class="inline-block mt-1.5 px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-heavy">ТЕСТ С ДОКОЙ</span>' : '') + '</div><button onclick="cancelRunnerTest()" class="px-3.5 py-2 rounded-xl bg-[#181822] text-xs font-heavy text-zinc-300">Назад</button></div><div class="space-y-4">' + qHtml + proofHtml + '</div><button onclick="finishRunnerTest()" class="w-full py-4 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs transition-all">' + (t.needProof ? 'Завершить и отправить с докой' : 'Завершить тест') + '</button>';
             }
+
+            window.setRunnerProof = function(field, val) { if (activeRunnerTest) activeRunnerTest[field] = val; };
 
             window.chooseTestAnswer = function(qIdx, oIdx) {
                 if (!activeRunnerTest) return;
@@ -2352,6 +2650,13 @@
             window.finishRunnerTest = function() {
                 if (!activeRunnerTest) return;
                 var t = activeRunnerTest.test;
+                var proof = String(activeRunnerTest.proof || '').trim();
+                if (t.needProof && !/^https?:\/\/[^\s]{4,}$/.test(proof)) {
+                    var pe = document.getElementById('runner-proof');
+                    if (pe) { pe.focus(); pe.classList.add('border-red-400'); }
+                    showToast('Вставьте ссылку на доки (https://...)');
+                    return;
+                }
                 var correctCount = 0;
                 var details = [];
                 for (var i = 0; i < t.questions.length; i++) {
@@ -2363,7 +2668,9 @@
                 }
                 var pct = Math.round((correctCount / t.questions.length) * 100);
                 var passed = pct >= t.passScore;
-                db.testSubmissions.unshift({ id: Date.now(), testTitle: t.title, nick: db.currentUser.nick, staticId: db.currentUser.staticId, tg: db.currentUser.tg, scorePct: pct, passed: passed, time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }), details: details });
+                var sub = { id: Date.now(), testTitle: t.title, nick: db.currentUser.nick, staticId: db.currentUser.staticId, tg: db.currentUser.tg, scorePct: pct, passed: passed, time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }), details: details };
+                if (t.needProof) { sub.proof = proof; sub.proofComment = String(activeRunnerTest.proofComment || '').trim(); }
+                db.testSubmissions.unshift(sub);
                 addLog('TEST', 'Сдал тест «' + t.title + '» на ' + pct + '%');
                 activeRunnerTest = null;
                 saveDb();
@@ -2476,10 +2783,14 @@
 
             window.submitJoinApplication = function() {
                 var u = db.currentUser;
+                if (mineOf(db.applications).filter(isPending)[0]) { showToast('Ваша заявка уже на рассмотрении'); return; }
                 var aEl = document.getElementById('join-age');
                 var pEl = document.getElementById('join-prime');
                 var eEl = document.getElementById('join-exp');
                 var rEl = document.getElementById('join-rolls');
+                var age = aEl ? aEl.value.trim() : '', prime = pEl ? pEl.value.trim() : '', exp = eEl ? eEl.value.trim() : '', rolls = rEl ? rEl.value.trim() : '';
+                var bad = !age ? aEl : !prime ? pEl : !exp ? eEl : null;
+                if (bad) { bad.focus(); bad.classList.add('border-red-400'); setTimeout(function() { bad.classList.remove('border-red-400'); }, 1600); showToast('Заполните обязательные поля анкеты'); return; }
 
                 db.applications.unshift({
                     id: Date.now(),
@@ -2488,18 +2799,19 @@
                     staticId: u.staticId,
                     tg: u.tg,
                     avatar: u.avatar,
-                    age: aEl && aEl.value.trim() ? aEl.value.trim() : '18 лет',
-                    prime: pEl && pEl.value.trim() ? pEl.value.trim() : '6+ часов',
-                    exp: eEl && eEl.value.trim() ? eEl.value.trim() : 'Бизвары, цеха',
-                    rolls: rEl && rEl.value.trim() ? rEl.value.trim() : 'Приложено',
+                    age: age,
+                    prime: prime,
+                    exp: exp,
+                    rolls: rolls || '—',
                     status: 'PENDING'
                 });
                 addLog('AUTH', 'Подана заявка в семью от ' + u.nick);
+                [aEl, pEl, eEl, rEl].forEach(function(el) { if (el) el.value = ''; });
                 saveDb();
                 renderUserBar();
                 renderSeniorPanels();
                 renderJoinState();
-                showToast('Заявка отправлена Старшему составу! Ожидайте одобрения.');
+                showToast('Заявка отправлена Старшему составу! Ждите ответа.');
             };
 
             window.renderPayoutRates = function() {
@@ -2707,6 +3019,7 @@
                 var pendRb = (db.rollbacks || []).filter(function(r) { return r.status === 'PENDING'; });
                 var rbB = document.getElementById('sidebar-rollbacks-badge');
                 if (rbB) rbB.textContent = String(pendRb.length);
+                renderPromoClaimsAdmin();
 
                 var rbPendEl = document.getElementById('admin-rollbacks-pending');
                 if (rbPendEl) {
@@ -3182,10 +3495,11 @@
 
             window.deleteRollback = function(id) {
                 if (db.currentUser.role !== 'SENIOR') return;
-                if (!window.confirm('Удалить запись?')) return;
-                db.rollbacks = db.rollbacks.filter(function(r) { return r.id !== id; });
-                saveDb();
-                renderSeniorPanels();
+                uiConfirm({ title: 'Удалить запись?', text: 'Откат / видео будет удалён из списка.', ok: 'Удалить' }, function() {
+                    db.rollbacks = db.rollbacks.filter(function(r) { return r.id !== id; });
+                    saveDb();
+                    renderSeniorPanels();
+                });
             };
 
             function renderRollbacks() {
@@ -3210,104 +3524,110 @@
                 }
             }
 
-            // ===== ПРОМОКОДЫ =====
-            window.redeemPromo = function(inputId) {
-                var el = document.getElementById(inputId);
-                var code = el ? el.value.trim() : '';
-                if (!code) { showToast('Введите промокод'); return; }
-                api('POST', '/api/promo/redeem', { code: code }).then(function(res) {
-                    if (res._status === 401) { forceLogout('Сессия истекла, войдите снова'); return; }
-                    if (res.state) applyServerState(res, false);
-                    if (res.error) { showToast(res.error); return; }
-                    if (el) el.value = '';
-                    var pr = res.promo || {};
-                    showToast(pr.joined ? 'Промокод принят: вы в семье (1. Контракт)!' : ('Промокод активирован' + (pr.reward ? ': ' + pr.reward : '')));
-                }).catch(function() { showToast('Нет связи с сервером'); });
-            };
-
-            window.selectPromoType = function(t) {
-                currentPromoType = t;
-                var on = 'py-3 px-4 rounded-xl bg-white text-black text-xs font-heavy transition-all';
-                var off = 'py-3 px-4 rounded-xl bg-[#14141c] border border-[#282834] text-zinc-300 text-xs font-heavy transition-all';
-                var b0 = document.getElementById('pc-type-0'), b1 = document.getElementById('pc-type-1');
-                if (b0) b0.className = t === 'invite' ? on : off;
-                if (b1) b1.className = t === 'bonus' ? on : off;
-            };
-
-            function promoAction(path, body, okMsg) {
-                api('POST', path, body).then(function(res) {
-                    if (res.state) applyServerState(res, false);
-                    showToast(res.error || okMsg);
-                }).catch(function() { showToast('Нет связи с сервером'); });
-            }
-
-            window.createPromoCode = function() {
-                var uses = parseInt((document.getElementById('pc-uses') || {}).value, 10);
-                if (!(uses >= 1 && uses <= 100)) { showToast('Количество активаций: от 1 до 100'); return; }
-                var codeEl = document.getElementById('pc-code'), rwEl = document.getElementById('pc-reward');
-                promoAction('/api/promo/create', { code: codeEl ? codeEl.value.trim() : '', uses: uses, type: currentPromoType, reward: rwEl ? rwEl.value.trim() : '' }, 'Промокод создан');
-                if (codeEl) codeEl.value = '';
-                if (rwEl) rwEl.value = '';
-            };
-            window.togglePromoCode = function(id) { promoAction('/api/promo/toggle', { id: id }, 'Статус промокода изменён'); };
-            window.deletePromoCode = function(id) {
-                if (!window.confirm('Удалить промокод вместе с историей активаций?')) return;
-                promoAction('/api/promo/delete', { id: id }, 'Промокод удалён');
-            };
-            window.copyPromoCode = function(code) {
-                var temp = document.createElement('textarea');
-                temp.value = code; document.body.appendChild(temp); temp.select();
-                document.execCommand('copy'); document.body.removeChild(temp);
-                showToast('Скопировано: ' + code);
-            };
-
-            function renderPromoCodes() {
-                var box = document.getElementById('promo-codes-list');
-                if (!box) return;
-                var list = db.promoCodes || [];
-                box.innerHTML = list.length === 0 ? '<div class="bento-card p-8 text-center text-xs text-zinc-500">Промокодов пока нет.</div>' : list.map(function(c) {
-                    var left = c.uses - c.used;
-                    var pct = c.uses ? Math.round(c.used / c.uses * 100) : 0;
-                    var dead = !c.active || left <= 0;
-                    var who = (c.usedBy || []).map(function(u) { return '<span class="inline-block mr-1.5 mb-1 px-2 py-0.5 rounded bg-[#181822] border border-[#2c2c3a] text-[10px] text-zinc-300">' + escHtml(u.nick) + ' · ' + escHtml(u.tg) + '</span>'; }).join('');
-                    return '<div class="bento-card p-5 space-y-3 text-xs">' +
-                        '<div class="flex flex-wrap items-center justify-between gap-3">' +
-                            '<div class="flex flex-wrap items-center gap-2">' +
-                                '<span class="px-3 py-1.5 rounded-lg bg-white text-black text-sm font-heavy tracking-widest">' + escHtml(c.code) + '</span>' +
-                                '<span class="px-2.5 py-1 rounded-lg bg-white/10 text-white text-[10px] font-heavy">' + (c.type === 'invite' ? 'ПРИГЛАШЕНИЕ' : 'БОНУС') + '</span>' +
-                                '<span class="px-2.5 py-1 rounded-lg text-[10px] font-heavy ' + (dead ? 'bg-red-500/15 border border-red-500/30 text-red-300' : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300') + '">' + (left <= 0 ? 'ЛИМИТ ИСЧЕРПАН' : (c.active ? 'АКТИВЕН' : 'ОТКЛЮЧЁН')) + '</span>' +
-                            '</div>' +
-                            '<div class="flex flex-wrap items-center gap-1.5">' +
-                                '<button onclick="copyPromoCode(\'' + escHtml(c.code) + '\')" class="px-3 py-1.5 rounded-lg bg-[#181822] border border-[#2c2c3a] text-[10px] font-heavy text-white">Копировать</button>' +
-                                '<button onclick="togglePromoCode(' + c.id + ')" class="px-3 py-1.5 rounded-lg bg-[#181822] border border-[#2c2c3a] text-[10px] font-heavy text-white">' + (c.active ? 'Отключить' : 'Включить') + '</button>' +
-                                (canManageContent() ? '<button onclick="deletePromoCode(' + c.id + ')" class="px-3 py-1.5 rounded-lg bg-red-500/15 border border-red-500/30 text-red-300 text-[10px] font-heavy">Удалить</button>' : '') +
-                            '</div>' +
-                        '</div>' +
-                        '<div><div class="flex items-center justify-between text-[11px] text-zinc-400 mb-1"><span>Активаций: <strong class="text-white">' + c.used + ' из ' + c.uses + '</strong> · осталось ' + Math.max(0, left) + '</span><span>' + escHtml(c.createdBy || '') + '</span></div>' +
-                        '<div class="h-1.5 rounded bg-[#1c1c26] overflow-hidden"><div class="h-full bg-white" style="width:' + pct + '%"></div></div></div>' +
-                        (c.reward ? '<div class="text-[11px] text-zinc-300">Награда / заметка: ' + escHtml(c.reward) + '</div>' : '') +
-                        (who ? '<div><div class="text-[10px] text-zinc-500 uppercase mb-1">Активировали</div>' + who + '</div>' : '') +
-                    '</div>';
-                }).join('');
-            }
-
             window.setLogFilter = function(flt) { currentLogFilter = flt; renderSeniorPanels(); };
+
+            var CMS_CONFIG = {
+                news: {
+                    title: 'Новая новость семьи', sub: 'Сводка, итоги бизвара или объявление для всех участников', cta: 'Опубликовать новость',
+                    fields: [
+                        { key: 'badge', label: 'Метка', type: 'chips', options: ['ВАЖНО', 'ИТОГИ', 'СОБЫТИЕ', 'ОБЪЯВЛЕНИЕ'], def: 'ВАЖНО', required: true },
+                        { key: 'title', label: 'Заголовок', type: 'text', ph: 'Например: Победа на бизваре в порту', required: true, max: 90 },
+                        { key: 'desc', label: 'Текст новости', type: 'textarea', ph: 'Что произошло, кто участвовал, итог...', required: true, max: 600 },
+                        { key: 'image', label: 'Обложка (ссылка на фото, необязательно)', type: 'image' }
+                    ]
+                },
+                rules: {
+                    title: 'Новый пункт правил', sub: 'Правило, которое обязан знать и соблюдать каждый участник', cta: 'Добавить правило',
+                    fields: [
+                        { key: 'num', label: 'Номер пункта', type: 'text', ph: 'Например: 1.2', max: 8 },
+                        { key: 'title', label: 'Название правила', type: 'text', ph: 'Например: Запрет на слив информации', required: true, max: 90 },
+                        { key: 'desc', label: 'Что запрещено или обязательно', type: 'textarea', ph: 'Опишите правило и наказание за нарушение...', required: true, max: 600 }
+                    ]
+                },
+                diplomacy: {
+                    title: 'Новый статус дипломатии', sub: 'Союз, война или перемирие с другой семьёй', cta: 'Опубликовать статус',
+                    fields: [
+                        { key: 'badge', label: 'Статус отношений', type: 'chips', options: ['СОЮЗ', 'ВОЙНА', 'ПЕРЕМИРИЕ', 'НЕЙТРАЛИТЕТ'], def: 'СОЮЗ', required: true },
+                        { key: 'title', label: 'Название семьи', type: 'text', ph: 'Например: CARTEL SYNDICATE', required: true, max: 60 },
+                        { key: 'desc', label: 'Условия и что известно', type: 'textarea', ph: 'Совместный контроль трассы, правила капта, причина войны...', required: true, max: 500 },
+                        { key: 'image', label: 'Эмблема семьи (ссылка, необязательно)', type: 'image' }
+                    ]
+                },
+                fleet: {
+                    title: 'Новый автомобиль', sub: 'Техника синдиката: модель, доступ по рангу и назначение', cta: 'Добавить в автопарк',
+                    fields: [
+                        { key: 'title', label: 'Модель автомобиля', type: 'text', ph: 'Например: Benefactor V-Series', required: true, max: 60 },
+                        { key: 'badge', label: 'С какого ранга доступно', type: 'chips', options: ['1 РАНГ', '2 РАНГ', '3 РАНГ', 'СТАРШИЙ СОСТАВ'], def: '1 РАНГ', required: true },
+                        { key: 'meta', label: 'Для чего используется', type: 'chips', options: ['Контракты', 'Бизвары', 'Трасса', 'Капт', 'Грузоперевозки'], def: '' },
+                        { key: 'desc', label: 'Описание (необязательно)', type: 'textarea', ph: 'Особенности, правила использования, где стоит...', max: 400 },
+                        { key: 'image', label: 'Фото авто (ссылка, необязательно)', type: 'image' }
+                    ]
+                },
+                estates: {
+                    title: 'Новый объект недвижимости', sub: 'Штаб, особняк, склад или гараж семьи', cta: 'Добавить объект',
+                    fields: [
+                        { key: 'title', label: 'Название объекта', type: 'text', ph: 'Например: Особняк на Richman', required: true, max: 60 },
+                        { key: 'badge', label: 'Тип объекта', type: 'chips', options: ['ШТАБ', 'ОСОБНЯК', 'СКЛАД', 'ГАРАЖ', 'БИЗНЕС'], def: 'ШТАБ', required: true },
+                        { key: 'meta', label: 'Адрес / район', type: 'text', ph: 'Например: Richman, дом 12', max: 80 },
+                        { key: 'desc', label: 'Описание (необязательно)', type: 'textarea', ph: 'Для чего используется, кто имеет доступ...', max: 400 },
+                        { key: 'image', label: 'Фото объекта (ссылка, необязательно)', type: 'image' }
+                    ]
+                }
+            };
+            var cmsCur = { sec: 'news', values: {} };
+
+            function cmsInputCls() { return 'w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none'; }
+
+            function renderCmsChips(f) {
+                var cur = cmsCur.values[f.key];
+                return '<div class="flex flex-wrap gap-2" id="cms-chips-' + f.key + '">' + f.options.map(function(o, i) {
+                    var on = cur === o;
+                    return '<button type="button" onclick="cmsPick(\'' + f.key + '\', ' + i + ')" class="px-3.5 py-2 rounded-xl text-[11px] font-heavy transition-all ' + (on ? 'bg-white text-black' : 'bg-[#14141c] border border-[#282834] text-zinc-300 hover:border-white') + '">' + escHtml(o) + '</button>';
+                }).join('') + '</div>';
+            }
+
+            window.cmsPick = function(key, idx) {
+                var cfg = CMS_CONFIG[cmsCur.sec];
+                var f = cfg.fields.filter(function(x) { return x.key === key; })[0];
+                if (!f) return;
+                var val = f.options[idx];
+                cmsCur.values[key] = (cmsCur.values[key] === val && !f.required) ? '' : val;
+                var holder = document.getElementById('cms-chips-' + key);
+                if (holder) holder.outerHTML = renderCmsChips(f);
+            };
+
+            window.cmsPreview = function(val) {
+                var box = document.getElementById('cms-img-prev');
+                if (!box) return;
+                val = String(val || '').trim();
+                if (/^https?:\/\/[^\s]{4,}$/.test(val)) {
+                    box.innerHTML = '<img src="' + escHtml(val) + '" alt="" class="w-full h-36 object-cover rounded-xl border border-[#272733]" onerror="this.parentNode.innerHTML=\'<div class=&quot;text-[10px] text-red-300&quot;>Не удалось загрузить картинку по этой ссылке</div>\'">';
+                    box.classList.remove('hidden');
+                } else { box.innerHTML = ''; box.classList.add('hidden'); }
+            };
 
             window.openAddContentModal = function(section) {
                 if (db.currentUser.role !== 'SENIOR') return;
-                var el = document.getElementById('cms-target-section');
-                if (el) el.value = section;
-                var titleMap = {
-                    'estates': 'Добавить дом в Недвижимость',
-                    'news': 'Добавить новость семьи',
-                    'fleet': 'Добавить транспорт в Автопарк',
-                    'rules': 'Добавить пункт в Правила',
-                    'diplomacy': 'Добавить статус в Дипломатию'
-                };
-                var mTitle = document.getElementById('modal-add-content-title');
-                if (mTitle) mTitle.textContent = titleMap[section] || 'Добавить запись';
+                var cfg = CMS_CONFIG[section];
+                if (!cfg) return;
+                cmsCur = { sec: section, values: {} };
+                cfg.fields.forEach(function(f) { if (f.type === 'chips') cmsCur.values[f.key] = f.def || ''; });
+                document.getElementById('modal-add-content-title').textContent = cfg.title;
+                document.getElementById('modal-add-content-sub').textContent = cfg.sub;
+                document.getElementById('cms-submit').textContent = cfg.cta;
+                document.getElementById('cms-form-body').innerHTML = cfg.fields.map(function(f) {
+                    var label = '<label class="block text-[10px] text-zinc-400 uppercase mb-1.5">' + escHtml(f.label) + (f.required ? ' *' : '') + '</label>';
+                    var ctl = '';
+                    if (f.type === 'chips') ctl = renderCmsChips(f);
+                    else if (f.type === 'textarea') ctl = '<textarea id="cms-f-' + f.key + '" rows="3" maxlength="' + (f.max || 500) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + ' resize-none"></textarea>';
+                    else if (f.type === 'image') ctl = '<input id="cms-f-' + f.key + '" type="text" maxlength="500" placeholder="https://..." oninput="cmsPreview(this.value)" class="' + cmsInputCls() + '"><div id="cms-img-prev" class="hidden mt-2"></div>';
+                    else ctl = '<input id="cms-f-' + f.key + '" type="text" maxlength="' + (f.max || 100) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + '">';
+                    return '<div>' + label + ctl + '</div>';
+                }).join('');
                 var m = document.getElementById('modal-add-content');
                 if (m) m.classList.remove('hidden');
+                var first = document.querySelector('#cms-form-body input[type=text], #cms-form-body textarea');
+                if (first) setTimeout(function() { first.focus(); }, 40);
             };
 
             window.closeModal = function(id) {
@@ -3316,16 +3636,29 @@
             };
 
             window.saveCmsContent = function() {
-                var sec = document.getElementById('cms-target-section').value;
-                var badge = document.getElementById('cms-badge').value.trim() || 'DRUGHILL';
-                var title = document.getElementById('cms-title').value.trim() || 'Запись';
-                var desc = document.getElementById('cms-desc').value.trim() || 'Текст';
-                var defaultPlaceholder = sec === 'estates' ? 'https://placehold.co/800x450/14141c/ffffff?text=ОСОБНЯК' : 'https://placehold.co/800x450/14141c/ffffff?text=DRUGHILL';
-                var image = document.getElementById('cms-image').value.trim() || defaultPlaceholder;
-
-                if (db[sec] && Array.isArray(db[sec])) {
-                    db[sec].unshift({ badge: badge, date: 'Сегодня', title: title, desc: desc, image: image });
+                var sec = cmsCur.sec, cfg = CMS_CONFIG[sec];
+                if (!cfg || !db[sec] || !Array.isArray(db[sec])) return;
+                var vals = {};
+                for (var i = 0; i < cfg.fields.length; i++) {
+                    var f = cfg.fields[i];
+                    var v = f.type === 'chips' ? (cmsCur.values[f.key] || '') : ((document.getElementById('cms-f-' + f.key) || {}).value || '').trim();
+                    if (f.required && !v) {
+                        var el = document.getElementById('cms-f-' + f.key);
+                        if (el) { el.focus(); el.classList.add('border-red-400'); setTimeout(function(e) { return function() { e.classList.remove('border-red-400'); }; }(el), 1600); }
+                        showToast('Заполните поле: ' + f.label);
+                        return;
+                    }
+                    if (f.type === 'image' && v && !/^https?:\/\/[^\s]{4,}$/.test(v)) { showToast('Ссылка на фото должна начинаться с https://'); return; }
+                    vals[f.key] = v;
                 }
+                var entry = { date: 'Сегодня', title: vals.title, desc: vals.desc || '' };
+                if (sec === 'rules') entry.badge = vals.num ? vals.num + ' ПРАВИЛА' : 'ПРАВИЛА';
+                else entry.badge = vals.badge || 'DRUGHILL';
+                if (vals.meta) entry.meta = vals.meta;
+                var ph = { news: 'https://placehold.co/800x420/121217/ffffff?text=DRUGHILL', fleet: 'https://placehold.co/600x360/121217/ffffff?text=АВТОПАРК', estates: 'https://placehold.co/800x450/14141c/ffffff?text=ОСОБНЯК' };
+                if (vals.image) entry.image = vals.image; else if (ph[sec]) entry.image = ph[sec];
+                db[sec].unshift(entry);
+                addLog('RANK', 'Опубликовано: ' + entry.title + ' (' + entry.badge + ')');
                 saveDb();
                 renderContentSections();
                 closeModal('modal-add-content');
@@ -3375,11 +3708,12 @@
                     try {
                         var data = JSON.parse(ev.target.result);
                         if (!isValidDbShape(data)) { showToast('Это не файл базы DRUGHILL'); return; }
-                        if (!window.confirm('Заменить базу НА СЕРВЕРЕ данными из файла?\nТекущие данные у всех участников будут перезаписаны.')) return;
-                        delete data.currentUser;
-                        api('POST', '/api/admin/import', data).then(function(res) {
-                            if (res.state) { applyServerState(res, false); showToast('База загружена на сервер'); }
-                            else showToast(res.error || 'Не удалось загрузить базу');
+                        uiConfirm({ title: 'Заменить базу на сервере?', text: 'Текущие данные у всех участников будут перезаписаны данными из файла.', ok: 'Заменить базу' }, function() {
+                            delete data.currentUser;
+                            api('POST', '/api/admin/import', data).then(function(res) {
+                                if (res.state) { applyServerState(res, false); showToast('База загружена на сервер'); }
+                                else showToast(res.error || 'Не удалось загрузить базу');
+                            });
                         });
                     } catch (err) { showToast('Ошибка чтения файла'); }
                 };
@@ -3389,10 +3723,11 @@
 
             window.resetDemoDatabase = function() {
                 if (!requireDbAccess()) return;
-                if (!window.confirm('Сбросить базу НА СЕРВЕРЕ к начальной?\nСначала скачайте резервную копию db.json: данные у всех пропадут безвозвратно.')) return;
-                api('POST', '/api/admin/reset', {}).then(function(res) {
-                    if (res.state) { applyServerState(res, false); showToast('База сброшена'); }
-                    else showToast(res.error || 'Не удалось сбросить базу');
+                uiConfirm({ title: 'Сбросить базу к начальной?', text: 'Сначала скачайте резервную копию db.json: данные у всех участников пропадут безвозвратно.', ok: 'Сбросить базу' }, function() {
+                    api('POST', '/api/admin/reset', {}).then(function(res) {
+                        if (res.state) { applyServerState(res, false); showToast('База сброшена'); }
+                        else showToast(res.error || 'Не удалось сбросить базу');
+                    });
                 });
             };
 
@@ -3420,7 +3755,7 @@
                 renderAcademyAndTests();
                 renderRollbacks();
                 renderPromoRequirements();
-                renderPromoCodes();
+                renderMyPromoClaims();
                 renderPayoutRates();
                 renderSeniorPanels();
                 renderDbPanel();

@@ -40,21 +40,22 @@ const SPEC = {
   promoReports: ['id', 'nick', 'staticId', 'tg', 'avatar', 'fromRank', 'toRank', 'tasks', 'proofs', 'status', 'createdAt'],
   payoutReports: ['id', 'nick', 'staticId', 'tg', 'avatar', 'total', 'items', 'proofs', 'status', 'createdAt'],
   vacations: ['id', 'nick', 'staticId', 'tg', 'avatar', 'rank', 'startDate', 'endDate', 'daysCount', 'reason', 'status', 'createdAt'],
-  testSubmissions: ['id', 'testTitle', 'nick', 'staticId', 'tg', 'scorePct', 'passed', 'time', 'details', 'createdAt'],
-  tests: ['id', 'title', 'passScore', 'questions'],
-  news: ['badge', 'date', 'title', 'desc', 'image'],
-  rules: ['badge', 'date', 'title', 'desc', 'image'],
-  diplomacy: ['badge', 'date', 'title', 'desc', 'image'],
-  fleet: ['badge', 'date', 'title', 'desc', 'image'],
-  estates: ['badge', 'date', 'title', 'desc', 'image'],
+  testSubmissions: ['id', 'testTitle', 'nick', 'staticId', 'tg', 'scorePct', 'passed', 'time', 'details', 'proof', 'proofComment', 'createdAt'],
+  tests: ['id', 'title', 'passScore', 'questions', 'needProof', 'proofHint'],
+  news: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
+  rules: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
+  diplomacy: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
+  fleet: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
+  estates: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
   payoutItems: ['id', 'name', 'rate'],
   rollbacks: ['id', 'nick', 'staticId', 'tg', 'avatar', 'kind', 'title', 'link', 'comment', 'status', 'decidedBy', 'createdAt'],
   promoRequirements: ['id', 'rank', 'text'],
+  promoClaims: ['id', 'nick', 'staticId', 'tg', 'avatar', 'status', 'decidedBy', 'createdAt'],
   promoCodes: ['id', 'code', 'type', 'uses', 'used', 'reward', 'active', 'createdBy', 'createdAt', 'usedBy'],
   logs: ['id', 'type', 'actor', 'action', 'time', 'ts']
 };
 const KEYS = Object.keys(SPEC);
-const ID_COLLS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests', 'rollbacks', 'promoCodes'];
+const ID_COLLS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests', 'rollbacks', 'promoClaims', 'promoCodes'];
 const SET_COLLS = ['news', 'rules', 'diplomacy', 'fleet', 'estates', 'payoutItems', 'promoRequirements'];
 const CONTENT = ['news', 'rules', 'diplomacy', 'fleet', 'estates'];
 const URL_FIELDS = ['avatar', 'image'];
@@ -62,7 +63,6 @@ const STATUSES = ['PENDING', 'APPROVED', 'REJECTED'];
 const PROMO_RANKS = ['1. Контракт', '2. Академ', '3. Мейн'];
 const PROMO_TARGETS = ['2. Академ', '3. Мейн'];
 const ROLLBACK_KINDS = ['Откат', 'Аттестация'];
-const PROMO_TYPES = ['invite', 'bonus'];
 const DEFAULT_REQUIREMENTS = [
   { id: 'rq1', rank: 'all', text: 'Сданы правила семьи DRUGHILL' },
   { id: 'rq2', rank: 'all', text: 'Выполнены семейные контракты' },
@@ -240,9 +240,11 @@ function viewFor(me) {
     v.testSubmissions = state.testSubmissions.filter(own);
     v.applications = state.applications.filter(own);
     v.rollbacks = state.rollbacks.filter(own);
+    v.promoClaims = state.promoClaims.filter(own);
     v.promoRequirements = state.promoRequirements;
   } else {
     v.applications = state.applications.filter(own);
+    v.promoClaims = state.promoClaims.filter(own);
   }
   return v;
 }
@@ -267,8 +269,9 @@ const SUBS = {
   promoReports: { min: LEVELS.MEMBER, fields: ['toRank', 'tasks', 'proofs'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
   payoutReports: { min: LEVELS.MEMBER, fields: ['items', 'proofs'], del: LEVELS.LEADER, decide: LEVELS.SENIOR },
   vacations: { min: LEVELS.MEMBER, fields: ['startDate', 'endDate', 'reason'], del: LEVELS.SENIOR, decide: LEVELS.SENIOR },
-  testSubmissions: { min: LEVELS.MEMBER, fields: ['testTitle', 'scorePct', 'passed', 'time', 'details'], del: LEVELS.LEADER, decide: LEVELS.LEADER + 1 },
-  rollbacks: { min: LEVELS.MEMBER, fields: ['kind', 'title', 'link', 'comment'], del: LEVELS.SENIOR, decide: LEVELS.SENIOR }
+  testSubmissions: { min: LEVELS.MEMBER, fields: ['testTitle', 'scorePct', 'passed', 'time', 'details', 'proof', 'proofComment'], del: LEVELS.LEADER, decide: LEVELS.LEADER + 1 },
+  rollbacks: { min: LEVELS.MEMBER, fields: ['kind', 'title', 'link', 'comment'], del: LEVELS.SENIOR, decide: LEVELS.SENIOR },
+  promoClaims: { min: LEVELS.GUEST, fields: [], del: LEVELS.LEADER, decide: LEVELS.SENIOR }
 };
 function rankIdx(rank) { return PROMO_RANKS.indexOf(rank); }
 
@@ -333,6 +336,15 @@ function buildSubmission(coll, me, rec, W) {
     out.passed = !!out.passed;
     out.time = cleanStr(out.time || timeNow(), 10);
     out.testTitle = cleanStr(out.testTitle || 'Тест', 100);
+    const tst = W.tests.find(t => t.title === out.testTitle);
+    if (tst && tst.needProof) {
+      out.proof = cleanStr(out.proof || '', 600);
+      out.proofComment = cleanStr(out.proofComment || '', 300);
+      if (!/^https?:\/\/[^\s]{4,}$/.test(out.proof)) throw new HttpError(400, 'Для этого теста нужна ссылка на доки (https://...)');
+    } else { delete out.proof; delete out.proofComment; }
+  }
+  if (coll === 'promoClaims') {
+    if (W.promoClaims.some(r => sameTg(r.tg, me.tg) && r.status === 'PENDING')) throw new HttpError(400, 'Ваша заявка на награду уже на рассмотрении у Лидера');
   }
   const taken = new Set(W[coll].map(r => r.id));
   out.id = Number.isSafeInteger(rec && rec.id) && rec.id > 0 && !taken.has(rec.id) ? rec.id : nextId(taken);
@@ -424,6 +436,8 @@ function applyPatch(me, patch, events) {
       if (!Array.isArray(clean.questions) || !clean.questions.length) throw new HttpError(400, 'В тесте нет вопросов');
       clean.title = cleanStr(clean.title || 'Аттестация', 100);
       clean.passScore = Math.max(1, Math.min(100, Math.round(Number(clean.passScore) || 70)));
+      clean.needProof = clean.needProof === true;
+      clean.proofHint = clean.needProof ? cleanStr(clean.proofHint || 'Приложите ссылку на доки (скрин, видео, отчёт)', 200) : '';
       const idx = W.tests.findIndex(r => r.id === (rec && rec.id));
       if (idx === -1) { clean.id = nextId(new Set(W.tests.map(r => r.id))); W.tests.push(clean); }
       else W.tests[idx] = Object.assign({}, clean, { id: W.tests[idx].id });
@@ -521,7 +535,7 @@ function chatOf(tgHandle) {
   const id = Object.keys(users).find(i => sameTg(users[i].tg, tgHandle) && users[i].chatId);
   return id ? users[id].chatId : null;
 }
-const COLL_TITLE = { applications: 'заявка в семью', vacations: 'заявка на отпуск', promoReports: 'рапорт на повышение', payoutReports: 'заявка на премию', rollbacks: 'заявка с видео' };
+const COLL_TITLE = { promoClaims: 'заявка «Награда за промокод»', applications: 'заявка в семью', vacations: 'заявка на отпуск', promoReports: 'рапорт на повышение', payoutReports: 'заявка на премию', rollbacks: 'заявка с видео' };
 function eventText(ev, site) {
   const it = ev.item;
   const who = '<b>' + esc(it.nick) + '</b> (' + esc(it.staticId) + ', ' + esc(it.tg) + ')';
@@ -532,13 +546,15 @@ function eventText(ev, site) {
   else if (ev.coll === 'promoReports') body = '⬆️ <b>Рапорт на повышение</b>\n' + who + '\n' + esc(it.fromRank) + ' → ' + esc(it.toRank) + '\nВыполнено: ' + esc(it.tasks) + '\nДок-ва: ' + esc(it.proofs);
   else if (ev.coll === 'payoutReports') body = '💰 <b>Заявка на премию</b>\n' + who + '\nСумма: $' + Number(it.total).toLocaleString('en-US') + '\n' + (it.items || []).map(l => esc(l.name) + ' × ' + l.qty).join(', ') + (it.proofs ? '\nДок-ва: ' + esc(it.proofs) : '');
   else if (ev.coll === 'rollbacks') body = '🎬 <b>' + (it.kind === 'Аттестация' ? 'Видео для аттестации' : 'Новый откат') + '</b>\n' + who + '\n' + esc(it.title) + (it.comment ? '\nКомментарий: ' + esc(it.comment) : '') + '\n' + esc(it.link);
+  else if (ev.coll === 'promoClaims') body = '🎟 <b>Награда за промокод</b>\n' + who + '\nИгрок активировал промокод в игре и просит награду. Проверьте и выдайте.';
+  else if (ev.coll === 'testSubmissions' && it.proof) body = '📎 <b>Тест с докой: ' + esc(it.testTitle) + '</b>\n' + who + '\nРезультат: ' + it.scorePct + '%\nДоки: ' + esc(it.proof) + (it.proofComment ? '\nКомментарий: ' + esc(it.proofComment) : '');
   else return '';
   return body + '\n\nРассмотреть: ' + site;
 }
 function dispatchEvents(events, site) {
   events.forEach(ev => {
     if (ev.type === 'new') {
-      if (ev.coll === 'testSubmissions') return;
+      if (ev.coll === 'testSubmissions' && !ev.item.proof) return;
       const text = eventText(ev, site);
       if (text) leaderChats().forEach(c => send(c, text));
     } else if (ev.type === 'decided') {
@@ -769,69 +785,6 @@ async function handleApi(req, res, url) {
     markDirty('users.json');
     const entry = findRoster(state, me.tg);
     if (entry) { if (nick) entry.nick = nick; if (sid) entry.staticId = '#' + sid; state.rev += 1; markDirty('state.json'); }
-    return json(res, 200, stateResponse(resolveMe(me.uid), true));
-  }
-
-  // ───── промокоды (по счёту: лимит активаций) ─────
-  if (p === '/api/promo/redeem' && req.method === 'POST') {
-    if (limited(req, 'promo', 10, 10 * 60 * 1000)) throw new HttpError(429, 'Слишком много попыток, подождите');
-    const b = await readBody(req, 2048);
-    const code = cleanStr(b.code, 30).toUpperCase().replace(/\s+/g, '');
-    const pc = code && state.promoCodes.find(c => c.code === code);
-    if (!pc || !pc.active) throw new HttpError(404, 'Промокод не найден или отключён');
-    if (pc.used >= pc.uses) throw new HttpError(410, 'Лимит активаций этого промокода исчерпан');
-    if ((pc.usedBy || []).some(u => sameTg(u.tg, me.tg))) throw new HttpError(400, 'Вы уже активировали этот промокод');
-    if (pc.type === 'invite' && me.level >= LEVELS.MEMBER) throw new HttpError(400, 'Этот промокод для гостей: вы уже в составе семьи');
-    pc.used += 1;
-    pc.usedBy = (pc.usedBy || []).concat([{ nick: me.nick, staticId: me.staticId, tg: me.tg, at: new Date().toISOString() }]).slice(-100);
-    let joined = false;
-    if (pc.type === 'invite' && me.level === LEVELS.GUEST) {
-      state.roster.push({ id: nextId(new Set(state.roster.map(r => r.id))), nick: me.nick, staticId: me.staticId, tg: me.tg, rank: '1. Контракт', avatar: me.avatar || PLACEHOLDER });
-      state.applications.forEach(a => { if (sameTg(a.tg, me.tg) && a.status === 'PENDING') { a.status = 'APPROVED'; a.decidedBy = 'Промокод ' + pc.code; } });
-      joined = true;
-    }
-    state.logs.unshift({ id: nextId(), type: 'AUTH', actor: me.nick, action: 'Активировал промокод ' + pc.code + (joined ? ' и принят в семью (1. Контракт)' : ''), time: timeNow(), ts: new Date().toISOString() });
-    state.logs = state.logs.slice(0, 500);
-    state.rev += 1;
-    state.savedAt = new Date().toISOString();
-    markDirty('state.json');
-    const left = pc.uses - pc.used;
-    const text = '🎟 <b>Промокод ' + esc(pc.code) + ' активирован</b>\n<b>' + esc(me.nick) + '</b> (' + esc(me.staticId) + ', ' + esc(me.tg) + ')\n' +
-      (joined ? 'Принят в семью на 1. Контракт.\n' : '') + (pc.reward ? 'Награда: ' + esc(pc.reward) + '\n' : '') + 'Осталось активаций: ' + left + ' из ' + pc.uses;
-    leaderChats().forEach(c => send(c, text));
-    const out = stateResponse(resolveMe(me.uid), true);
-    out.promo = { code: pc.code, type: pc.type, reward: pc.reward || '', joined: joined, left: left };
-    return json(res, 200, out);
-  }
-  if (p === '/api/promo/create' && req.method === 'POST') {
-    need(me, LEVELS.SENIOR, 'Промокоды создаёт только Старший состав');
-    const b = await readBody(req, 2048);
-    const uses = Math.floor(Number(b.uses));
-    if (!(uses >= 1 && uses <= 100)) throw new HttpError(400, 'Количество активаций: от 1 до 100');
-    const type = PROMO_TYPES.indexOf(b.type) !== -1 ? b.type : 'invite';
-    let code = cleanStr(b.code, 30).toUpperCase().replace(/\s+/g, '');
-    if (!code) { do { code = 'DH-' + crypto.randomBytes(3).toString('hex').toUpperCase(); } while (state.promoCodes.some(c => c.code === code)); }
-    if (!/^[A-Z0-9А-ЯЁ][A-Z0-9А-ЯЁ_-]{2,23}$/.test(code)) throw new HttpError(400, 'Код: 3–24 символа (буквы, цифры, - и _)');
-    if (state.promoCodes.some(c => c.code === code)) throw new HttpError(400, 'Такой промокод уже есть');
-    state.promoCodes.unshift({
-      id: nextId(new Set(state.promoCodes.map(c => c.id))), code: code, type: type, uses: uses, used: 0,
-      reward: cleanStr(b.reward, 120), active: true, createdBy: me.nick, createdAt: new Date().toISOString(), usedBy: []
-    });
-    state.rev += 1; markDirty('state.json');
-    return json(res, 200, stateResponse(resolveMe(me.uid), true));
-  }
-  if ((p === '/api/promo/toggle' || p === '/api/promo/delete') && req.method === 'POST') {
-    const b = await readBody(req, 1024);
-    const idx = state.promoCodes.findIndex(c => c.id === b.id);
-    if (idx === -1) throw new HttpError(404, 'Промокод не найден');
-    if (p === '/api/promo/toggle') {
-      need(me, LEVELS.SENIOR, 'Только Старший состав');
-      state.promoCodes[idx].active = !state.promoCodes[idx].active;
-    } else {
-      need(me, LEVELS.LEADER, 'Удалять промокоды может только Лидер или Зам. Лидера');
-      state.promoCodes.splice(idx, 1);
-    }
-    state.rev += 1; markDirty('state.json');
     return json(res, 200, stateResponse(resolveMe(me.uid), true));
   }
 
