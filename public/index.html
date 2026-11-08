@@ -398,7 +398,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] text-zinc-400 uppercase mb-1.5 whitespace-nowrap">Имя и Фамилия</label>
-                        <input autocomplete="off" id="auth-nick-input" type="text" placeholder="Например: Иван Петров" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
+                        <input autocomplete="off" id="auth-nick-input" type="text" placeholder="Имя Фамилия" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
                     </div>
                     <div>
                         <label class="block text-[10px] text-zinc-400 uppercase mb-1.5 whitespace-nowrap">Ваш Static ID</label>
@@ -1049,7 +1049,7 @@
                         </div>
 
                         <div class="space-y-2.5">
-                            <label class="block text-xs font-heavy text-zinc-200">Выполненные требования (отметьте нужное)</label>
+                            <label id="promo-req-title" class="block text-xs font-heavy text-zinc-200">Выполненные требования (отметьте нужное)</label>
                             <div id="promo-req-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
                         </div>
 
@@ -1327,7 +1327,7 @@
             <div class="space-y-3">
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Имя и Фамилия (по-русски)</label>
-                    <input autocomplete="off" id="new-mem-nick" type="text" placeholder="Иван Петров" maxlength="42" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                    <input autocomplete="off" id="new-mem-nick" type="text" placeholder="Имя Фамилия" maxlength="42" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Static ID</label>
@@ -1425,9 +1425,17 @@
                 <h3 class="text-lg font-heavy text-white">Требования для повышения</h3>
                 <button onclick="closeModal('modal-edit-requirements')" class="text-zinc-400 hover:text-white">✕</button>
             </div>
-            <p class="text-[10px] text-zinc-400">Меняйте текст требования и выбирайте, для какого повышения оно нужно. Можно добавлять новые и удалять ненужные.</p>
-            <div id="req-editor-list" class="space-y-2.5"></div>
-            <button type="button" onclick="addRequirementRow()" class="w-full py-3 rounded-xl bg-[#181822] border border-dashed border-[#3a3a4a] hover:border-white text-xs font-heavy text-white transition-all">+ Добавить требование</button>
+            <p class="text-[10px] text-zinc-400">У каждого повышения свой отдельный список требований. Меняйте текст, добавляйте новые и удаляйте ненужные.</p>
+            <div class="space-y-2.5">
+                <div class="text-xs font-heavy text-white">Требования на 2 ранг — Академ</div>
+                <div id="req-editor-list-2" class="space-y-2.5"></div>
+                <button type="button" onclick="addRequirementRow('2. Академ')" class="w-full py-3 rounded-xl bg-[#181822] border border-dashed border-[#3a3a4a] hover:border-white text-xs font-heavy text-white transition-all">+ Добавить требование на 2 ранг</button>
+            </div>
+            <div class="space-y-2.5 pt-3 border-t border-[#23232e]">
+                <div class="text-xs font-heavy text-white">Требования на 3 ранг — Мейн</div>
+                <div id="req-editor-list-3" class="space-y-2.5"></div>
+                <button type="button" onclick="addRequirementRow('3. Мейн')" class="w-full py-3 rounded-xl bg-[#181822] border border-dashed border-[#3a3a4a] hover:border-white text-xs font-heavy text-white transition-all">+ Добавить требование на 3 ранг</button>
+            </div>
             <button onclick="saveEditedRequirements()" class="w-full py-3.5 rounded-xl bg-white text-black font-heavy text-xs">Сохранить</button>
         </div>
     </div>
@@ -1456,7 +1464,7 @@
             <div class="space-y-3">
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваши Имя и Фамилия (по-русски)</label>
-                    <input autocomplete="off" id="edit-prof-nick" type="text" placeholder="Иван Петров" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                    <input autocomplete="off" id="edit-prof-nick" type="text" placeholder="Имя Фамилия" maxlength="42" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
                 <div>
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваш Static ID</label>
@@ -1588,10 +1596,14 @@
 
             function makeDefaultRequirements() {
                 return [
-                    { id: 'rq1', rank: 'all', text: 'Сданы правила семьи DRUGHILL' },
-                    { id: 'rq2', rank: 'all', text: 'Выполнены семейные контракты' },
-                    { id: 'rq3', rank: 'all', text: 'Пополнен склад / общак' },
-                    { id: 'rq4', rank: 'all', text: 'Участие в строях / бизварах' }
+                    { id: 'rq1_2', rank: '2. Академ', text: 'Сданы правила семьи DRUGHILL' },
+                    { id: 'rq2_2', rank: '2. Академ', text: 'Выполнены семейные контракты' },
+                    { id: 'rq3_2', rank: '2. Академ', text: 'Пополнен склад / общак' },
+                    { id: 'rq4_2', rank: '2. Академ', text: 'Участие в строях / бизварах' },
+                    { id: 'rq1_3', rank: '3. Мейн', text: 'Сданы правила семьи DRUGHILL' },
+                    { id: 'rq2_3', rank: '3. Мейн', text: 'Выполнены семейные контракты' },
+                    { id: 'rq3_3', rank: '3. Мейн', text: 'Пополнен склад / общак' },
+                    { id: 'rq4_3', rank: '3. Мейн', text: 'Участие в строях / бизварах' }
                 ];
             }
 
@@ -2232,7 +2244,7 @@
                     return x.split('-').map(function(y) { return y.charAt(0).toUpperCase() + y.slice(1).toLowerCase(); }).join('-');
                 }).join(' ');
             }
-            var FULLNAME_HINT = 'Укажите Имя и Фамилию по-русски через пробел (например: Иван Петров)';
+            var FULLNAME_HINT = 'Укажите Имя и Фамилию по-русски через пробел';
 
             window.startTelegramAuth = function() {
                 var nickInput = document.getElementById('auth-nick-input');
@@ -2814,6 +2826,8 @@
             function renderPromoRequirements() {
                 var box = document.getElementById('promo-req-list');
                 if (!box) return;
+                var ttl = document.getElementById('promo-req-title');
+                if (ttl) ttl.textContent = 'Требования на ' + (currentPromoTarget === '3. Мейн' ? '3 ранг — Мейн' : '2 ранг — Академ') + ' (отметьте выполненные)';
                 var list = (db.promoRequirements || []).filter(function(r) { return r.rank === 'all' || r.rank === currentPromoTarget; });
                 if (!list.length) { box.innerHTML = emptyState('rules', 'Требования не заданы', 'Для этого ранга требования пока не добавлены.', { compact: true }); return; }
                 box.innerHTML = list.map(function(r) {
@@ -2830,6 +2844,7 @@
             };
 
             window.selectPromoTarget = function(rankName) {
+                if (rankName !== currentPromoTarget) promoChecked = {};
                 currentPromoTarget = rankName;
                 var b2 = document.getElementById('promo-btn-2');
                 var b3 = document.getElementById('promo-btn-3');
@@ -2843,44 +2858,55 @@
 
             window.openEditRequirementsModal = function() {
                 if (db.currentUser.role !== 'SENIOR') return;
-                tempReqs = (db.promoRequirements || []).map(function(r) { return { id: r.id, rank: r.rank, text: r.text }; });
+                tempReqs = [];
+                ['2. Академ', '3. Мейн'].forEach(function(rk) {
+                    (db.promoRequirements || []).forEach(function(r) {
+                        // старые требования «Для всех» попадают в оба списка, дальше редактируются отдельно
+                        if (r.rank === rk || r.rank === 'all') tempReqs.push({ id: (r.rank === 'all' ? r.id + '_' + (rk === '2. Академ' ? '2' : '3') : r.id), rank: rk, text: r.text });
+                    });
+                });
                 renderRequirementsEditor();
                 var m = document.getElementById('modal-edit-requirements');
                 if (m) m.classList.remove('hidden');
             };
 
             function renderRequirementsEditor() {
-                var box = document.getElementById('req-editor-list');
-                if (!box) return;
-                box.innerHTML = tempReqs.map(function(r, idx) {
-                    function opt(v, label) { return '<option value="' + v + '"' + (r.rank === v ? ' selected' : '') + '>' + label + '</option>'; }
-                    return '<div class="flex items-center gap-2">' +
-                        '<input autocomplete="off" type="text" maxlength="100" value="' + escHtml(r.text) + '" placeholder="Текст требования" oninput="onReqRowInput(' + idx + ', \'text\', this.value)" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
-                        '<select onchange="onReqRowInput(' + idx + ', \'rank\', this.value)" class="w-32 px-2.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-[11px] text-white focus:outline-none focus:border-white">' + opt('all', 'Для всех') + opt('2. Академ', 'На 2 ранг') + opt('3. Мейн', 'На 3 ранг') + '</select>' +
-                        '<button type="button" onclick="removeRequirementRow(' + idx + ')" class="w-10 h-10 shrink-0 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-heavy" title="Удалить">✕</button>' +
-                    '</div>';
-                }).join('');
+                [['2. Академ', 'req-editor-list-2'], ['3. Мейн', 'req-editor-list-3']].forEach(function(pair) {
+                    var box = document.getElementById(pair[1]);
+                    if (!box) return;
+                    var html = '';
+                    tempReqs.forEach(function(r, idx) {
+                        if (r.rank !== pair[0]) return;
+                        html += '<div class="flex items-center gap-2">' +
+                            '<input autocomplete="off" type="text" maxlength="100" value="' + escHtml(r.text) + '" placeholder="Текст требования" oninput="onReqRowInput(' + idx + ', \'text\', this.value)" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">' +
+                            '<button type="button" onclick="removeRequirementRow(' + idx + ')" class="w-10 h-10 shrink-0 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-heavy" title="Удалить">✕</button>' +
+                        '</div>';
+                    });
+                    box.innerHTML = html || '<div class="text-[11px] text-zinc-500">Требований пока нет.</div>';
+                });
             }
 
             window.onReqRowInput = function(idx, field, val) { if (tempReqs[idx]) tempReqs[idx][field] = val; };
-            window.addRequirementRow = function() {
-                tempReqs.push({ id: 'rq' + Date.now() + '_' + tempReqs.length, rank: 'all', text: '' });
+            window.addRequirementRow = function(rank) {
+                tempReqs.push({ id: 'rq' + Date.now() + '_' + tempReqs.length, rank: rank, text: '' });
                 renderRequirementsEditor();
-                var box = document.getElementById('req-editor-list');
+                var box = document.getElementById(rank === '3. Мейн' ? 'req-editor-list-3' : 'req-editor-list-2');
                 if (box && box.lastChild) { var inp = box.lastChild.querySelector('input'); if (inp) inp.focus(); }
             };
             window.removeRequirementRow = function(idx) { tempReqs.splice(idx, 1); renderRequirementsEditor(); };
 
             window.saveEditedRequirements = function() {
-                var cleaned = [];
+                var cleaned = [], has = { '2. Академ': 0, '3. Мейн': 0 };
                 for (var i = 0; i < tempReqs.length; i++) {
                     var tx = String(tempReqs[i].text || '').trim();
                     if (!tx) continue;
-                    cleaned.push({ id: tempReqs[i].id || ('rq' + Date.now() + '_' + i), rank: tempReqs[i].rank || 'all', text: tx });
+                    cleaned.push({ id: tempReqs[i].id || ('rq' + Date.now() + '_' + i), rank: tempReqs[i].rank, text: tx });
+                    has[tempReqs[i].rank]++;
                 }
-                if (!cleaned.length) { showToast('Нужно хотя бы одно требование'); return; }
+                if (!has['2. Академ']) { showToast('Добавьте хотя бы одно требование на 2 ранг'); return; }
+                if (!has['3. Мейн']) { showToast('Добавьте хотя бы одно требование на 3 ранг'); return; }
                 db.promoRequirements = cleaned;
-                addLog('RANK', 'Обновлены требования для повышения (' + cleaned.length + ' шт.)');
+                addLog('RANK', 'Обновлены требования для повышения (2 ранг: ' + has['2. Академ'] + ', 3 ранг: ' + has['3. Мейн'] + ')');
                 saveDb();
                 renderPromoRequirements();
                 closeModal('modal-edit-requirements');

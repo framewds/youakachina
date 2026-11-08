@@ -72,6 +72,18 @@ const DEFAULT_REQUIREMENTS = [
   { id: 'rq3', rank: 'all', text: 'Пополнен склад / общак' },
   { id: 'rq4', rank: 'all', text: 'Участие в строях / бизварах' }
 ];
+// у каждого повышения (2 и 3 ранг) свой список: старые требования «Для всех» дублируются в оба
+function splitReqs(arr) {
+  const out = [];
+  let changed = false;
+  (arr || []).forEach(r => {
+    if (r && r.rank === 'all') {
+      changed = true;
+      PROMO_TARGETS.forEach((rk, i) => out.push({ id: String(r.id) + '_' + (i + 2), rank: rk, text: r.text }));
+    } else out.push(r);
+  });
+  return { list: out, changed: changed };
+}
 
 function atomicWrite(file, text) {
   const tmp = file + '.tmp';
@@ -116,7 +128,7 @@ function normalizeFullName(s) {
   if (!RU_FULLNAME_RE.test(s)) return '';
   return s.split(' ').map(capWord).join(' ');
 }
-const FULLNAME_ERR = 'Укажите Имя и Фамилию по-русски через пробел (например: Иван Петров)';
+const FULLNAME_ERR = 'Укажите Имя и Фамилию по-русски через пробел';
 
 function cleanUrl(s) {
   s = String(s == null ? '' : s).trim();
@@ -172,6 +184,7 @@ function normalizeState(raw) {
     ];
   }
   if (!S.promoRequirements.length) S.promoRequirements = DEFAULT_REQUIREMENTS.map(r => Object.assign({}, r));
+  S.promoRequirements = splitReqs(S.promoRequirements).list;
   S.rules.forEach(r => { if (r.badge) r.badge = r.badge.replace(/УСТАВ/g, 'ПРАВИЛА'); });
   S.promoRequirements.forEach(r => { if (r.text) r.text = r.text.replace(/устав семьи/gi, 'правила семьи').replace(/Сдан правила/, 'Сданы правила'); });
   ensureIds(S);
@@ -202,6 +215,7 @@ function ensureOwner(S) {
 function initStore() {
   state = loadJson('state.json', null);
   if (!state || !Array.isArray(state.roster)) { state = seedState(); markDirty('state.json'); }
+  { const sp = splitReqs(state.promoRequirements); if (sp.changed) { state.promoRequirements = sp.list; markDirty('state.json'); } }
   users = loadJson('users.json', {});
   sessions = loadJson('sessions.json', {});
   meta = loadJson('meta.json', {});
