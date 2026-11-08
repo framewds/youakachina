@@ -12,6 +12,9 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const dns = require('dns');
+const https = require('https');
+const net = require('net');
 
 const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN || '';
@@ -103,7 +106,7 @@ function cleanStr(s, max) {
 }
 function cleanUrl(s) {
   s = String(s == null ? '' : s).trim();
-  return /^(https?:\/\/|\/avatars\/)[^\s"'<>`\\]{1,600}$/.test(s) ? s : PLACEHOLDER;
+  return /^(https?:\/\/|\/avatars\/)[^\s"'<>`\\]{1,1000}$/.test(s) ? s : PLACEHOLDER;
 }
 function cleanVal(v, depth) {
   if (typeof v === 'string') return cleanStr(v, 2000);
@@ -882,6 +885,115 @@ function serveFile(req, res, filePath, cache) {
   });
 }
 
+
+// ───────────────────────── прокси картинок ─────────────────────────
+// Внешние фото (imgur, discord, postimages и т.п.) грузятся через сервер: так не мешают блокировки
+// провайдера, защита от «чужого» referer и ссылки-страницы (imgur.com/xxxx, альбомы).
+function isPrivateIp(ip) {
+  if (net.isIPv6(ip)) {
+    const l = ip.toLowerCase();
+    if (l === '::1' || l === '::' || l.indexOf('fc') === 0 || l.indexOf('fd') === 0 || l.indexOf('fe8') === 0 || l.indexOf('fe9') === 0 || l.indexOf('fea') === 0 || l.indexOf('feb') === 0) return true;
+    const m = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(l);
+    return m ? isPrivateIp(m[1]) : false;
+  }
+  const o = ip.split('.').map(Number);
+  if (o.length !== 4 || o.some(n => !(n >= 0 && n <= 255))) return true;
+  return o[0] === 0 || o[0] === 10 || o[0] === 127 || (o[0] === 169 && o[1] === 254) || (o[0] === 172 && o[1] >= 16 && o[1] <= 31) ||
+    (o[0] === 192 && o[1] === 168) || (o[0] === 100 && o[1] >= 64 && o[1] <= 127) || o[0] >= 224;
+}
+function safeLookup(host, opts, cb) {
+  if (typeof opts === 'function') { cb = opts; opts = {}; }
+  dns.lookup(host, Object.assign({}, opts, { all: true }), (err, list) => {
+    if (err) return cb(err);
+    const ok = list.filter(a => !isPrivateIp(a.address)).sort((a, b) => a.family - b.family);
+    if (!ok.length) return cb(new Error('blocked address'));
+    if (opts && opts.all) return cb(null, ok);
+    cb(null, ok[0].address, ok[0].family);
+  });
+}
+function getRemote(u, hops) {
+  return new Promise((resolve, reject) => {
+    let U;
+    try { U = new URL(u); } catch (e) { return reject(new Error('bad url')); }
+    if (U.protocol !== 'http:' && U.protocol !== 'https:') return reject(new Error('bad protocol'));
+    if (U.port && U.port !== '80' && U.port !== '443') return reject(new Error('bad port'));
+    if (net.isIP(U.hostname) && isPrivateIp(U.hostname)) return reject(new Error('blocked address'));
+    const mod = U.protocol === 'https:' ? https : http;
+    const rq = mod.request(U, {
+      method: 'GET', lookup: safeLookup, timeout: 9000,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot-Image/1.0; DrughillPortal)', 'Accept': 'image/*,text/html;q=0.8,*/*;q=0.5' }
+    }, res => {
+      if ([301, 302, 303, 307, 308].indexOf(res.statusCode) !== -1 && res.headers.location) {
+        res.resume();
+        if (hops >= 4) return reject(new Error('too many redirects'));
+        let next;
+        try { next = new URL(res.headers.location, U).href; } catch (e) { return reject(new Error('bad redirect')); }
+        return resolve(getRemote(next, hops + 1));
+      }
+      resolve(res);
+    });
+    rq.on('timeout', () => rq.destroy(new Error('timeout')));
+    rq.on('error', reject);
+    rq.end();
+  });
+}
+function readLimited(res, max) {
+  return new Promise((resolve, reject) => {
+    const chunks = []; let n = 0;
+    res.on('data', c => { n += c.length; chunks.push(c); if (n > max) { res.destroy(); resolve(Buffer.concat(chunks)); } });
+    res.on('end', () => resolve(Buffer.concat(chunks)));
+    res.on('error', reject);
+  });
+}
+function normalizeImageUrl(u) {
+  const m = /^https?:\/\/(?:www\.|m\.)?imgur\.com\/(?:gallery\/)?([A-Za-z0-9]{5,10})\/?(?:[?#].*)?$/.exec(u);
+  return m ? 'https://i.imgur.com/' + m[1] + '.jpg' : u;
+}
+const IMG_MAX = 10 * 1024 * 1024;
+async function imageProxy(req, res, url) {
+  const fail = (code, msg) => { res.writeHead(code, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(msg); };
+  if (req.method !== 'GET' && req.method !== 'HEAD') return fail(405, 'method');
+  if (limited(req, 'img', 400, 60 * 1000)) return fail(429, 'too many requests');
+  const raw = String(url.searchParams.get('u') || '');
+  if (!/^https?:\/\/[^\s"'<>`\\]{4,1000}$/.test(raw)) return fail(400, 'bad url');
+  try {
+    let target = normalizeImageUrl(raw);
+    let r = await getRemote(target, 0);
+    let ct = String(r.headers['content-type'] || '').toLowerCase();
+    // ссылка на страницу (альбом, postimages, prnt.sc…): берём og:image
+    if (/^text\/html/.test(ct) && r.statusCode === 200) {
+      const html = (await readLimited(r, 600 * 1024)).toString('utf8');
+      const mm = /<meta[^>]+(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image)["'][^>]*content=["']([^"']+)["']/i.exec(html) ||
+                 /<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']/i.exec(html);
+      if (!mm) return fail(415, 'not an image');
+      target = new URL(mm[1].replace(/&amp;/g, '&'), target).href;
+      r = await getRemote(target, 0);
+      ct = String(r.headers['content-type'] || '').toLowerCase();
+    }
+    if (r.statusCode !== 200) { r.resume(); return fail(502, 'upstream ' + r.statusCode); }
+    if (!/^image\//.test(ct)) {
+      // некоторые хосты отдают octet-stream — пропускаем по расширению
+      if (!(/^application\/octet-stream/.test(ct) && /\.(png|jpe?g|gif|webp|avif)(\?|$)/i.test(target))) { r.resume(); return fail(415, 'not an image'); }
+      ct = 'image/' + (/\.png/i.test(target) ? 'png' : /\.gif/i.test(target) ? 'gif' : /\.webp/i.test(target) ? 'webp' : /\.avif/i.test(target) ? 'avif' : 'jpeg');
+    }
+    res.writeHead(200, {
+      'Content-Type': ct.split(';')[0],
+      'Cache-Control': 'public, max-age=86400',
+      'X-Content-Type-Options': 'nosniff',
+      'Content-Security-Policy': "sandbox; default-src 'none'; style-src 'unsafe-inline'"
+    });
+    if (req.method === 'HEAD') { r.destroy(); return res.end(); }
+    let n = 0;
+    r.on('data', c => { n += c.length; if (n > IMG_MAX) { r.destroy(); res.destroy(); } });
+    r.on('error', () => res.destroy());
+    r.pipe(res);
+  } catch (e) {
+    console.warn('img proxy:', raw.slice(0, 120), '-', e.message);
+    if (!res.headersSent) fail(502, 'fetch failed');
+    else res.destroy();
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'same-origin');
@@ -891,6 +1003,7 @@ const server = http.createServer(async (req, res) => {
   try { pathname = decodeURIComponent(url.pathname); } catch (e) { res.writeHead(400); return res.end('Bad request'); }
   if (pathname.indexOf('\0') !== -1) { res.writeHead(400); return res.end('Bad request'); }
 
+  if (pathname === '/api/img') return imageProxy(req, res, url);
   if (pathname.indexOf('/api/') === 0) {
     try { await handleApi(req, res, url); }
     catch (e) {
