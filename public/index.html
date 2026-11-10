@@ -1682,7 +1682,24 @@
             var FB_PHOTO = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450"><rect width="800" height="450" fill="#14141c"/><g fill="none" stroke="#4a4a5c" stroke-width="10" stroke-linejoin="round"><rect x="300" y="160" width="200" height="140" rx="16"/><circle cx="400" cy="230" r="38"/></g></svg>');
             document.addEventListener('error', function(e) {
                 var t = e.target;
-                if (!t || t.tagName !== 'IMG' || t.getAttribute('data-fb')) return;
+                if (!t || t.tagName !== 'IMG') return;
+                var cur = t.getAttribute('src') || '';
+                // 1) старая внешняя заглушка → своя с инициалами
+                var ph = /^https?:\/\/placehold\.co\/(\d+)x(\d+)\/([0-9a-f]+)\/([0-9a-f]+)\?text=(.*)$/i.exec(cur);
+                if (ph && !t.getAttribute('data-ph')) {
+                    t.setAttribute('data-ph', '1');
+                    t.src = '/avatars/ph.svg?w=' + ph[1] + '&h=' + ph[2] + '&bg=' + ph[3] + '&fg=' + ph[4] + '&text=' + ph[5];
+                    return;
+                }
+                // 2) фото через сервер не загрузилось → пробуем открыть ссылку напрямую (без referer)
+                var px = /^\/api\/img\?u=(.+)$/.exec(cur);
+                if (px && !t.getAttribute('data-direct')) {
+                    t.setAttribute('data-direct', '1');
+                    t.referrerPolicy = 'no-referrer';
+                    try { t.src = decodeURIComponent(px[1]); return; } catch (err) {}
+                }
+                // 3) совсем не вышло — аккуратная заглушка
+                if (t.getAttribute('data-fb')) return;
                 t.setAttribute('data-fb', '1');
                 t.removeAttribute('srcset');
                 t.src = /rounded-full/.test(t.className || '') ? FB_AVATAR : FB_PHOTO;

@@ -321,6 +321,7 @@ function resolveMe(uid) {
   else if (entry) { level = rankLevel(entry.rank); rank = entry.rank; }
   else { level = LEVELS.GUEST; rank = 'Гость'; }
   if (entry) { nick = entry.nick; staticId = entry.staticId; } else { nick = u.nick; staticId = u.staticId; }
+  maybeRefreshAvatar(uid);
   avatar = u.avatar || (entry && entry.avatar) || PLACEHOLDER;
   return { uid, tg: u.tg, nick, staticId, avatar, rank, level };
 }
@@ -355,6 +356,7 @@ function viewFor(me) {
     v.applications = state.applications.filter(own);
     v.promoClaims = state.promoClaims.filter(own);
   }
+  Object.keys(v).forEach(k => { if (Array.isArray(v[k])) v[k] = withAvatars(v[k]); });
   return v;
 }
 
@@ -765,9 +767,44 @@ async function fetchAvatar(userId) {
     const r = await fetch(TG_API + '/file/bot' + BOT_TOKEN + '/' + f.result.file_path);
     if (!r.ok) return null;
     const buf = Buffer.from(await r.arrayBuffer());
+    if (buf.length < 100) return null;
     fs.writeFileSync(path.join(DATA_DIR, 'avatars', userId + '.jpg'), buf);
     return '/avatars/' + userId + '.jpg?v=' + Date.now();
-  } catch (e) { return null; }
+  } catch (e) { console.warn('avatar', userId, e.message); return null; }
+}
+const isRealAvatar = a => typeof a === 'string' && /^\/avatars\/\d+\.jpg/.test(a);
+function avatarByTg(tgHandle) {
+  const t = String(tgHandle || '').toLowerCase();
+  const u = Object.keys(users).map(k => users[k]).find(x => x && String(x.tg || '').toLowerCase() === t && isRealAvatar(x.avatar));
+  return u ? u.avatar : null;
+}
+// сохраняем свежий аватар в профиль и в состав
+function applyAvatar(uid, av) {
+  const u = users[uid]; if (!u || !av) return;
+  u.avatar = av; u.avatarAt = Date.now(); markDirty('users.json');
+  const entry = findRoster(state, u.tg);
+  if (entry && entry.avatar !== av) { entry.avatar = av; state.rev += 1; markDirty('state.json'); }
+}
+const avatarBusy = {};
+const avatarMiss = {};
+function maybeRefreshAvatar(uid) {
+  const u = users[uid];
+  if (!BOT_TOKEN || !u || avatarBusy[uid]) return;
+  const stale = !isRealAvatar(u.avatar) || !u.avatarAt || Date.now() - u.avatarAt > 12 * 3600 * 1000;
+  if (!stale || (u.avatarTry && Date.now() - u.avatarTry < 10 * 60 * 1000)) return;
+  avatarBusy[uid] = true; u.avatarTry = Date.now();
+  fetchAvatar(uid).then(av => { if (av) applyAvatar(uid, av); }).finally(() => { delete avatarBusy[uid]; });
+}
+// в списках подставляем настоящую аватарку по @tg, если в записи заглушка
+function withAvatars(arr) {
+  if (!Array.isArray(arr) || !arr.length || !arr[0] || !('avatar' in arr[0] || arr.some(r => r && 'avatar' in r))) return arr;
+  const cache = {};
+  return arr.map(r => {
+    if (!r || !('avatar' in r) || isRealAvatar(r.avatar)) return r;
+    const key = String(r.tg || '').toLowerCase();
+    const a = key in cache ? cache[key] : (cache[key] = avatarByTg(r.tg));
+    return a ? Object.assign({}, r, { avatar: a }) : r;
+  });
 }
 
 async function finalizeLogin(code, from) {
@@ -782,8 +819,10 @@ async function finalizeLogin(code, from) {
     staticId: L.staticId || prev.staticId || '—',
     avatar: prev.avatar || null
   };
-  const av = await Promise.race([fetchAvatar(from.id), new Promise(r => setTimeout(() => r(null), 4000))]);
-  if (av) users[uid].avatar = av;
+  const ap = fetchAvatar(from.id);
+  ap.then(late => { if (late) applyAvatar(uid, late); });   // если Telegram ответил позже — всё равно сохраним
+  const av = await Promise.race([ap, new Promise(r => setTimeout(() => r(null), 7000))]);
+  if (av) { users[uid].avatar = av; users[uid].avatarAt = Date.now(); }
   // аватар и актуальный ник/static в составе
   const entry = findRoster(state, handle);
   if (entry && av && entry.avatar !== av) { entry.avatar = av; state.rev += 1; markDirty('state.json'); }
@@ -1058,7 +1097,9 @@ function safeLookup(host, opts, cb) {
     cb(null, ok[0].address, ok[0].family);
   });
 }
-function getRemote(u, hops) {
+const UA_BROWSER = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
+const UA_BOT = 'Mozilla/5.0 (compatible; Googlebot-Image/1.0; DrughillPortal)';
+function getRemote(u, hops, ua) {
   return new Promise((resolve, reject) => {
     let U;
     try { U = new URL(u); } catch (e) { return reject(new Error('bad url')); }
@@ -1067,15 +1108,15 @@ function getRemote(u, hops) {
     if (net.isIP(U.hostname) && isPrivateIp(U.hostname)) return reject(new Error('blocked address'));
     const mod = U.protocol === 'https:' ? https : http;
     const rq = mod.request(U, {
-      method: 'GET', lookup: safeLookup, timeout: 9000,
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot-Image/1.0; DrughillPortal)', 'Accept': 'image/*,text/html;q=0.8,*/*;q=0.5' }
+      method: 'GET', lookup: safeLookup, timeout: 12000,
+      headers: { 'User-Agent': ua || UA_BROWSER, 'Accept': 'image/avif,image/webp,image/*,text/html;q=0.8,*/*;q=0.5', 'Accept-Language': 'ru,en;q=0.8', 'Referer': U.origin + '/' }
     }, res => {
       if ([301, 302, 303, 307, 308].indexOf(res.statusCode) !== -1 && res.headers.location) {
         res.resume();
         if (hops >= 4) return reject(new Error('too many redirects'));
         let next;
         try { next = new URL(res.headers.location, U).href; } catch (e) { return reject(new Error('bad redirect')); }
-        return resolve(getRemote(next, hops + 1));
+        return resolve(getRemote(next, hops + 1, ua));
       }
       resolve(res);
     });
@@ -1105,7 +1146,8 @@ async function imageProxy(req, res, url) {
   if (!/^https?:\/\/[^\s"'<>`\\]{4,1000}$/.test(raw)) return fail(400, 'bad url');
   try {
     let target = normalizeImageUrl(raw);
-    let r = await getRemote(target, 0);
+    let r = await getRemote(target, 0, UA_BROWSER);
+    if ([403, 429, 406].indexOf(r.statusCode) !== -1) { r.resume(); r = await getRemote(target, 0, UA_BOT); }
     let ct = String(r.headers['content-type'] || '').toLowerCase();
     // ссылка на страницу (альбом, postimages, prnt.sc…): берём og:image
     if (/^text\/html/.test(ct) && r.statusCode === 200) {
@@ -1114,7 +1156,7 @@ async function imageProxy(req, res, url) {
                  /<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']/i.exec(html);
       if (!mm) return fail(415, 'not an image');
       target = new URL(mm[1].replace(/&amp;/g, '&'), target).href;
-      r = await getRemote(target, 0);
+      r = await getRemote(target, 0, UA_BROWSER);
       ct = String(r.headers['content-type'] || '').toLowerCase();
     }
     if (r.statusCode !== 200) { r.resume(); return fail(502, 'upstream ' + r.statusCode); }
@@ -1167,7 +1209,18 @@ const server = http.createServer(async (req, res) => {
     return res.end(placeholderSvg(url.searchParams));
   }
   const av = /^\/avatars\/(\d+\.jpg)$/.exec(pathname);
-  if (av) return serveFile(req, res, path.join(DATA_DIR, 'avatars', av[1]), 'public, max-age=86400');
+  if (av) {
+    const f = path.join(DATA_DIR, 'avatars', av[1]);
+    if (!fs.existsSync(f) && BOT_TOKEN) {
+      const id = av[1].replace('.jpg', '');
+      if (!avatarBusy['f' + id] && !(avatarMiss[id] && Date.now() - avatarMiss[id] < 10 * 60 * 1000)) {
+        avatarBusy['f' + id] = true;
+        const got = await fetchAvatar(id); delete avatarBusy['f' + id];
+        if (got) { if (users[id]) applyAvatar(id, got); } else avatarMiss[id] = Date.now();
+      }
+    }
+    return serveFile(req, res, f, 'public, max-age=3600');
+  }
   if (pathname === '/') pathname = '/index.html';
   const filePath = path.join(PUBLIC_DIR, pathname);
   if (filePath !== PUBLIC_DIR && !filePath.startsWith(PUBLIC_DIR + path.sep)) { res.writeHead(403); return res.end('Forbidden'); }
