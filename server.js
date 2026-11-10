@@ -57,7 +57,7 @@ fs.mkdirSync(path.join(DATA_DIR, 'avatars'), { recursive: true });
 // ───────────────────────── хранилище ─────────────────────────
 const LEVELS = { GUEST: 0, MEMBER: 1, SENIOR: 2, LEADER: 3 };
 const LEADER_RANKS = ['Лидер', 'Зам. Лидера'];
-const PLACEHOLDER = 'https://placehold.co/100x100/1c1c24/ffffff?text=DH';
+const PLACEHOLDER = '/avatars/ph.svg?w=100&h=100&bg=1c1c24&fg=ffffff&text=DH';
 
 const SPEC = {
   roster: ['id', 'nick', 'staticId', 'tg', 'rank', 'avatar'],
@@ -85,8 +85,11 @@ const SET_COLLS = ['news', 'rules', 'diplomacy', 'fleet', 'estates', 'payoutItem
 const CONTENT = ['news', 'rules', 'diplomacy', 'fleet', 'estates'];
 const URL_FIELDS = ['avatar', 'image'];
 const STATUSES = ['PENDING', 'APPROVED', 'REJECTED'];
-const PROMO_RANKS = ['1. Контракт', '2. Академ', '3. Мейн'];
-const PROMO_TARGETS = ['2. Академ', '3. Мейн'];
+const PROMO_RANKS = ['1. Контракт', '2. Лил Драгхилл', '3. Драгхилл', '4. Проверенный'];
+const PROMO_TARGETS = PROMO_RANKS.slice(1);
+// старые названия рангов → новые (данные и старые открытые вкладки)
+const RANK_RENAME = { '2. Академ': '2. Лил Драгхилл', '3. Мейн': '3. Драгхилл', '2 ранг — Академ': '2. Лил Драгхилл', '3 ранг — Мейн': '3. Драгхилл', '1 РАНГ': '1. Контракт', '2 РАНГ': '2. Лил Драгхилл', '3 РАНГ': '3. Драгхилл', '4 РАНГ': '4. Проверенный' };
+function mapRank(v) { return typeof v === 'string' && RANK_RENAME[v] ? RANK_RENAME[v] : v; }
 const ROLLBACK_KINDS = ['Откат', 'Аттестация'];
 const DEFAULT_REQUIREMENTS = [
   { id: 'rq1', rank: 'all', text: 'Сданы правила семьи DRUGHILL' },
@@ -94,7 +97,7 @@ const DEFAULT_REQUIREMENTS = [
   { id: 'rq3', rank: 'all', text: 'Пополнен склад / общак' },
   { id: 'rq4', rank: 'all', text: 'Участие в строях / бизварах' }
 ];
-// у каждого повышения (2 и 3 ранг) свой список: старые требования «Для всех» дублируются в оба
+// у каждого повышения (2, 3 и 4 ранг) свой список: старые требования «Для всех» дублируются в оба
 function splitReqs(arr) {
   const out = [];
   let changed = false;
@@ -153,8 +156,27 @@ function normalizeFullName(s) {
 }
 const FULLNAME_ERR = 'Укажите Имя и Фамилию по-русски через пробел';
 
+// внешний placehold.co у многих не открывается — заменяем на свою заглушку (/avatars/ph.svg)
+function localPh(s) {
+  const m = /^https?:\/\/placehold\.co\/(\d{1,4})x(\d{1,4})\/([0-9a-fA-F]{3,6})\/([0-9a-fA-F]{3,6})(?:\.\w+)?\?text=(.*)$/.exec(s);
+  if (!m) return PLACEHOLDER;
+  let t = m[5];
+  try { t = decodeURIComponent(t.replace(/\+/g, ' ')); } catch (e) {}
+  return '/avatars/ph.svg?w=' + m[1] + '&h=' + m[2] + '&bg=' + m[3] + '&fg=' + m[4] + '&text=' + encodeURIComponent(t.slice(0, 14));
+}
+function placeholderSvg(q) {
+  const num = (v, d) => Math.max(20, Math.min(1200, parseInt(v, 10) || d));
+  const hex = (v, d) => /^[0-9a-fA-F]{3,6}$/.test(String(v || '')) ? v : d;
+  const w = num(q.get('w'), 100), h = num(q.get('h'), 100);
+  const bg = hex(q.get('bg'), '1c1c24'), fg = hex(q.get('fg'), 'ffffff');
+  const t = String(q.get('text') || '').slice(0, 14).replace(/[&<>"']/g, '');
+  const size = Math.round(Math.max(10, Math.min(h * 0.3, (w * 0.86) / Math.max(1, t.length) * 1.5)));
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '"><rect width="100%" height="100%" fill="#' + bg + '"/>' +
+    '<text x="50%" y="50%" fill="#' + fg + '" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="' + size + '" text-anchor="middle" dominant-baseline="central">' + t + '</text></svg>';
+}
 function cleanUrl(s) {
   s = String(s == null ? '' : s).trim();
+  if (/^https?:\/\/placehold\.co\//i.test(s)) return localPh(s);
   return /^(https?:\/\/|\/avatars\/)[^\s"'<>`\\]{1,1000}$/.test(s) ? s : PLACEHOLDER;
 }
 // любая ссылка: с https://, без протокола (youtu.be/abc, drive.google.com/...), с www. — всё приводим к https://...
@@ -188,6 +210,7 @@ function cleanRecord(coll, rec) {
     else if (f === 'status') out[f] = STATUSES.indexOf(rec[f]) !== -1 ? rec[f] : 'PENDING';
     else if (f === 'id') out[f] = Number.isSafeInteger(rec[f]) && rec[f] > 0 ? rec[f] : (typeof rec[f] === 'string' ? cleanStr(rec[f], 40) : 0);
     else if (f === 'tg') out[f] = cleanStr(rec[f], 40);
+    else if (f === 'rank' || f === 'fromRank' || f === 'toRank') out[f] = mapRank(cleanStr(rec[f], 60));
     else if (f === 'nick') out[f] = cleanStr(rec[f], 40);
     else out[f] = cleanVal(rec[f], 0);
   });
@@ -247,8 +270,31 @@ function ensureOwner(S) {
 function initStore() {
   state = loadJson('state.json', null);
   if (!state || !Array.isArray(state.roster)) { state = seedState(); markDirty('state.json'); }
+  { let ch = false;
+    const ren = (o, f) => { if (o && typeof o[f] === 'string' && RANK_RENAME[o[f]]) { o[f] = RANK_RENAME[o[f]]; ch = true; } };
+    (state.roster || []).forEach(o => ren(o, 'rank'));
+    (state.promoReports || []).forEach(o => { ren(o, 'fromRank'); ren(o, 'toRank'); });
+    (state.promoRequirements || []).forEach(o => ren(o, 'rank'));
+    (state.fleet || []).forEach(o => ren(o, 'badge'));
+    if (ch) markDirty('state.json'); }
   { const sp = splitReqs(state.promoRequirements); if (sp.changed) { state.promoRequirements = sp.list; markDirty('state.json'); } }
+  { // у каждого повышения должен быть свой список требований: для новых рангов копируем с предыдущего
+    const reqs = state.promoRequirements = state.promoRequirements || [];
+    PROMO_TARGETS.forEach((rk, i) => {
+      if (i === 0 || reqs.some(r => r.rank === rk)) return;
+      const prev = reqs.filter(r => r.rank === PROMO_TARGETS[i - 1]);
+      prev.forEach((r, j) => reqs.push({ id: 'rq' + (j + 1) + '_' + (i + 2), rank: rk, text: r.text }));
+      markDirty('state.json');
+    }); }
   users = loadJson('users.json', {});
+  // миграция: старые ссылки placehold.co → своя заглушка
+  { let ch = false;
+    const fix = o => { ['avatar', 'image'].forEach(f => { if (o && typeof o[f] === 'string' && /^https?:\/\/placehold\.co\//i.test(o[f])) { o[f] = localPh(o[f]); ch = true; } }); };
+    KEYS.forEach(k => { if (Array.isArray(state[k])) state[k].forEach(fix); });
+    if (ch) markDirty('state.json');
+    let uch = false;
+    Object.keys(users).forEach(id => { const u = users[id]; if (u && typeof u.avatar === 'string' && /^https?:\/\/placehold\.co\//i.test(u.avatar)) { u.avatar = localPh(u.avatar); uch = true; } });
+    if (uch) markDirty('users.json'); }
   sessions = loadJson('sessions.json', {});
   meta = loadJson('meta.json', {});
   const now = Date.now();
@@ -355,8 +401,8 @@ function buildSubmission(coll, me, rec, W) {
   if (coll === 'promoReports') {
     out.fromRank = me.rank;
     out.toRank = cleanStr(out.toRank || '', 60);
-    if (PROMO_TARGETS.indexOf(out.toRank) === -1) throw new HttpError(400, 'Выберите ранг: 2. Академ или 3. Мейн');
-    if (rankIdx(me.rank) === -1) throw new HttpError(400, 'Рапорт на повышение подают участники с 1 по 3 ранг');
+    if (PROMO_TARGETS.indexOf(out.toRank) === -1) throw new HttpError(400, 'Выберите ранг: ' + PROMO_TARGETS.join(', '));
+    if (rankIdx(me.rank) === -1) throw new HttpError(400, 'Рапорт на повышение подают участники до ранга ' + PROMO_RANKS[PROMO_RANKS.length - 1]);
     if (rankIdx(me.rank) >= rankIdx(out.toRank)) throw new HttpError(400, 'Этот ранг у вас уже есть или выше');
     out.tasks = cleanStr(out.tasks || '', 1000);
     out.proofs = cleanStr(out.proofs || '', 2000);
@@ -1116,6 +1162,10 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, { Allow: 'GET, HEAD' }); return res.end(); }
   if (pathname === '/healthz') { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
+  if (pathname === '/avatars/ph.svg') {
+    res.writeHead(200, { 'Content-Type': 'image/svg+xml; charset=utf-8', 'Cache-Control': 'public, max-age=604800', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'" });
+    return res.end(placeholderSvg(url.searchParams));
+  }
   const av = /^\/avatars\/(\d+\.jpg)$/.exec(pathname);
   if (av) return serveFile(req, res, path.join(DATA_DIR, 'avatars', av[1]), 'public, max-age=86400');
   if (pathname === '/') pathname = '/index.html';
