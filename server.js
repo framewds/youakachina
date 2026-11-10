@@ -124,6 +124,7 @@ const dirty = new Set();
 let flushTimer = null;
 function markDirty(n) {
   dirty.add(n);
+  if (n === 'state.json' && typeof scheduleWarm === 'function') scheduleWarm();
   if (!flushTimer) flushTimer = setTimeout(flush, 250);
 }
 function flush() {
@@ -177,7 +178,9 @@ function placeholderSvg(q) {
 function cleanUrl(s) {
   s = String(s == null ? '' : s).trim();
   if (/^https?:\/\/placehold\.co\//i.test(s)) return localPh(s);
-  return /^(https?:\/\/|\/avatars\/)[^\s"'<>`\\]{1,1000}$/.test(s) ? s : PLACEHOLDER;
+  if (/^\/\//.test(s)) s = 'https:' + s;
+  if (/^https?:\/\//i.test(s)) s = s.replace(/\s+/g, '').replace(/'/g, '%27').replace(/"/g, '%22').replace(/</g, '%3C').replace(/>/g, '%3E').replace(/`/g, '%60').replace(/\\/g, '%5C');
+  return /^(https?:\/\/|\/avatars\/)[^\s"'<>`\\]{1,2000}$/.test(s) ? s : PLACEHOLDER;
 }
 // любая ссылка: с https://, без протокола (youtu.be/abc, drive.google.com/...), с www. — всё приводим к https://...
 function normLink(s) {
@@ -1098,8 +1101,12 @@ function safeLookup(host, opts, cb) {
   });
 }
 const UA_BROWSER = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
-const UA_BOT = 'Mozilla/5.0 (compatible; Googlebot-Image/1.0; DrughillPortal)';
-function getRemote(u, hops, ua) {
+const UA_BOT = 'Mozilla/5.0 (compatible; Googlebot-Image/1.0; +http://www.google.com/bot.html)';
+const UA_DISCORD = 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)';
+const IMG_MAX = 10 * 1024 * 1024;
+
+// ref: undefined → referer = origin самого сайта, null → без referer
+function getRemote(u, hops, ua, ref) {
   return new Promise((resolve, reject) => {
     let U;
     try { U = new URL(u); } catch (e) { return reject(new Error('bad url')); }
@@ -1107,16 +1114,15 @@ function getRemote(u, hops, ua) {
     if (U.port && U.port !== '80' && U.port !== '443') return reject(new Error('bad port'));
     if (net.isIP(U.hostname) && isPrivateIp(U.hostname)) return reject(new Error('blocked address'));
     const mod = U.protocol === 'https:' ? https : http;
-    const rq = mod.request(U, {
-      method: 'GET', lookup: safeLookup, timeout: 12000,
-      headers: { 'User-Agent': ua || UA_BROWSER, 'Accept': 'image/avif,image/webp,image/*,text/html;q=0.8,*/*;q=0.5', 'Accept-Language': 'ru,en;q=0.8', 'Referer': U.origin + '/' }
-    }, res => {
+    const headers = { 'User-Agent': ua || UA_BROWSER, 'Accept': 'image/avif,image/webp,image/apng,image/*,text/html;q=0.8,*/*;q=0.5', 'Accept-Language': 'ru,en;q=0.8' };
+    if (ref !== null) headers['Referer'] = ref || (U.origin + '/');
+    const rq = mod.request(U, { method: 'GET', lookup: safeLookup, timeout: 9000, headers: headers }, res => {
       if ([301, 302, 303, 307, 308].indexOf(res.statusCode) !== -1 && res.headers.location) {
         res.resume();
-        if (hops >= 4) return reject(new Error('too many redirects'));
+        if (hops >= 5) return reject(new Error('too many redirects'));
         let next;
         try { next = new URL(res.headers.location, U).href; } catch (e) { return reject(new Error('bad redirect')); }
-        return resolve(getRemote(next, hops + 1, ua));
+        return resolve(getRemote(next, hops + 1, ua, ref));
       }
       resolve(res);
     });
@@ -1125,61 +1131,208 @@ function getRemote(u, hops, ua) {
     rq.end();
   });
 }
+// читает ответ целиком (не больше max); too=true, если ответ больше лимита
 function readLimited(res, max) {
   return new Promise((resolve, reject) => {
-    const chunks = []; let n = 0;
-    res.on('data', c => { n += c.length; chunks.push(c); if (n > max) { res.destroy(); resolve(Buffer.concat(chunks)); } });
-    res.on('end', () => resolve(Buffer.concat(chunks)));
-    res.on('error', reject);
+    const chunks = []; let n = 0, done = false;
+    const timer = setTimeout(() => { if (!done) { done = true; res.destroy(); reject(new Error('read timeout')); } }, 20000);
+    res.on('data', c => { if (done) return; n += c.length; chunks.push(c); if (n > max) { done = true; clearTimeout(timer); res.destroy(); resolve({ buf: Buffer.concat(chunks), too: true }); } });
+    res.on('end', () => { if (done) return; done = true; clearTimeout(timer); resolve({ buf: Buffer.concat(chunks), too: false }); });
+    res.on('error', e => { if (done) return; done = true; clearTimeout(timer); reject(e); });
+    res.on('close', () => { if (done) return; done = true; clearTimeout(timer); resolve({ buf: Buffer.concat(chunks), too: false }); });
   });
 }
-function normalizeImageUrl(u) {
-  const m = /^https?:\/\/(?:www\.|m\.)?imgur\.com\/(?:gallery\/)?([A-Za-z0-9]{5,10})\/?(?:[?#].*)?$/.exec(u);
-  return m ? 'https://i.imgur.com/' + m[1] + '.jpg' : u;
+// определяем настоящий тип по первым байтам (не верим Content-Type: бывает octet-stream, text/plain и т.п.)
+function sniffImage(b) {
+  if (!b || b.length < 12) return '';
+  if (b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return 'image/jpeg';
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47) return 'image/png';
+  if (b.slice(0, 4).toString('latin1') === 'GIF8') return 'image/gif';
+  if (b.slice(0, 4).toString('latin1') === 'RIFF' && b.slice(8, 12).toString('latin1') === 'WEBP') return 'image/webp';
+  if (b.slice(4, 8).toString('latin1') === 'ftyp') { const br = b.slice(8, 12).toString('latin1'); if (/^(avif|avis)$/.test(br)) return 'image/avif'; if (/^(heic|heix|mif1|msf1)$/.test(br)) return 'image/heic'; }
+  if (b[0] === 0x42 && b[1] === 0x4D) return 'image/bmp';
+  return '';
 }
-const IMG_MAX = 10 * 1024 * 1024;
+function normalizeImageUrl(u) {
+  let m = /^https?:\/\/(?:www\.|m\.)?imgur\.com\/(?:gallery\/)?([A-Za-z0-9]{5,10})(?:\.(?:jpe?g|png|gif|webp|gifv|mp4))?\/?(?:[?#].*)?$/.exec(u);
+  if (m && !/^(a|gallery|t|r|user)$/i.test(m[1])) return 'https://i.imgur.com/' + m[1] + '.jpg';
+  m = /^https?:\/\/(?:i\.)?imgur\.com\/([A-Za-z0-9]{5,10})\.gifv(?:[?#].*)?$/.exec(u);
+  if (m) return 'https://i.imgur.com/' + m[1] + '.gif';
+  return u;
+}
+// из HTML-страницы (альбом imgur, postimages, prnt.sc, lightshot…) достаём адрес картинки
+function imageFromHtml(html, base) {
+  const pats = [
+    /<meta[^>]+(?:property|name)=["'](?:og:image(?::secure_url|:url)?|twitter:image(?::src)?)["'][^>]*content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image(?::secure_url|:url)?|twitter:image(?::src)?)["']/i,
+    /<link[^>]+rel=["']image_src["'][^>]*href=["']([^"']+)["']/i,
+    /(https?:\/\/i\.imgur\.com\/[A-Za-z0-9]{5,10}\.(?:jpe?g|png|gif|webp))/i,
+    /<img[^>]+id=["']main-image["'][^>]*src=["']([^"']+)["']/i,
+    /<img[^>]+class=["'][^"']*no-click[^"']*["'][^>]*src=["']([^"']+)["']/i
+  ];
+  for (const re of pats) {
+    const mm = re.exec(html);
+    if (mm) { try { return new URL(mm[1].replace(/&amp;/g, '&'), base).href; } catch (e) {} }
+  }
+  return '';
+}
+// варианты одной и той же ссылки (Discord: cdn ↔ media, без подписи)
+function urlVariants(u) {
+  const out = [u];
+  try {
+    const U = new URL(u);
+    if (/(^|\.)discordapp\.(com|net)$/i.test(U.hostname) || /(^|\.)discord\.com$/i.test(U.hostname)) {
+      const swap = new URL(u);
+      swap.hostname = /^cdn\./i.test(U.hostname) ? 'media.discordapp.net' : 'cdn.discordapp.com';
+      out.push(swap.href);
+      if (U.search) { const bare = new URL(u); bare.search = ''; out.push(bare.href); const bare2 = new URL(swap.href); bare2.search = ''; out.push(bare2.href); }
+    }
+  } catch (e) {}
+  return out.filter((x, i) => out.indexOf(x) === i);
+}
+async function tryFetchImage(u, ua, ref, depth) {
+  const r = await getRemote(u, 0, ua, ref);
+  if (r.statusCode !== 200) { r.resume(); throw new Error('http ' + r.statusCode); }
+  const ct = String(r.headers['content-type'] || '').toLowerCase();
+  const len = parseInt(r.headers['content-length'] || '0', 10);
+  if (len > IMG_MAX) { r.resume(); throw new Error('too big'); }
+  const isHtml = /^(text\/html|application\/xhtml)/.test(ct);
+  const got = await readLimited(r, isHtml ? 800 * 1024 : IMG_MAX);
+  if (got.too && !isHtml) throw new Error('too big');
+  const type = sniffImage(got.buf);
+  if (type) return { buf: got.buf, ct: type };
+  if (isHtml && depth < 1) {
+    const next = imageFromHtml(got.buf.toString('utf8'), u);
+    if (next && next !== u) return fetchImageAny(next, depth + 1);
+  }
+  throw new Error('not an image');
+}
+const EXTERNAL_PROXIES = [
+  u => 'https://wsrv.nl/?n=-1&url=' + encodeURIComponent(u),
+  u => 'https://images.weserv.nl/?n=-1&url=' + encodeURIComponent(u)
+];
+// перебор способов: прямые (разные User-Agent и referer, варианты ссылки), затем внешние прокси-кэши
+async function fetchImageAny(raw, depth) {
+  const target = normalizeImageUrl(raw);
+  const variants = urlVariants(target);
+  const profiles = [[UA_BROWSER, undefined], [UA_BROWSER, null], [UA_DISCORD, null], [UA_BOT, null]];
+  const deadline = Date.now() + 35000;
+  let lastErr = new Error('failed');
+  const attempt = async (u, ua, ref, d) => {
+    if (Date.now() > deadline) throw new Error('deadline');
+    try { return await tryFetchImage(u, ua, ref, d); } catch (e) { lastErr = e; return null; }
+  };
+  let res = await attempt(variants[0], profiles[0][0], profiles[0][1], depth);
+  if (res) return res;
+  // сразу пробуем внешний прокси: для imgur и подобных, которые режут IP дата-центров, это самый надёжный путь
+  if (depth === 0 && !/(^https?:\/\/(wsrv|images\.weserv)\.)/i.test(target)) {
+    res = await attempt(EXTERNAL_PROXIES[0](target), UA_BROWSER, null, 1);
+    if (res) return res;
+  }
+  for (let vi = 0; vi < variants.length; vi++) {
+    for (let pi = 0; pi < profiles.length; pi++) {
+      if (vi === 0 && pi === 0) continue;
+      res = await attempt(variants[vi], profiles[pi][0], profiles[pi][1], depth);
+      if (res) return res;
+    }
+  }
+  if (depth === 0) {
+    for (let i = 1; i < EXTERNAL_PROXIES.length; i++) {
+      res = await attempt(EXTERNAL_PROXIES[i](target), UA_BROWSER, null, 1);
+      if (res) return res;
+    }
+  }
+  throw lastErr;
+}
+
+// ─── дисковый кэш: фото сохраняется, пока ссылка жива (Discord-ссылки протухают, imgur удаляет) ───
+const IMG_CACHE_DIR = path.join(DATA_DIR, 'imgcache');
+const IMG_CACHE_LIMIT = 600 * 1024 * 1024;
+try { fs.mkdirSync(IMG_CACHE_DIR, { recursive: true }); } catch (e) { console.warn('imgcache dir:', e.message); }
+const imgKey = u => crypto.createHash('sha1').update(u).digest('hex');
+const imgInflight = new Map();
+const imgFailAt = new Map();
+function cacheRead(u) {
+  try {
+    const k = imgKey(u);
+    const ct = fs.readFileSync(path.join(IMG_CACHE_DIR, k + '.ct'), 'utf8');
+    const buf = fs.readFileSync(path.join(IMG_CACHE_DIR, k + '.img'));
+    return buf.length ? { buf: buf, ct: ct } : null;
+  } catch (e) { return null; }
+}
+function cacheWrite(u, img) {
+  try {
+    const k = imgKey(u);
+    fs.writeFileSync(path.join(IMG_CACHE_DIR, k + '.img.tmp'), img.buf);
+    fs.renameSync(path.join(IMG_CACHE_DIR, k + '.img.tmp'), path.join(IMG_CACHE_DIR, k + '.img'));
+    fs.writeFileSync(path.join(IMG_CACHE_DIR, k + '.ct'), img.ct);
+  } catch (e) { console.warn('imgcache write:', e.message); }
+}
+function pruneImgCache() {
+  try {
+    const files = fs.readdirSync(IMG_CACHE_DIR).filter(f => /\.img$/.test(f)).map(f => { const st = fs.statSync(path.join(IMG_CACHE_DIR, f)); return { f: f, size: st.size, t: st.atimeMs || st.mtimeMs }; });
+    let total = files.reduce((a, x) => a + x.size, 0);
+    files.sort((a, b) => a.t - b.t);
+    for (const x of files) { if (total <= IMG_CACHE_LIMIT) break; total -= x.size; try { fs.unlinkSync(path.join(IMG_CACHE_DIR, x.f)); fs.unlinkSync(path.join(IMG_CACHE_DIR, x.f.replace(/\.img$/, '.ct'))); } catch (e) {} }
+  } catch (e) {}
+}
+setInterval(pruneImgCache, 6 * 3600 * 1000).unref();
+// отдаёт из кэша, а если там нет, качает (один запрос на одну ссылку одновременно) и кладёт в кэш
+async function getImage(raw) {
+  const hit = cacheRead(raw);
+  if (hit) return hit;
+  if (imgInflight.has(raw)) return imgInflight.get(raw);
+  const p = fetchImageAny(raw, 0).then(img => { cacheWrite(raw, img); imgFailAt.delete(raw); return img; }).finally(() => imgInflight.delete(raw));
+  imgInflight.set(raw, p);
+  return p;
+}
+// прогрев: все фото из новостей, автопарка, недвижимости и дипломатии скачиваются на сервер сразу после сохранения
+let warmTimer = null, warmBusy = false;
+function scheduleWarm(delay) {
+  if (warmTimer) return;
+  warmTimer = setTimeout(() => { warmTimer = null; warmImages(); }, delay || 1500);
+  if (warmTimer.unref) warmTimer.unref();
+}
+async function warmImages() {
+  if (warmBusy || !state) return;
+  warmBusy = true;
+  try {
+    const urls = [];
+    CONTENT.forEach(c => (state[c] || []).forEach(it => {
+      const u = it && it.image;
+      if (typeof u === 'string' && /^https?:\/\//.test(u) && !/^https?:\/\/placehold\.co\//i.test(u) && urls.indexOf(u) === -1) urls.push(u);
+    }));
+    for (const u of urls) {
+      if (cacheRead(u)) continue;
+      const f = imgFailAt.get(u);
+      if (f && Date.now() - f < 20 * 60 * 1000) continue;
+      try { await getImage(u); } catch (e) { imgFailAt.set(u, Date.now()); console.warn('img warm failed:', u.slice(0, 100), '-', e.message); }
+    }
+  } finally { warmBusy = false; }
+}
+setInterval(() => scheduleWarm(10), 30 * 60 * 1000).unref();
+setTimeout(() => scheduleWarm(10), 4000).unref();
+
 async function imageProxy(req, res, url) {
   const fail = (code, msg) => { res.writeHead(code, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(msg); };
   if (req.method !== 'GET' && req.method !== 'HEAD') return fail(405, 'method');
-  if (limited(req, 'img', 400, 60 * 1000)) return fail(429, 'too many requests');
-  const raw = String(url.searchParams.get('u') || '');
-  if (!/^https?:\/\/[^\s"'<>`\\]{4,1000}$/.test(raw)) return fail(400, 'bad url');
+  if (limited(req, 'img', 1200, 60 * 1000)) return fail(429, 'too many requests');
+  let raw = String(url.searchParams.get('u') || '').trim();
+  if (/^\/\//.test(raw)) raw = 'https:' + raw;
+  if (!/^https?:\/\/[^\s"'<>`\\]{4,2000}$/.test(raw)) return fail(400, 'bad url');
   try {
-    let target = normalizeImageUrl(raw);
-    let r = await getRemote(target, 0, UA_BROWSER);
-    if ([403, 429, 406].indexOf(r.statusCode) !== -1) { r.resume(); r = await getRemote(target, 0, UA_BOT); }
-    let ct = String(r.headers['content-type'] || '').toLowerCase();
-    // ссылка на страницу (альбом, postimages, prnt.sc…): берём og:image
-    if (/^text\/html/.test(ct) && r.statusCode === 200) {
-      const html = (await readLimited(r, 600 * 1024)).toString('utf8');
-      const mm = /<meta[^>]+(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image)["'][^>]*content=["']([^"']+)["']/i.exec(html) ||
-                 /<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']/i.exec(html);
-      if (!mm) return fail(415, 'not an image');
-      target = new URL(mm[1].replace(/&amp;/g, '&'), target).href;
-      r = await getRemote(target, 0, UA_BROWSER);
-      ct = String(r.headers['content-type'] || '').toLowerCase();
-    }
-    if (r.statusCode !== 200) { r.resume(); return fail(502, 'upstream ' + r.statusCode); }
-    if (!/^image\//.test(ct)) {
-      // некоторые хосты отдают octet-stream — пропускаем по расширению
-      if (!(/^application\/octet-stream/.test(ct) && /\.(png|jpe?g|gif|webp|avif)(\?|$)/i.test(target))) { r.resume(); return fail(415, 'not an image'); }
-      ct = 'image/' + (/\.png/i.test(target) ? 'png' : /\.gif/i.test(target) ? 'gif' : /\.webp/i.test(target) ? 'webp' : /\.avif/i.test(target) ? 'avif' : 'jpeg');
-    }
+    const img = await getImage(raw);
     res.writeHead(200, {
-      'Content-Type': ct.split(';')[0],
-      'Cache-Control': 'public, max-age=86400',
+      'Content-Type': img.ct,
+      'Content-Length': img.buf.length,
+      'Cache-Control': 'public, max-age=604800',
       'X-Content-Type-Options': 'nosniff',
       'Content-Security-Policy': "sandbox; default-src 'none'; style-src 'unsafe-inline'"
     });
-    if (req.method === 'HEAD') { r.destroy(); return res.end(); }
-    let n = 0;
-    r.on('data', c => { n += c.length; if (n > IMG_MAX) { r.destroy(); res.destroy(); } });
-    r.on('error', () => res.destroy());
-    r.pipe(res);
+    res.end(req.method === 'HEAD' ? undefined : img.buf);
   } catch (e) {
     console.warn('img proxy:', raw.slice(0, 120), '-', e.message);
-    if (!res.headersSent) fail(502, 'fetch failed');
-    else res.destroy();
+    if (!res.headersSent) fail(502, 'fetch failed'); else res.destroy();
   }
 }
 

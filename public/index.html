@@ -1691,17 +1691,28 @@
                     t.src = '/avatars/ph.svg?w=' + ph[1] + '&h=' + ph[2] + '&bg=' + ph[3] + '&fg=' + ph[4] + '&text=' + ph[5];
                     return;
                 }
-                // 2) фото через сервер не загрузилось → пробуем открыть ссылку напрямую (без referer)
+                // 2) фото через сервер не загрузилось → пробуем напрямую (без referer), затем через внешний кэш-прокси
                 var px = /^\/api\/img\?u=(.+)$/.exec(cur);
-                if (px && !t.getAttribute('data-direct')) {
+                if (px && !t.getAttribute('data-orig')) { try { t.setAttribute('data-orig', decodeURIComponent(px[1])); } catch (err) {} }
+                var orig = t.getAttribute('data-orig');
+                if (orig && !t.getAttribute('data-direct')) {
                     t.setAttribute('data-direct', '1');
                     t.referrerPolicy = 'no-referrer';
-                    try { t.src = decodeURIComponent(px[1]); return; } catch (err) {}
+                    t.src = orig;
+                    return;
+                }
+                if (orig && !t.getAttribute('data-wsrv')) {
+                    t.setAttribute('data-wsrv', '1');
+                    t.referrerPolicy = 'no-referrer';
+                    t.src = 'https://wsrv.nl/?n=-1&url=' + encodeURIComponent(orig);
+                    return;
                 }
                 // 3) совсем не вышло — аккуратная заглушка
                 if (t.getAttribute('data-fb')) return;
                 t.setAttribute('data-fb', '1');
                 t.removeAttribute('srcset');
+                var pv = t.closest ? t.closest('#cms-img-prev') : null;
+                if (pv) { pv.innerHTML = '<div class="text-[10px] text-red-300">Не удалось загрузить картинку по этой ссылке (ссылка устарела или удалена)</div>'; return; }
                 t.src = /rounded-full/.test(t.className || '') ? FB_AVATAR : FB_PHOTO;
             }, true);
 
@@ -3929,7 +3940,7 @@
                 if (!box) return;
                 val = String(val || '').trim();
                 if (/^https?:\/\/[^\s]{4,}$/.test(val)) {
-                    box.innerHTML = '<img src="' + escHtml(imgSrc(val)) + '" referrerpolicy="no-referrer" alt="" class="w-full h-36 object-cover rounded-xl border border-[#272733]" onerror="this.parentNode.innerHTML=\'<div class=&quot;text-[10px] text-red-300&quot;>Не удалось загрузить картинку по этой ссылке</div>\'">';
+                    box.innerHTML = '<img src="' + escHtml(imgSrc(val)) + '" referrerpolicy="no-referrer" alt="" class="w-full h-36 object-cover rounded-xl border border-[#272733]">';
                     box.classList.remove('hidden');
                 } else { box.innerHTML = ''; box.classList.add('hidden'); }
             };
@@ -3961,7 +3972,7 @@
                     var ctl = '';
                     if (f.type === 'chips') ctl = renderCmsChips(f);
                     else if (f.type === 'textarea') ctl = '<textarea autocomplete="off" id="cms-f-' + f.key + '" rows="' + (f.rows || 3) + '" maxlength="' + (f.max || 500) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + ' resize-none"></textarea>';
-                    else if (f.type === 'image') ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="1000" placeholder="https://..." oninput="cmsPreview(this.value)" class="' + cmsInputCls() + '"><div id="cms-img-prev" class="hidden mt-2"></div>';
+                    else if (f.type === 'image') ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="2000" placeholder="https://..." oninput="cmsPreview(this.value)" class="' + cmsInputCls() + '"><div id="cms-img-prev" class="hidden mt-2"></div>';
                     else ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="' + (f.max || 100) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + '">';
                     return '<div>' + label + ctl + '</div>';
                 }).join('');
