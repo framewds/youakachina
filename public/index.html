@@ -1716,6 +1716,30 @@
                 t.src = /rounded-full/.test(t.className || '') ? FB_AVATAR : FB_PHOTO;
             }, true);
 
+            // фото, которое сервер скачать не смог, но у вас в браузере открылось: отдаём его серверу, чтобы оно сохранилось навсегда
+            var rescued = {};
+            function rescueImage(orig) {
+                if (!orig || rescued[orig] || !apiToken) return;
+                rescued[orig] = 1;
+                var tryUrls = ['https://wsrv.nl/?n=-1&url=' + encodeURIComponent(orig), orig];
+                (function next(i) {
+                    if (i >= tryUrls.length) { delete rescued[orig]; return; }
+                    fetch(tryUrls[i], { mode: 'cors', referrerPolicy: 'no-referrer' }).then(function(r) {
+                        if (!r.ok) throw new Error('http');
+                        return r.blob();
+                    }).then(function(b) {
+                        if (b.size < 200 || b.size > 10 * 1024 * 1024) throw new Error('size');
+                        return fetch('/api/img/save?u=' + encodeURIComponent(orig), { method: 'POST', headers: { 'Authorization': 'Bearer ' + apiToken, 'Content-Type': 'application/octet-stream' }, body: b });
+                    }).catch(function() { next(i + 1); });
+                })(0);
+            }
+            document.addEventListener('load', function(e) {
+                var t = e.target;
+                if (!t || t.tagName !== 'IMG') return;
+                var o = t.getAttribute('data-orig');
+                if (o && (t.getAttribute('data-direct') || t.getAttribute('data-wsrv')) && !t.getAttribute('data-fb')) rescueImage(o);
+            }, true);
+
             // внешние фото идут через сервер (imgur и др. часто не грузятся напрямую: блокировки, referer, ссылки-страницы)
             function imgSrc(u) {
                 u = String(u || '');
@@ -2531,7 +2555,7 @@
                 var newsEl = document.getElementById('news-grid');
                 if (newsEl) {
                     newsEl.innerHTML = db.news.length === 0 ? emptyState('news', 'Новостей пока нет', 'Когда в семье появятся новости, они будут опубликованы здесь.', { cls: 'bento-card col-span-full' }) : db.news.map(function(n, i) {
-                        return '<div class="bento-card overflow-hidden flex flex-col">' + (/^(https?:\/\/|\/avatars\/)/.test(String(n.image || '')) ? '<img src="' + escHtml(imgSrc(n.image)) + '" referrerpolicy="no-referrer" loading="lazy" alt="" class="w-full h-44 object-cover border-b border-[#23232d]">' : '') + '<div class="p-6 space-y-2.5"><div class="flex items-center justify-between"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(n.badge) + '</span><span class="text-[11px] text-zinc-500">' + escHtml(n.date || 'Сегодня') + '</span></div><h3 class="text-base font-heavy text-white pt-1">' + escHtml(n.title) + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(n.desc) + '</p>' + delBtn('news', i) + '</div></div>';
+                        return '<div class="bento-card overflow-hidden flex flex-col">' + (/^(https?:\/\/|\/avatars\/|\/uploads\/)/.test(String(n.image || '')) ? '<img src="' + escHtml(imgSrc(n.image)) + '" referrerpolicy="no-referrer" loading="lazy" alt="" class="w-full h-44 object-cover border-b border-[#23232d]">' : '') + '<div class="p-6 space-y-2.5"><div class="flex items-center justify-between"><span class="px-2.5 py-1 rounded-md bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(n.badge) + '</span><span class="text-[11px] text-zinc-500">' + escHtml(n.date || 'Сегодня') + '</span></div><h3 class="text-base font-heavy text-white pt-1">' + escHtml(n.title) + '</h3><p class="text-xs text-zinc-400 leading-relaxed">' + escHtml(n.desc) + '</p>' + delBtn('news', i) + '</div></div>';
                     }).join('');
                 }
 
@@ -2557,7 +2581,7 @@
                 }
 
                 var DIP_STYLE = { 'СОЮЗ': 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300', 'ВОЙНА': 'bg-red-500/15 border border-red-500/30 text-red-300', 'ПЕРЕМИРИЕ': 'bg-amber-500/15 border border-amber-500/30 text-amber-300', 'НЕЙТРАЛИТЕТ': 'bg-white/10 border border-white/20 text-zinc-200' };
-                var okImg = function(u) { return /^(https?:\/\/|\/avatars\/)/.test(String(u || '')); };
+                var okImg = function(u) { return /^(https?:\/\/|\/avatars\/|\/uploads\/)/.test(String(u || '')); };
 
                 var dipEl = document.getElementById('diplomacy-grid');
                 if (dipEl) {
@@ -3939,10 +3963,40 @@
                 var box = document.getElementById('cms-img-prev');
                 if (!box) return;
                 val = String(val || '').trim();
-                if (/^https?:\/\/[^\s]{4,}$/.test(val)) {
+                if (/^(https?:\/\/[^\s]{4,}|\/uploads\/[a-f0-9]{24}\.\w+)$/.test(val)) {
                     box.innerHTML = '<img src="' + escHtml(imgSrc(val)) + '" referrerpolicy="no-referrer" alt="" class="w-full h-36 object-cover rounded-xl border border-[#272733]">';
                     box.classList.remove('hidden');
                 } else { box.innerHTML = ''; box.classList.add('hidden'); }
+            };
+
+            // загрузка фото с устройства: уменьшаем до 1600 px, отправляем на сервер, в поле подставляется постоянная ссылка /uploads/...
+            window.cmsUploadFile = function(inp) {
+                var file = inp.files && inp.files[0];
+                inp.value = '';
+                if (!file) return;
+                if (!/^image\//.test(file.type)) { showToast('Нужна картинка'); return; }
+                showToast('Загружаю фото...');
+                var url = URL.createObjectURL(file), im = new Image();
+                im.onload = function() {
+                    var k = Math.min(1, 1600 / Math.max(im.width, im.height));
+                    var c = document.createElement('canvas');
+                    c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k));
+                    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+                    URL.revokeObjectURL(url);
+                    c.toBlob(function(b) {
+                        if (!b) { showToast('Не удалось обработать фото'); return; }
+                        fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + apiToken, 'Content-Type': 'application/octet-stream' }, body: b })
+                            .then(function(r) { return r.json(); })
+                            .then(function(j) {
+                                if (!j.url) { showToast(j.error || 'Не удалось загрузить фото'); return; }
+                                var el = document.getElementById('cms-f-image');
+                                if (el) { el.value = j.url; cmsPreview(j.url); }
+                                showToast('Фото загружено');
+                            }).catch(function() { showToast('Не удалось загрузить фото'); });
+                    }, 'image/jpeg', 0.88);
+                };
+                im.onerror = function() { URL.revokeObjectURL(url); showToast('Не удалось прочитать фото'); };
+                im.src = url;
             };
 
             window.editContentEntry = function(sec, i) {
@@ -3972,7 +4026,7 @@
                     var ctl = '';
                     if (f.type === 'chips') ctl = renderCmsChips(f);
                     else if (f.type === 'textarea') ctl = '<textarea autocomplete="off" id="cms-f-' + f.key + '" rows="' + (f.rows || 3) + '" maxlength="' + (f.max || 500) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + ' resize-none"></textarea>';
-                    else if (f.type === 'image') ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="2000" placeholder="https://..." oninput="cmsPreview(this.value)" class="' + cmsInputCls() + '"><div id="cms-img-prev" class="hidden mt-2"></div>';
+                    else if (f.type === 'image') ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="2000" placeholder="https://... или загрузите файл" oninput="cmsPreview(this.value)" class="' + cmsInputCls() + '"><div class="mt-2"><label class="inline-block px-3.5 py-2 rounded-xl bg-[#181822] hover:bg-white hover:text-black border border-[#2c2c38] text-[10px] font-heavy text-zinc-300 cursor-pointer transition-all">Загрузить с устройства<input type="file" accept="image/*" class="hidden" onchange="cmsUploadFile(this)"></label></div><div id="cms-img-prev" class="hidden mt-2"></div>';
                     else ctl = '<input autocomplete="off" id="cms-f-' + f.key + '" type="text" maxlength="' + (f.max || 100) + '" placeholder="' + escHtml(f.ph || '') + '" class="' + cmsInputCls() + '">';
                     return '<div>' + label + ctl + '</div>';
                 }).join('');
@@ -4006,7 +4060,7 @@
                         showToast('Заполните поле: ' + f.label);
                         return;
                     }
-                    if (f.type === 'image' && v && v.indexOf('/avatars/') !== 0) { var nl = normLink(v); if (!nl) { showToast('Не похоже на ссылку на фото'); return; } v = nl; }
+                    if (f.type === 'image' && v && v.indexOf('/avatars/') !== 0 && v.indexOf('/uploads/') !== 0) { var nl = normLink(v); if (!nl) { showToast('Не похоже на ссылку на фото'); return; } v = nl; }
                     vals[f.key] = v;
                 }
                 var isEdit = cmsCur.idx !== null && cmsCur.idx !== undefined && db[sec][cmsCur.idx];

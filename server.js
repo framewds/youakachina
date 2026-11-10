@@ -53,6 +53,7 @@ function tokenId(token) { return crypto.createHash('sha256').update(String(token
 const LOGIN_TTL = 10 * 60 * 1000;
 
 fs.mkdirSync(path.join(DATA_DIR, 'avatars'), { recursive: true });
+fs.mkdirSync(path.join(DATA_DIR, 'uploads'), { recursive: true });
 
 // ───────────────────────── хранилище ─────────────────────────
 const LEVELS = { GUEST: 0, MEMBER: 1, SENIOR: 2, LEADER: 3 };
@@ -180,7 +181,7 @@ function cleanUrl(s) {
   if (/^https?:\/\/placehold\.co\//i.test(s)) return localPh(s);
   if (/^\/\//.test(s)) s = 'https:' + s;
   if (/^https?:\/\//i.test(s)) s = s.replace(/\s+/g, '').replace(/'/g, '%27').replace(/"/g, '%22').replace(/</g, '%3C').replace(/>/g, '%3E').replace(/`/g, '%60').replace(/\\/g, '%5C');
-  return /^(https?:\/\/|\/avatars\/)[^\s"'<>`\\]{1,2000}$/.test(s) ? s : PLACEHOLDER;
+  return /^(https?:\/\/|\/avatars\/|\/uploads\/)[^\s"'<>`\\]{1,2000}$/.test(s) ? s : PLACEHOLDER;
 }
 // любая ссылка: с https://, без протокола (youtu.be/abc, drive.google.com/...), с www. — всё приводим к https://...
 function normLink(s) {
@@ -907,6 +908,14 @@ function readBody(req, limit) {
     req.on('error', reject);
   });
 }
+function readRaw(req, limit) {
+  return new Promise((resolve, reject) => {
+    let n = 0; const chunks = [];
+    req.on('data', c => { n += c.length; if (n > limit) { reject(new HttpError(413, 'Файл слишком большой (максимум 10 МБ)')); req.destroy(); return; } chunks.push(c); });
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
 function json(res, code, obj) {
   const body = JSON.stringify(obj);
   res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Content-Length': Buffer.byteLength(body) });
@@ -985,6 +994,32 @@ async function handleApi(req, res, url) {
       return json(res, 200, { ok: true });
     }
 
+  // фото, которое браузер смог загрузить (а сервер нет): сохраняем на сервер, чтобы оно больше не пропадало
+  if (p === '/api/img/save' && req.method === 'POST') {
+    need(me, LEVELS.MEMBER, 'Войдите как участник семьи');
+    if (limited(req, 'imgsave', 120, 10 * 60 * 1000)) throw new HttpError(429, 'Слишком много запросов');
+    const target = String(url.searchParams.get('u') || '').trim();
+    const known = CONTENT.some(c => (state[c] || []).some(it => it && it.image === target));
+    if (!known) throw new HttpError(400, 'Эта ссылка не используется на сайте');
+    const buf = await readRaw(req, IMG_MAX);
+    const type = sniffImage(buf);
+    if (!type) throw new HttpError(400, 'Это не картинка');
+    if (!cacheRead(target)) cacheWrite(target, { buf: buf, ct: type });
+    return json(res, 200, { ok: true });
+  }
+  // загрузка фото с устройства: файл хранится в Volume и не зависит от внешних ссылок
+  if (p === '/api/upload' && req.method === 'POST') {
+    need(me, LEVELS.SENIOR, 'Загружать фото может только Старший состав');
+    if (limited(req, 'upload', 60, 10 * 60 * 1000)) throw new HttpError(429, 'Слишком много загрузок, подождите');
+    const buf = await readRaw(req, IMG_MAX);
+    const type = sniffImage(buf);
+    const ext = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif', 'image/webp': '.webp' }[type];
+    if (!ext) throw new HttpError(400, 'Нужна картинка JPG, PNG, WEBP или GIF');
+    const name = crypto.createHash('sha1').update(buf).digest('hex').slice(0, 24) + ext;
+    fs.writeFileSync(path.join(DATA_DIR, 'uploads', name), buf);
+    return json(res, 200, { url: '/uploads/' + name });
+  }
+
   if (p === '/api/state' && req.method === 'GET') {
     const rev = parseInt(url.searchParams.get('rev'), 10);
     const vsig = url.searchParams.get('vsig');
@@ -1059,7 +1094,7 @@ async function handleApi(req, res, url) {
   throw new HttpError(404, 'Не найдено');
 }
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
 
 function serveFile(req, res, filePath, cache) {
   fs.stat(filePath, (err, st) => {
@@ -1332,7 +1367,7 @@ async function imageProxy(req, res, url) {
     res.end(req.method === 'HEAD' ? undefined : img.buf);
   } catch (e) {
     console.warn('img proxy:', raw.slice(0, 120), '-', e.message);
-    if (!res.headersSent) fail(502, 'fetch failed'); else res.destroy();
+    if (!res.headersSent) fail(502, 'fetch failed: ' + e.message); else res.destroy();
   }
 }
 
@@ -1374,6 +1409,8 @@ const server = http.createServer(async (req, res) => {
     }
     return serveFile(req, res, f, 'public, max-age=3600');
   }
+  const up = /^\/uploads\/([a-f0-9]{24}\.(?:jpg|png|gif|webp))$/.exec(pathname);
+  if (up) return serveFile(req, res, path.join(DATA_DIR, 'uploads', up[1]), 'public, max-age=31536000, immutable');
   if (pathname === '/') pathname = '/index.html';
   const filePath = path.join(PUBLIC_DIR, pathname);
   if (filePath !== PUBLIC_DIR && !filePath.startsWith(PUBLIC_DIR + path.sep)) { res.writeHead(403); return res.end('Forbidden'); }
