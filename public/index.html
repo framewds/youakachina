@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <title>DRUGHILL — Официальный портал семьи | Region RP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -350,7 +354,14 @@
         /* Гость видит только выбор (без меню и разделов) */
         #portal-shell.guest-mode #sidebar,
         #portal-shell.guest-mode #mobile-menu-btn { display: none !important; }
-    </style>
+            .drag-h { cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
+        body.is-dragging, body.is-dragging * { cursor: grabbing !important; -webkit-user-select: none; user-select: none; }
+        .dragging-card { opacity: .45; }
+        .drop-by { box-shadow: 0 -4px 0 0 #fff; }
+        .drop-ay { box-shadow: 0 4px 0 0 #fff; }
+        .drop-bx { box-shadow: -4px 0 0 0 #fff; }
+        .drop-ax { box-shadow: 4px 0 0 0 #fff; }
+</style>
 </head>
 <body class="bg-dot-matrix min-h-screen text-white relative">
 
@@ -2534,7 +2545,7 @@
 
             function delBtn(sec, i) {
                 if (!canManageContent()) return '';
-                return '<div class="flex justify-end gap-2 pt-2"><button type="button" onclick="editContentEntry(\'' + sec + '\', ' + i + ')" class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 text-[10px] font-heavy transition-all">Изменить</button><button type="button" onclick="deleteContentEntry(\'' + sec + '\', ' + i + ')" class="px-3.5 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 text-[10px] font-heavy transition-all">Удалить запись</button></div>';
+                return '<div class="flex justify-end items-center gap-2 pt-2"><button type="button" data-sec="' + sec + '" data-i="' + i + '" title="Зажмите и перетащите, чтобы поменять порядок" class="drag-h mr-auto px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-zinc-300 hover:bg-white/15 text-[10px] font-heavy select-none">⠿ Переместить</button><button type="button" onclick="editContentEntry(\'' + sec + '\', ' + i + ')" class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 text-[10px] font-heavy transition-all">Изменить</button><button type="button" onclick="deleteContentEntry(\'' + sec + '\', ' + i + ')" class="px-3.5 py-2 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 hover:bg-red-500/25 text-[10px] font-heavy transition-all">Удалить запись</button></div>';
             }
 
             window.deleteContentEntry = function(sec, i) {
@@ -2550,6 +2561,70 @@
                     showToast('Запись удалена');
                 });
             };
+
+            // ===== Перетаскивание записей (правила, автопарк, недвижимость, новости, дипломатия) =====
+            (function() {
+                var CONT = { news: 'news-grid', rules: 'rules-list', diplomacy: 'diplomacy-grid', fleet: 'fleet-grid', estates: 'estates-grid' };
+                var st = null;
+                function clearMarks() {
+                    var els = document.querySelectorAll('.dragging-card,.drop-bx,.drop-ax,.drop-by,.drop-ay');
+                    for (var i = 0; i < els.length; i++) els[i].classList.remove('dragging-card', 'drop-bx', 'drop-ax', 'drop-by', 'drop-ay');
+                }
+                function finish(apply) {
+                    var s = st; st = null;
+                    document.body.classList.remove('is-dragging');
+                    clearMarks();
+                    if (!s || !apply || !canManageContent()) return;
+                    var arr = db[s.sec];
+                    if (!Array.isArray(arr) || !arr[s.from]) return;
+                    var dest = s.to + (s.after ? 1 : 0);
+                    if (s.from < dest) dest--;
+                    if (dest === s.from) return;
+                    var item = arr.splice(s.from, 1)[0];
+                    arr.splice(dest, 0, item);
+                    addLog('RANK', 'Изменён порядок: ' + (item.title || 'запись'));
+                    saveDb();
+                    renderContentSections();
+                    showToast('Порядок сохранён');
+                }
+                document.addEventListener('pointerdown', function(e) {
+                    var h = e.target.closest ? e.target.closest('.drag-h') : null;
+                    if (!h || !canManageContent() || (e.pointerType === 'mouse' && e.button !== 0)) return;
+                    var sec = h.getAttribute('data-sec'), from = parseInt(h.getAttribute('data-i'), 10);
+                    var box = document.getElementById(CONT[sec]);
+                    if (!box) return;
+                    var cards = Array.prototype.slice.call(box.children);
+                    if (!cards[from]) return;
+                    e.preventDefault();
+                    var l0 = cards[0].getBoundingClientRect().left;
+                    st = { sec: sec, from: from, to: from, after: false, cards: cards, single: cards.every(function(c) { return Math.abs(c.getBoundingClientRect().left - l0) < 6; }) };
+                    cards[from].classList.add('dragging-card');
+                    document.body.classList.add('is-dragging');
+                    try { h.setPointerCapture(e.pointerId); } catch (err) {}
+                });
+                document.addEventListener('pointermove', function(e) {
+                    if (!st) return;
+                    if (!document.body.contains(st.cards[st.from])) { finish(false); return; }
+                    e.preventDefault();
+                    if (e.clientY < 90) window.scrollBy(0, -16); else if (e.clientY > window.innerHeight - 90) window.scrollBy(0, 16);
+                    var best = st.from, bestD = Infinity, bestR = null;
+                    st.cards.forEach(function(c, i) {
+                        var r = c.getBoundingClientRect();
+                        var dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right), dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+                        var d = Math.sqrt(dx * dx + dy * dy);
+                        if (d < bestD) { bestD = d; best = i; bestR = r; }
+                    });
+                    var sameRow = e.clientY >= bestR.top && e.clientY <= bestR.bottom;
+                    var useX = !st.single && sameRow;
+                    st.to = best;
+                    st.after = useX ? e.clientX > (bestR.left + bestR.right) / 2 : e.clientY > (bestR.top + bestR.bottom) / 2;
+                    st.cards.forEach(function(c) { c.classList.remove('drop-bx', 'drop-ax', 'drop-by', 'drop-ay'); });
+                    st.cards[best].classList.add(useX ? (st.after ? 'drop-ax' : 'drop-bx') : (st.after ? 'drop-ay' : 'drop-by'));
+                }, { passive: false });
+                document.addEventListener('pointerup', function() { finish(true); });
+                document.addEventListener('pointercancel', function() { finish(false); });
+                document.addEventListener('keydown', function(e) { if (st && e.key === 'Escape') finish(false); });
+            })();
 
             function renderContentSections() {
                 var newsEl = document.getElementById('news-grid');
