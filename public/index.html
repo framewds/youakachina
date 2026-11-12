@@ -54,49 +54,64 @@
         }
         #mouse-ambient-glow {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            width: 640px;
+            height: 640px;
+            margin: -320px 0 0 -320px;
             pointer-events: none;
             z-index: 1;
-            background: radial-gradient(520px circle at var(--cursor-x) var(--cursor-y), rgba(255, 255, 255, 0.055), transparent 65%);
-            transition: opacity 0.3s ease;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 65%);
+            transform: translate3d(50vw, 50vh, 0);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            will-change: transform;
         }
+        #mouse-ambient-glow.on { opacity: 1; }
         #cursor-follower-ring {
             position: fixed;
             top: 0;
             left: 0;
             width: 34px;
             height: 34px;
-            border-radius: 9999px;
-            border: 1.5px solid rgba(255, 255, 255, 0.32);
-            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            margin: -17px 0 0 -17px;
             pointer-events: none;
             z-index: 9999;
             transform: translate3d(-100px, -100px, 0);
-            transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease, background-color 0.22s ease;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
+            will-change: transform;
         }
-        #cursor-follower-ring.cursor-hover {
-            width: 54px;
-            height: 54px;
-            border-color: rgba(255, 255, 255, 0.75);
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 0 28px rgba(255, 255, 255, 0.18);
+        #cursor-follower-ring::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            border: 1.5px solid rgba(255, 255, 255, 0.34);
+            background: rgba(255, 255, 255, 0.04);
+            transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
         }
+        #cursor-follower-ring.cursor-hover::before {
+            transform: scale(1.55);
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.07);
+        }
+        #cursor-follower-ring.cursor-down::before { transform: scale(0.82); }
+        #cursor-follower-ring.cursor-hover.cursor-down::before { transform: scale(1.3); }
         #cursor-follower-dot {
             position: fixed;
             top: 0;
             left: 0;
             width: 6px;
             height: 6px;
+            margin: -3px 0 0 -3px;
             border-radius: 9999px;
             background: #ffffff;
             pointer-events: none;
             z-index: 10000;
             transform: translate3d(-100px, -100px, 0);
-            box-shadow: 0 0 10px #ffffff;
+            will-change: transform;
         }
-        @media (max-width: 1024px) {
-            #cursor-follower-ring, #cursor-follower-dot {
+        @media (max-width: 1024px), (hover: none) {
+            #cursor-follower-ring, #cursor-follower-dot, #mouse-ambient-glow {
                 display: none !important;
             }
         }
@@ -126,7 +141,7 @@
             background: linear-gradient(155deg, rgba(22, 22, 29, 0.92) 0%, rgba(13, 13, 18, 0.96) 100%);
             border: 1px solid #23232d;
             border-radius: 22px;
-            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease, box-shadow 0.28s ease;
             box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
         }
         .bento-card::after {
@@ -137,6 +152,7 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
+            will-change: opacity;
         }
         .bento-card:hover {
             border-color: rgba(255, 255, 255, 0.32);
@@ -157,7 +173,7 @@
             justify-content: center;
             color: #ffffff;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 18px rgba(0,0,0,0.45);
-            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.28s ease, color 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
         }
         .bento-card:hover .icon-badge {
             background: #ffffff;
@@ -199,7 +215,7 @@
             border-radius: 14px;
             font-size: 12px;
             color: #a1a1aa;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
             text-align: left;
             gap: 10px;
             position: relative;
@@ -332,6 +348,36 @@
             justify-content: center;
             box-shadow: 0 0 20px rgba(255,255,255,0.45);
             animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        /* ── анимации и доводка дизайна (чёрно-белая гамма сохранена) ── */
+        @keyframes cardIn { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
+        @keyframes popIn { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 12px) scale(0.96); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+        @keyframes sheen { 0% { transform: translateX(-120%); } 55%, 100% { transform: translateX(260%); } }
+        .page-sec .bento-card[onclick] { animation: cardIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+        .page-sec .bento-card[onclick]:nth-child(1) { animation-delay: 0ms; }
+        .page-sec .bento-card[onclick]:nth-child(2) { animation-delay: 50ms; }
+        .page-sec .bento-card[onclick]:nth-child(3) { animation-delay: 100ms; }
+        .page-sec .bento-card[onclick]:nth-child(4) { animation-delay: 150ms; }
+        .page-sec .bento-card[onclick]:nth-child(5) { animation-delay: 200ms; }
+        .page-sec .bento-card[onclick]:nth-child(6) { animation-delay: 250ms; }
+        .page-sec .bento-card[onclick]:nth-child(7) { animation-delay: 300ms; }
+        .page-sec .bento-card[onclick]:nth-child(8) { animation-delay: 350ms; }
+        .page-sec .bento-card[onclick]:nth-child(n+9) { animation-delay: 400ms; }
+        [id^="modal-"]:not(.hidden) { animation: fadeIn 0.18s ease; }
+        [id^="modal-"]:not(.hidden) > div { animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        #toast-box:not(.hidden) { animation: toastIn 0.32s cubic-bezier(0.16, 1, 0.3, 1); }
+        button { transition-property: transform, background-color, color, border-color, opacity, box-shadow; transition-duration: 0.18s; transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+        button:not(:disabled):active, .nav-btn:active { transform: scale(0.97); }
+        button.bg-white:not(:disabled):hover { box-shadow: 0 8px 24px rgba(255, 255, 255, 0.16); }
+        input, textarea { transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease; }
+        input:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.07); }
+        .hero-banner-glow::after { content: ''; position: absolute; top: 0; left: 0; width: 38%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.045), transparent); transform: translateX(-120%); animation: sheen 7s ease-in-out infinite; pointer-events: none; }
+        .log-row { animation: fadeIn 0.25s ease; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
         .page-sec {
             animation: secFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1230,10 +1276,10 @@
                             <h2 class="text-2xl font-heavy text-white mt-2">Логи действий</h2>
                         </div>
                         <div class="flex flex-wrap gap-1.5">
-                            <button onclick="setLogFilter('ALL')" class="px-3 py-1.5 rounded-lg bg-white text-black text-[10px] font-heavy">Все</button>
-                            <button onclick="setLogFilter('AUTH')" class="px-3 py-1.5 rounded-lg bg-[#16161f] text-zinc-300 text-[10px] font-heavy">Входы</button>
-                            <button onclick="setLogFilter('RANK')" class="px-3 py-1.5 rounded-lg bg-[#16161f] text-zinc-300 text-[10px] font-heavy">Ранги</button>
-                            <button onclick="setLogFilter('TEST')" class="px-3 py-1.5 rounded-lg bg-[#16161f] text-zinc-300 text-[10px] font-heavy">Тесты</button>
+                            <button id="log-flt-ALL" onclick="setLogFilter('ALL')" class="px-3 py-1.5 rounded-lg text-[10px] font-heavy">Все</button>
+                            <button id="log-flt-AUTH" onclick="setLogFilter('AUTH')" class="px-3 py-1.5 rounded-lg text-[10px] font-heavy">Входы</button>
+                            <button id="log-flt-RANK" onclick="setLogFilter('RANK')" class="px-3 py-1.5 rounded-lg text-[10px] font-heavy">Ранги</button>
+                            <button id="log-flt-TEST" onclick="setLogFilter('TEST')" class="px-3 py-1.5 rounded-lg text-[10px] font-heavy">Тесты</button>
                         </div>
                     </div>
                     <div id="logs-list-container" class="space-y-2.5"></div>
@@ -1395,6 +1441,16 @@
                 <p class="text-[10px] text-zinc-500 leading-relaxed">После вопросов участник обязан заполнить столько блоков со ссылками на видео (YouTube, Rutube, Google Drive и любые другие, с https:// или без). Дополнительные блоки он может добавить сам. Всё придёт Старшему составу кнопками «Открыть ссылку».</p>
             </div>
 
+            <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+                <div class="text-[10px] text-zinc-400 uppercase">Автогенерация вопросов по материалам сайта</div>
+                <div id="gen-sections" class="flex flex-wrap gap-1.5"></div>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div id="gen-counts" class="flex items-center gap-1.5"></div>
+                    <button type="button" onclick="generateTest()" class="px-4 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">✦ Сгенерировать тест</button>
+                </div>
+                <p class="text-[10px] text-zinc-500 leading-relaxed">Вопросы собираются из выбранного раздела (правила, автопарк, недвижимость, дипломатия, новости, ранги). Каждое нажатие даёт новый набор. Проверьте вопросы перед сохранением.</p>
+            </div>
+
             <div class="space-y-2">
                 <div class="text-[10px] text-zinc-400 uppercase">Вопросы</div>
                 <div id="builder-questions-list" class="space-y-4"></div>
@@ -1516,7 +1572,7 @@
             var promoChecked = {};
             var currentRollbackKind = 'Откат';
             var tempReqs = [];
-            var currentLogFilter = 'ALL';
+            var currentLogFilter = 'ALL', logLimit = 80;
             var tempBuilderQuestions = [];
             var activeRunnerTest = null;
             var selectedRegMode = 'GUEST';
@@ -1938,9 +1994,15 @@
                 });
             };
 
+            // Лог создаётся один раз с уникальным cid и уходит на сервер из отдельной очереди:
+            // ответ сервера больше не стирает запись, а повторная отправка не создаёт дубль.
+            // Автора записи ставит сервер по сессии, подменить его нельзя.
+            var pendingLogs = [];
             function addLog(type, action) {
                 var now = new Date();
-                db.logs.unshift({ id: Date.now() * 1000 + Math.floor(Math.random() * 1000), type: type, actor: db.currentUser.nick || 'Гость', action: action, time: now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) });
+                var e = { id: Date.now() * 1000 + Math.floor(Math.random() * 1000), cid: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), type: type, actor: db.currentUser.nick || 'Гость', action: String(action || '').slice(0, 160), time: now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }), ts: now.toISOString() };
+                db.logs.unshift(e);
+                pendingLogs.push(e);
                 saveDb();
             }
 
@@ -1979,8 +2041,11 @@
                 var box = document.getElementById('toast-box');
                 if (!box) return;
                 box.textContent = msg;
+                box.classList.add('hidden');
+                void box.offsetWidth;
                 box.classList.remove('hidden');
-                setTimeout(function() { box.classList.add('hidden'); }, 3200);
+                clearTimeout(window.__toastT);
+                window.__toastT = setTimeout(function() { box.classList.add('hidden'); }, 3200);
             };
 
             window.setRegMode = function(mode) {
@@ -2033,10 +2098,7 @@
                 SET_KEYS.forEach(function(k) {
                     if (JSON.stringify(db[k] || []) !== JSON.stringify(snap[k] || [])) { patch[k] = db[k] || []; any = true; }
                 });
-                var oldLog = {};
-                (snap.logs || []).forEach(function(l) { oldLog[l.id] = 1; });
-                var add = (db.logs || []).filter(function(l) { return l.id && !oldLog[l.id]; });
-                if (add.length) { patch.logs = { add: add }; any = true; }
+                if (pendingLogs.length) { patch.logs = { add: pendingLogs.slice(0, 20).map(function(l) { return { cid: l.cid, type: l.type, action: l.action }; }) }; any = true; }
                 return any ? patch : null;
             }
 
@@ -2051,6 +2113,7 @@
                 var wasIn = db.currentUser.loggedIn;
                 if (res.state) {
                     KEYS_FOR_APPLY().forEach(function(k) { db[k] = res.state[k] || []; });
+                    pendingLogs.forEach(function(l) { if (!db.logs.some(function(x) { return x.cid === l.cid; })) db.logs.unshift(l); });
                     syncRev = res.rev;
                     lastVsig = res.vsig || lastVsig;
                 }
@@ -2079,9 +2142,11 @@
                 if (pushing) { pushAgain = true; return; }
                 var patch = buildPatch();
                 if (!patch) return;
+                var sentCids = patch.logs ? patch.logs.add.map(function(l) { return l.cid; }) : [];
                 pushing = true;
                 api('POST', '/api/sync', { patch: patch }).then(function(res) {
                     pushing = false;
+                    if (res._status !== 401 && sentCids.length) pendingLogs = pendingLogs.filter(function(l) { return sentCids.indexOf(l.cid) === -1; });
                     if (res._status === 401) { forceLogout('Сессия истекла, войдите снова'); return; }
                     if (res.state) applyServerState(res, false);
                     if (res.error) showToast(res.error);
@@ -2105,6 +2170,7 @@
             document.addEventListener('visibilitychange', function() { if (!document.hidden) pollOnce(); });
 
             function resetLocalSession() {
+                pendingLogs = [];
                 apiToken = null;
                 try { localStorage.removeItem(TOKEN_KEY); } catch (e) {}
                 var fresh = JSON.parse(JSON.stringify(defaultDb));
@@ -2168,7 +2234,7 @@
                 }, function() {
                     var u = db.currentUser;
                     db.applications.unshift({ id: Date.now(), kind: 'Уже игрок семьи', nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, age: '—', prime: '—', exp: '—', rolls: '—', status: 'PENDING' });
-                    addLog('AUTH', 'Запрос доступа: уже игрок семьи (' + u.nick + ')');
+                    addLog('AUTH', 'Запрос: уже игрок семьи');
                     saveDb();
                     renderJoinState();
                     showToast('Запрос отправлен. Ждите ответа Лидера.');
@@ -2184,7 +2250,7 @@
                 }, function() {
                     var u = db.currentUser;
                     db.promoClaims.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, status: 'PENDING' });
-                    addLog('AUTH', 'Запрошена награда за промокод (' + u.nick + ')');
+                    addLog('AUTH', 'Запросил награду за промокод');
                     saveDb();
                     renderJoinState();
                     renderMyPromoClaims();
@@ -2337,7 +2403,7 @@
                 for (var i = 0; i < db.promoClaims.length; i++) {
                     if (db.promoClaims[i].id === id) {
                         db.promoClaims[i].status = ok ? 'APPROVED' : 'REJECTED';
-                        addLog('RANK', (ok ? 'Выдана награда за промокод: ' : 'Отклонена награда за промокод: ') + db.promoClaims[i].nick);
+                        addLog('RANK', (ok ? 'Награда выдана: ' : 'Награда отклонена: ') + db.promoClaims[i].nick);
                         break;
                     }
                 }
@@ -2398,7 +2464,7 @@
                             return api('GET', '/api/state?rev=0').then(function(res) {
                                 if (!res.state) { showToast(res.error || 'Не удалось войти'); resetLocalSession(); return; }
                                 applyServerState(res, false);
-                                addLog('AUTH', 'Вход через @' + TG_BOT_USERNAME + ' (' + db.currentUser.tg + ' · ' + db.currentUser.rankTitle + ')');
+                                addLog('AUTH', 'Вход · ' + db.currentUser.rankTitle);
                                 navigateTo(db.currentUser.role === 'GUEST' ? 'join-family' : 'home');
                                 showToast('Добро пожаловать в DRUGHILL, ' + db.currentUser.nick + '!');
                             });
@@ -2588,7 +2654,7 @@
                 uiConfirm({ title: 'Удалить запись?', text: '«' + title + '» исчезнет у всех участников семьи.', ok: 'Удалить' }, function() {
                     if (!db[sec] || !db[sec][i]) return;
                     db[sec].splice(i, 1);
-                    addLog('RANK', 'Удалена запись: ' + title);
+                    addLog('RANK', 'Удалено: ' + title);
                     saveDb();
                     renderContentSections();
                     showToast('Запись удалена');
@@ -2615,7 +2681,7 @@
                     if (dest === s.from) return;
                     var item = arr.splice(s.from, 1)[0];
                     arr.splice(dest, 0, item);
-                    addLog('RANK', 'Изменён порядок: ' + (item.title || 'запись'));
+                    addLog('RANK', 'Порядок изменён: ' + (item.title || 'запись'));
                     saveDb();
                     renderContentSections();
                     showToast('Порядок сохранён');
@@ -2833,6 +2899,99 @@
                 if (w) w.classList.toggle('hidden', !withProof);
             };
 
+            // ===== Автогенерация теста из материалов сайта (без внешних сервисов) =====
+            var GEN_SECTIONS = { rules: 'Правила', fleet: 'Автопарк', estates: 'Недвижимость', diplomacy: 'Дипломатия', news: 'Новости', ranks: 'Ранги' };
+            var genSection = 'rules', genCount = 10;
+            function genShuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+            function genClip(v, n) {
+                v = String(v || '').replace(/\s+/g, ' ').trim();
+                if (v.length <= n) return v;
+                var cut = v.slice(0, n - 1), sp = cut.lastIndexOf(' ');
+                return (sp > n * 0.6 ? cut.slice(0, sp) : cut) + '…';
+            }
+            function genQ(text, correct, pool) {
+                correct = genClip(correct, 110);
+                if (!correct) return null;
+                var seen = {}; seen[correct.toLowerCase()] = 1;
+                var wrong = [];
+                genShuffle((pool || []).slice()).forEach(function(p) {
+                    p = genClip(p, 110);
+                    var k = p.toLowerCase();
+                    if (p && !seen[k] && wrong.length < 3) { seen[k] = 1; wrong.push(p); }
+                });
+                if (!wrong.length) return null;
+                var opts = genShuffle([correct].concat(wrong));
+                return { q: genClip(text, 200), opts: opts, correct: opts.indexOf(correct) };
+            }
+            function genCandidates(sec) {
+                var out = [];
+                if (sec === 'ranks') {
+                    RANKS.forEach(function(r, i) {
+                        if (i < RANKS.length - 1) out.push(genQ('Какой ранг идёт после «' + r + '»?', RANKS[i + 1], RANKS.filter(function(x) { return x !== RANKS[i + 1] && x !== r; }).concat(['Лидер', 'Зам. Лидера'])));
+                        out.push(genQ('Каким по счёту идёт ранг «' + r + '»?', String(i + 1), ['1', '2', '3', '4', '5', '6']));
+                    });
+                    return out.filter(Boolean);
+                }
+                var list = (db[sec] || []).filter(function(x) { return x && x.title; });
+                var titles = list.map(function(x) { return x.title; });
+                var descs = list.filter(function(x) { return x.desc; }).map(function(x) { return x.desc; });
+                var badges = list.filter(function(x) { return x.badge; }).map(function(x) { return x.badge; });
+                var without = function(arr, v) { return arr.filter(function(x) { return x !== v; }); };
+                list.forEach(function(it) {
+                    var t = genClip(it.title, 80);
+                    if (sec === 'rules') {
+                        if (it.badge) out.push(genQ('Как называется пункт «' + genClip(it.badge, 40) + '»?', it.title, without(titles, it.title)));
+                        if (it.desc) out.push(genQ('Что сказано в пункте «' + t + '»?', it.desc, without(descs, it.desc)));
+                    } else if (sec === 'fleet') {
+                        if (it.badge) out.push(genQ('Для какого ранга доступен «' + t + '»?', it.badge, without(badges, it.badge)));
+                        if (it.desc) out.push(genQ('Для чего предназначен «' + t + '»?', it.desc, without(descs, it.desc)));
+                    } else if (sec === 'estates') {
+                        if (it.badge) out.push(genQ('К какому типу относится «' + t + '»?', it.badge, without(badges, it.badge).concat(['ШТАБ', 'ГАРАЖ', 'БИЗНЕС', 'ЖИЛОЙ ДОМ'])));
+                        if (it.desc) out.push(genQ('Что известно об объекте «' + t + '»?', it.desc, without(descs, it.desc)));
+                    } else if (sec === 'diplomacy') {
+                        if (it.badge) out.push(genQ('Какой статус у семьи «' + t + '»?', it.badge, without(badges, it.badge).concat(['СОЮЗ', 'ВОЙНА', 'ПЕРЕМИРИЕ', 'НЕЙТРАЛИТЕТ'])));
+                        if (it.desc) out.push(genQ('Какие условия с семьёй «' + t + '»?', it.desc, without(descs, it.desc)));
+                    } else if (sec === 'news') {
+                        if (it.desc) out.push(genQ('О чём новость «' + t + '»?', it.desc, without(descs, it.desc)));
+                        if (it.badge) out.push(genQ('С какой меткой вышла новость «' + t + '»?', it.badge, without(badges, it.badge).concat(['ВАЖНО', 'ОБНОВЛЕНИЕ', 'СОБЫТИЕ'])));
+                    }
+                });
+                return out.filter(Boolean);
+            }
+            function renderGenUi() {
+                var sBox = document.getElementById('gen-sections'), cBox = document.getElementById('gen-counts');
+                var on = 'px-3 py-1.5 rounded-lg bg-white text-black text-[10px] font-heavy transition-all';
+                var off = 'px-3 py-1.5 rounded-lg bg-[#16161f] hover:bg-[#20202b] text-zinc-300 text-[10px] font-heavy transition-all';
+                if (sBox) sBox.innerHTML = Object.keys(GEN_SECTIONS).map(function(k) {
+                    var n = k === 'ranks' ? RANKS.length : (db[k] || []).length;
+                    return '<button type="button" onclick="setGenSection(\'' + k + '\')" class="' + (genSection === k ? on : off) + '">' + GEN_SECTIONS[k] + ' · ' + n + '</button>';
+                }).join('');
+                if (cBox) cBox.innerHTML = '<span class="text-[10px] text-zinc-500 mr-1">Вопросов:</span>' + [5, 10, 15, 20].map(function(n) {
+                    return '<button type="button" onclick="setGenCount(' + n + ')" class="' + (genCount === n ? on : off) + '">' + n + '</button>';
+                }).join('');
+            }
+            window.setGenSection = function(k) { genSection = k; renderGenUi(); };
+            window.setGenCount = function(n) { genCount = n; renderGenUi(); };
+            window.generateTest = function() {
+                var cands = genCandidates(genSection);
+                var seenQ = {};
+                cands = genShuffle(cands).filter(function(c) { if (seenQ[c.q]) return false; seenQ[c.q] = 1; return true; });
+                if (cands.length < 2) { showToast('В разделе «' + GEN_SECTIONS[genSection] + '» мало материала. Добавьте записи (нужно хотя бы 3) или выберите другой раздел'); return; }
+                var picked = cands.slice(0, genCount);
+                var hasOwn = tempBuilderQuestions.some(function(q) { return q.q.trim() || q.opts.some(function(o) { return o.trim(); }); });
+                function apply() {
+                    tempBuilderQuestions = picked;
+                    var t = document.getElementById('new-test-title');
+                    if (t && !t.value.trim()) t.value = 'Тест: ' + GEN_SECTIONS[genSection];
+                    renderBuilderQuestions();
+                    var list = document.getElementById('builder-questions-list');
+                    if (list && list.scrollIntoView) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    showToast('Сгенерировано вопросов: ' + picked.length + (picked.length < genCount ? ' (больше не из чего)' : '') + '. Проверьте и сохраните');
+                }
+                if (hasOwn) uiConfirm({ title: 'Заменить вопросы?', text: 'Текущие вопросы в форме будут заменены сгенерированными.', ok: 'Заменить', tone: 'info' }, apply);
+                else apply();
+            };
+
             window.openCreateTestModal = function() {
                 tempBuilderQuestions = [{ q: '', opts: ['', ''], correct: 0 }];
                 var t = document.getElementById('new-test-title'), ps = document.getElementById('new-test-pass'), h = document.getElementById('new-test-proof-hint');
@@ -2841,6 +3000,7 @@
                 if (ps) ps.value = '70';
                 if (h) h.value = '';
                 selectTestKind(false);
+                renderGenUi();
                 renderBuilderQuestions();
                 var m = document.getElementById('modal-create-test');
                 if (m) m.classList.remove('hidden');
@@ -2899,7 +3059,7 @@
                     test.proofCount = Math.max(1, Math.min(10, parseInt(pcEl && pcEl.value, 10) || 1));
                 }
                 db.tests.push(test);
-                addLog('TEST', 'Опубликован ' + (newTestNeedsProof ? 'тест с докой: ' : 'тест: ') + title);
+                addLog('TEST', (newTestNeedsProof ? 'Тест с докой: ' : 'Тест: ') + title);
                 saveDb();
                 closeModal('modal-create-test');
                 renderAcademyAndTests();
@@ -2913,7 +3073,7 @@
                 uiConfirm({ title: 'Удалить тест «' + t.title + '»?', text: 'Результаты, которые уже сданы, останутся в итогах.', ok: 'Удалить тест' }, function() {
                     db.tests = db.tests.filter(function(x) { return x.id !== id; });
                     if (activeRunnerTest && activeRunnerTest.test.id === id) activeRunnerTest = null;
-                    addLog('TEST', 'Удалён тест: ' + t.title);
+                    addLog('TEST', 'Тест удалён: ' + t.title);
                     saveDb();
                     renderAcademyAndTests();
                     showToast('Тест удалён');
@@ -3041,7 +3201,7 @@
                 var sub = { id: Date.now(), testTitle: t.title, nick: db.currentUser.nick, staticId: db.currentUser.staticId, tg: db.currentUser.tg, scorePct: pct, passed: passed, time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }), details: details };
                 if (t.needProof) { sub.proofs = proofList; sub.proof = proofList.map(function(x) { return x.link; }).join(' '); sub.proofComment = proofList[0].comment; }
                 db.testSubmissions.unshift(sub);
-                addLog('TEST', 'Сдал тест «' + t.title + '» на ' + pct + '%');
+                addLog('TEST', 'Сдал «' + t.title + '» — ' + pct + '%');
                 activeRunnerTest = null;
                 saveDb();
                 renderAcademyAndTests();
@@ -3137,7 +3297,7 @@
                     if (!has[PROMO_TARGETS[k]]) { showToast('Добавьте хотя бы одно требование на ' + PROMO_TARGETS[k]); return; }
                 }
                 db.promoRequirements = cleaned;
-                addLog('RANK', 'Обновлены требования для повышения (' + PROMO_TARGETS.map(function(rk) { return rk + ': ' + has[rk]; }).join(', ') + ')');
+                addLog('RANK', 'Изменены требования для повышения');
                 saveDb();
                 renderPromoRequirements();
                 closeModal('modal-edit-requirements');
@@ -3157,7 +3317,7 @@
                 if (!tasks.length) { showToast('Отметьте выполненные требования'); return; }
 
                 db.promoReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, fromRank: u.rankTitle, toRank: currentPromoTarget, tasks: tasks.join(' • '), proofs: proofs, status: 'PENDING' });
-                addLog('RANK', 'Рапорт на повышение до: ' + currentPromoTarget);
+                addLog('RANK', 'Рапорт на повышение → ' + currentPromoTarget);
                 promoChecked = {};
                 if (proofsEl) proofsEl.value = '';
                 saveDb();
@@ -3190,7 +3350,7 @@
                     rolls: rolls || '—',
                     status: 'PENDING'
                 });
-                addLog('AUTH', 'Подана заявка в семью от ' + u.nick);
+                addLog('AUTH', 'Подал заявку в семью');
                 [aEl, pEl, eEl, rEl].forEach(function(el) { if (el) el.value = ''; });
                 saveDb();
                 renderUserBar();
@@ -3296,7 +3456,7 @@
                 }
                 if (cleaned.length === 0) { showToast('Нужен хотя бы один пункт'); return; }
                 db.payoutItems = cleaned;
-                addLog('RANK', 'Обновлены пункты премий (' + cleaned.length + ' шт.)');
+                addLog('RANK', 'Изменены пункты премий');
                 saveDb();
                 renderPayoutRates();
                 closeModal('modal-edit-rates');
@@ -3370,7 +3530,7 @@
                     reason: reasonText,
                     status: 'PENDING'
                 });
-                addLog('RANK', 'Запрошен отпуск на ' + days + ' дн. (' + startFmt + ' — ' + endFmt + ')');
+                addLog('RANK', 'Отпуск ' + days + ' дн. (' + startFmt + ' — ' + endFmt + ')');
                 saveDb();
                 renderSeniorPanels();
                 showToast('Заявка на отпуск (' + days + ' дн.) отправлена Старшему составу!');
@@ -3690,10 +3850,25 @@
                 if (logEl) {
                     var logs = db.logs || [];
                     if (currentLogFilter !== 'ALL') logs = logs.filter(function(l) { return l.type === currentLogFilter; });
-                    var logTypeRu = { 'AUTH': 'ВХОД', 'RANK': 'РАНГ / ОТПУСК', 'TEST': 'ТЕСТЫ' };
-                    logEl.innerHTML = logs.length === 0 ? emptyState('file', 'Логов пока нет', 'Действия участников и Старшего состава будут записываться сюда.', { cls: 'bento-card' }) : logs.map(function(l) {
-                        return '<div class="bento-card p-4 flex items-center justify-between text-xs"><span class="px-2 py-0.5 rounded bg-white text-black text-[9px] font-heavy">' + (logTypeRu[l.type] || 'СИСТЕМА') + '</span><span><strong>' + l.actor + ':</strong> ' + l.action + '</span><span class="text-zinc-500 text-[10px]">' + l.time + '</span></div>';
+                    var logTypeRu = { 'AUTH': 'ВХОД', 'RANK': 'РАНГИ', 'TEST': 'ТЕСТЫ' };
+                    var shown = logs.slice(0, logLimit);
+                    var lastDay = '';
+                    var html = shown.map(function(l) {
+                        var d = l.ts ? new Date(l.ts) : null;
+                        var day = d && !isNaN(d) ? d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : '';
+                        var head = day && day !== lastDay ? '<div class="text-[10px] text-zinc-500 uppercase tracking-wider pt-2 pb-0.5 px-1">' + escHtml(day) + '</div>' : '';
+                        if (day) lastDay = day;
+                        return head + '<div class="log-row flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-[#0d0d12] border border-[#1f1f28] text-xs">' +
+                            '<span class="text-zinc-500 text-[10px] w-10 shrink-0 tabular-nums">' + escHtml(l.time || '') + '</span>' +
+                            '<span class="px-1.5 py-0.5 rounded bg-white text-black text-[8px] font-heavy shrink-0">' + (logTypeRu[l.type] || 'СИСТЕМА') + '</span>' +
+                            '<span class="min-w-0 truncate"><strong class="text-white">' + escHtml(l.actor) + '</strong> <span class="text-zinc-300">' + escHtml(l.action) + '</span></span></div>';
                     }).join('');
+                    if (logs.length > shown.length) html += '<button type="button" onclick="showMoreLogs()" class="w-full py-2.5 rounded-xl bg-[#14141c] border border-[#252530] hover:border-white text-[10px] font-heavy text-zinc-300">Показать ещё (' + (logs.length - shown.length) + ')</button>';
+                    logEl.innerHTML = logs.length === 0 ? emptyState('file', 'Логов пока нет', 'Действия участников и Старшего состава будут записываться сюда.', { cls: 'bento-card' }) : html;
+                    ['ALL', 'AUTH', 'RANK', 'TEST'].forEach(function(f) {
+                        var b = document.getElementById('log-flt-' + f);
+                        if (b) b.className = 'px-3 py-1.5 rounded-lg text-[10px] font-heavy transition-all ' + (f === currentLogFilter ? 'bg-white text-black' : 'bg-[#16161f] text-zinc-300 hover:bg-[#20202b]');
+                    });
                 }
             }
 
@@ -3711,7 +3886,7 @@
                                 rank: '1. Контракт',
                                 avatar: db.applications[i].avatar
                             });
-                            addLog('RANK', 'Принят в семью на 1. Контракт: ' + db.applications[i].nick);
+                            addLog('RANK', 'Принят в семью: ' + db.applications[i].nick);
                         }
                         break;
                     }
@@ -3737,7 +3912,7 @@
                         if (db.roster[i].nick === db.currentUser.nick) {
                             db.currentUser.rankTitle = newRank;
                         }
-                        addLog('RANK', 'Выдан ранг «' + newRank + '» участнику ' + db.roster[i].nick);
+                        addLog('RANK', db.roster[i].nick + ' → «' + newRank + '»');
                         showToast('Ранг ' + db.roster[i].nick + ' изменён на: ' + newRank);
                         break;
                     }
@@ -3821,7 +3996,7 @@
                         if (isHighRank(db.roster[i].rank) && !isLeaderLevel()) { showToast('Старший состав и выше исключает только Лидер или Зам. Лидера'); return; }
                         var removedNick = db.roster[i].nick;
                         db.roster.splice(i, 1);
-                        addLog('RANK', 'Исключён из семьи: ' + removedNick);
+                        addLog('RANK', 'Исключён: ' + removedNick);
                         showToast('Участник ' + removedNick + ' исключён из состава');
                         break;
                     }
@@ -3874,7 +4049,7 @@
                     rank: selectedNewMemRank,
                     avatar: '/avatars/ph.svg?w=100&h=100&bg=1c1c24&fg=ffffff&text=' + encodeURIComponent(initials)
                 });
-                addLog('RANK', 'Добавлен участник ' + nick + ' (' + selectedNewMemRank + ')');
+                addLog('RANK', 'Добавлен: ' + nick + ' (' + selectedNewMemRank + ')');
                 saveDb();
                 renderSeniorPanels();
                 closeModal('modal-add-member');
@@ -3896,9 +4071,9 @@
                                 db.roster[j].rank = pr.toRank;
                             }
                         }
-                        addLog('RANK', 'Повышен ' + pr.nick + ' до «' + pr.toRank + '»');
+                        addLog('RANK', 'Повышен: ' + pr.nick + ' → «' + pr.toRank + '»');
                     } else {
-                        addLog('RANK', 'Отклонён рапорт на повышение: ' + pr.nick);
+                        addLog('RANK', 'Рапорт отклонён: ' + pr.nick);
                     }
                     break;
                 }
@@ -3912,7 +4087,7 @@
                 for (var i = 0; i < db.payoutReports.length; i++) {
                     if (db.payoutReports[i].id === id) {
                         db.payoutReports[i].status = ok ? 'APPROVED' : 'REJECTED';
-                        addLog('RANK', (ok ? 'Одобрена премия ' : 'Отклонена премия ') + Number(db.payoutReports[i].total).toLocaleString('ru-RU') + ' ₽ для ' + db.payoutReports[i].nick);
+                        addLog('RANK', (ok ? 'Премия одобрена: ' : 'Премия отклонена: ') + db.payoutReports[i].nick + ' · ' + Number(db.payoutReports[i].total).toLocaleString('ru-RU') + ' ₽');
                         break;
                     }
                 }
@@ -3962,7 +4137,7 @@
                 for (var i = 0; i < db.rollbacks.length; i++) {
                     if (db.rollbacks[i].id === id) {
                         db.rollbacks[i].status = ok ? 'APPROVED' : 'REJECTED';
-                        addLog('TEST', (ok ? 'Принят ' : 'Отклонён ') + (db.rollbacks[i].kind === 'Откат' ? 'откат' : 'видео аттестации') + ' от ' + db.rollbacks[i].nick);
+                        addLog('TEST', (ok ? 'Принят ' : 'Отклонён ') + (db.rollbacks[i].kind === 'Откат' ? 'откат: ' : 'видео: ') + db.rollbacks[i].nick);
                         break;
                     }
                 }
@@ -4002,7 +4177,8 @@
                 }
             }
 
-            window.setLogFilter = function(flt) { currentLogFilter = flt; renderSeniorPanels(); };
+            window.showMoreLogs = function() { logLimit += 80; renderSeniorPanels(); };
+            window.setLogFilter = function(flt) { currentLogFilter = flt; logLimit = 80; renderSeniorPanels(); };
 
             var CMS_CONFIG = {
                 news: {
@@ -4290,50 +4466,54 @@
                 bindCards();
             }
 
-            function bindCards() {
-                var cards = document.querySelectorAll('.bento-card');
-                for (var i = 0; i < cards.length; i++) {
-                    cards[i].onmousemove = function(e) {
-                        var rect = this.getBoundingClientRect();
-                        this.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
-                        this.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
-                    };
-                }
-            }
+            function bindCards() { /* подсветка карточек теперь одна на весь документ (см. ниже) */ }
 
-            // Smooth cursor follower initialization
-            var ring = document.getElementById('cursor-follower-ring');
-            var dot = document.getElementById('cursor-follower-dot');
-            var mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
-            var ringX = mouseX, ringY = mouseY;
+            // Курсор: один rAF-цикл, который работает только пока курсор догоняет мышь.
+            // Всё движется через transform (без перерасчёта стилей документа), подсветка карточки обновляется только у карточки под курсором.
+            (function initCursor() {
+                var ring = document.getElementById('cursor-follower-ring');
+                var dot = document.getElementById('cursor-follower-dot');
+                var glow = document.getElementById('mouse-ambient-glow');
+                if (!ring || !dot || (window.matchMedia && window.matchMedia('(hover: none)').matches)) return;
+                var HOVER = 'button, a, [onclick], label, select, .bento-card, .nav-btn, .custom-check-card';
+                var mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, gx = mx, gy = my;
+                var raf = 0, hovering = false, card = null, cardRect = null;
 
-            window.addEventListener('mousemove', function(e) {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                document.documentElement.style.setProperty('--cursor-x', mouseX + 'px');
-                document.documentElement.style.setProperty('--cursor-y', mouseY + 'px');
-                if (dot) {
-                    dot.style.transform = 'translate3d(' + (mouseX - 3) + 'px, ' + (mouseY - 3) + 'px, 0)';
-                }
-                var t = e.target;
-                if (ring) {
-                    if (t && (t.tagName === 'BUTTON' || t.tagName === 'A' || t.closest('button') || t.closest('.bento-card'))) {
-                        ring.classList.add('cursor-hover');
-                    } else {
-                        ring.classList.remove('cursor-hover');
+                function frame() {
+                    rx += (mx - rx) * 0.24; ry += (my - ry) * 0.24;
+                    gx += (mx - gx) * 0.1; gy += (my - gy) * 0.1;
+                    dot.style.transform = 'translate3d(' + mx + 'px,' + my + 'px,0)';
+                    ring.style.transform = 'translate3d(' + rx + 'px,' + ry + 'px,0)';
+                    if (glow) glow.style.transform = 'translate3d(' + gx + 'px,' + gy + 'px,0)';
+                    if (card) {
+                        if (!cardRect) cardRect = card.getBoundingClientRect();
+                        card.style.setProperty('--mouse-x', (mx - cardRect.left) + 'px');
+                        card.style.setProperty('--mouse-y', (my - cardRect.top) + 'px');
                     }
+                    var moving = Math.abs(mx - rx) > 0.2 || Math.abs(my - ry) > 0.2 || Math.abs(mx - gx) > 0.5 || Math.abs(my - gy) > 0.5;
+                    raf = moving ? requestAnimationFrame(frame) : 0;
                 }
-            });
+                function wake() { if (!raf) raf = requestAnimationFrame(frame); }
 
-            function animateCursor() {
-                ringX += (mouseX - ringX) * 0.18;
-                ringY += (mouseY - ringY) * 0.18;
-                if (ring) {
-                    ring.style.transform = 'translate3d(' + (ringX - 17) + 'px, ' + (ringY - 17) + 'px, 0)';
-                }
-                requestAnimationFrame(animateCursor);
-            }
-            requestAnimationFrame(animateCursor);
+                window.addEventListener('mousemove', function(e) {
+                    mx = e.clientX; my = e.clientY;
+                    if (glow && !glow.classList.contains('on')) { glow.classList.add('on'); gx = mx; gy = my; rx = mx; ry = my; }
+                    wake();
+                }, { passive: true });
+                document.addEventListener('mouseover', function(e) {
+                    var t = e.target && e.target.closest ? e.target.closest(HOVER) : null;
+                    var on = !!t;
+                    if (on !== hovering) { hovering = on; ring.classList.toggle('cursor-hover', on); }
+                    var c = t && t.closest ? t.closest('.bento-card') : null;
+                    if (c !== card) { card = c; cardRect = null; if (c) wake(); }
+                }, { passive: true });
+                window.addEventListener('scroll', function() { cardRect = null; }, { passive: true, capture: true });
+                window.addEventListener('resize', function() { cardRect = null; }, { passive: true });
+                document.addEventListener('mousedown', function() { ring.classList.add('cursor-down'); }, { passive: true });
+                document.addEventListener('mouseup', function() { ring.classList.remove('cursor-down'); }, { passive: true });
+                document.addEventListener('mouseleave', function() { ring.style.opacity = '0'; dot.style.opacity = '0'; });
+                document.addEventListener('mouseenter', function() { ring.style.opacity = '1'; dot.style.opacity = '1'; });
+            })();
 
             renderAll();
             renderDbPanel();

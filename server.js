@@ -78,7 +78,7 @@ const SPEC = {
   promoRequirements: ['id', 'rank', 'text'],
   promoClaims: ['id', 'nick', 'staticId', 'tg', 'discord', 'avatar', 'status', 'decidedBy', 'createdAt'],
   promoCodes: ['id', 'code', 'type', 'uses', 'used', 'reward', 'active', 'createdBy', 'createdAt', 'usedBy'],
-  logs: ['id', 'type', 'actor', 'action', 'time', 'ts']
+  logs: ['id', 'cid', 'type', 'actor', 'actorTg', 'action', 'time', 'ts']
 };
 const KEYS = Object.keys(SPEC);
 const ID_COLLS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests', 'rollbacks', 'promoClaims', 'promoCodes'];
@@ -632,11 +632,19 @@ function applyPatch(me, patch, events) {
 
   // журнал действий
   if (patch.logs && Array.isArray(patch.logs.add)) {
+    // автора записи ставит сервер по сессии (клиент подменить его не может); cid защищает от дублей при повторной отправке
+    const known = new Set(W.logs.slice(0, 200).map(x => x.cid).filter(Boolean));
     patch.logs.add.slice(0, 20).reverse().forEach(l => {
       if (!l || typeof l !== 'object') return;
+      const cid = cleanStr(l.cid || '', 24);
+      if (cid && known.has(cid)) return;
+      if (cid) known.add(cid);
+      const type = cleanStr(l.type || 'RANK', 12).toUpperCase();
+      const action = cleanStr(l.action, 160);
+      if (!action) return;
       W.logs.unshift({
-        id: nextId(), type: cleanStr(l.type || 'AUTH', 12).toUpperCase(), actor: me.nick,
-        action: cleanStr(l.action, 300), time: timeNow(), ts: new Date().toISOString()
+        id: nextId(), cid: cid, type: ['AUTH', 'RANK', 'TEST'].indexOf(type) !== -1 ? type : 'RANK', actor: me.nick, actorTg: me.tg,
+        action: action, time: timeNow(), ts: new Date().toISOString()
       });
     });
     W.logs = W.logs.slice(0, 500);
