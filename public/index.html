@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#070a10">
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
     <link rel="shortcut icon" href="/favicon.ico">
@@ -407,10 +408,111 @@
         .drop-ay { box-shadow: 0 4px 0 0 #fff; }
         .drop-bx { box-shadow: -4px 0 0 0 #fff; }
         .drop-ax { box-shadow: 4px 0 0 0 #fff; }
+
+        /* ═══════════ ЗИМНЯЯ ТЕМА: лёд, иней, снег ═══════════ */
+        :root { --ice: #bae6fd; --ice-2: #e0f2fe; --frost-line: rgba(186, 230, 253, 0.22); }
+        body { background-color: #070a10; }
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(900px 420px at 12% -8%, rgba(125, 190, 255, 0.10), transparent 70%),
+                radial-gradient(760px 380px at 92% 4%, rgba(160, 140, 255, 0.07), transparent 70%),
+                radial-gradient(700px 300px at 50% 112%, rgba(110, 200, 255, 0.06), transparent 70%);
+        }
+        .bg-dot-matrix { background-color: #070a10; background-image: radial-gradient(rgba(186, 230, 253, 0.06) 1px, transparent 1px); }
+        #auth-gate { background-color: #070a10 !important; }
+        #mouse-ambient-glow { background: radial-gradient(circle, rgba(150, 210, 255, 0.075) 0%, transparent 65%); }
+        #cursor-follower-ring::before { border-color: rgba(186, 230, 253, 0.45); background: rgba(186, 230, 253, 0.05); }
+        #cursor-follower-ring.cursor-hover::before { border-color: rgba(224, 242, 254, 0.9); background: rgba(186, 230, 253, 0.09); }
+        #cursor-follower-dot { background: #e0f2fe; box-shadow: 0 0 10px rgba(186, 230, 253, 0.8); }
+        #sidebar { background: rgba(8, 12, 19, 0.94) !important; border-color: #162131 !important; }
+        header.sticky { background: rgba(7, 10, 16, 0.82) !important; border-color: #162131 !important; }
+        .bento-card {
+            background: linear-gradient(155deg, rgba(17, 24, 36, 0.93) 0%, rgba(9, 13, 20, 0.97) 100%);
+            border-color: #1c2738;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(224, 242, 254, 0.05);
+        }
+        .bento-card::before {
+            content: ''; position: absolute; left: 12%; right: 12%; top: 0; height: 1px; z-index: 1; pointer-events: none;
+            background: linear-gradient(90deg, transparent, rgba(224, 242, 254, 0.5), transparent); opacity: .55;
+            transition: opacity .3s ease, left .3s ease, right .3s ease;
+        }
+        .bento-card:hover::before { opacity: 1; left: 4%; right: 4%; }
+        .bento-card::after { background: radial-gradient(380px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(150, 210, 255, 0.085), transparent 60%); }
+        .bento-card:hover { border-color: rgba(186, 230, 253, 0.4); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.85), 0 0 28px rgba(125, 190, 255, 0.08); }
+        .bento-card:hover .icon-badge { background: linear-gradient(145deg, #ffffff, #cfe9ff); box-shadow: 0 0 24px rgba(150, 210, 255, 0.45); border-color: #e0f2fe; }
+        .icon-badge { background: linear-gradient(145deg, #1a2433 0%, #0f1520 100%); border-color: #26344a; }
+        .icon-badge-invert { background: linear-gradient(145deg, #ffffff, #cfe9ff); border-color: #e0f2fe; box-shadow: 0 0 25px rgba(150, 210, 255, 0.3); }
+        .hero-banner-glow {
+            background: linear-gradient(150deg, #121b2a 0%, #0a0f18 60%, #0c1220 100%);
+            border-color: #1f2c42;
+            box-shadow: 0 30px 70px -30px rgba(80, 150, 255, 0.22), inset 0 1px 0 rgba(224, 242, 254, 0.06);
+        }
+        /* иней по верхнему краю главного баннера */
+        .hero-banner-glow::before {
+            content: ''; position: absolute; left: 0; right: 0; top: 0; height: 70px; pointer-events: none; z-index: 0;
+            background: linear-gradient(180deg, rgba(186, 230, 253, 0.11), transparent);
+        }
+        .hero-banner-glow > * { position: relative; z-index: 1; }
+        .nav-btn:hover { background-color: #101927; }
+        .nav-btn.active { background: linear-gradient(135deg, #ffffff, #cfe9ff); box-shadow: 0 6px 22px rgba(150, 210, 255, 0.25); }
+        .custom-check-card { background: #0d131d; border-color: #1e2a3c; }
+        .custom-check-card.checked { border-color: var(--ice); background: #111b2a; box-shadow: 0 0 20px rgba(150, 210, 255, 0.1); }
+        .custom-check-card.checked .custom-check-box { background: var(--ice); border-color: var(--ice); }
+        input:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(150, 210, 255, 0.12); }
+        ::-webkit-scrollbar-track { background: #070a10; }
+        ::-webkit-scrollbar-thumb { background: #223046; }
+        ::selection { background: rgba(150, 210, 255, 0.35); color: #fff; }
+        .drop-by { box-shadow: 0 -4px 0 0 var(--ice); } .drop-ay { box-shadow: 0 4px 0 0 var(--ice); }
+        .drop-bx { box-shadow: -4px 0 0 0 var(--ice); } .drop-ax { box-shadow: 4px 0 0 0 var(--ice); }
+
+        #snow-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 55; pointer-events: none; }
+        #snow-toggle { width: 38px; height: 38px; border-radius: 12px; background: #0d131d; border: 1px solid #1f2b3d; color: #cfe9ff; font-size: 15px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+        #snow-toggle:hover { border-color: rgba(186, 230, 253, 0.6); box-shadow: 0 0 16px rgba(150, 210, 255, 0.2); }
+        #snow-toggle.off { opacity: .5; filter: grayscale(1); }
+
+        /* ═══════════ ЖУРНАЛ ДЕЙСТВИЙ ═══════════ */
+        .lg-AUTH { --c: #7dd3fc; } .lg-RANK { --c: #c4b5fd; } .lg-TEST { --c: #6ee7b7; } .lg-APP { --c: #fcd34d; }
+        .lg-PROMO { --c: #f9a8d4; } .lg-PAY { --c: #bef264; } .lg-VAC { --c: #67e8f9; } .lg-VIDEO { --c: #f0abfc; }
+        .lg-CONTENT { --c: #93c5fd; } .lg-ADMIN { --c: #fca5a5; } .lg-SYS { --c: #cbd5e1; }
+        .log-chip {
+            display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 10px;
+            font-size: 10px; font-weight: 900; color: #b4c3d8; background: #0e151f; border: 1px solid #1b2636;
+            transition: background-color .18s, color .18s, border-color .18s, transform .18s, opacity .18s;
+        }
+        .log-chip:hover { border-color: var(--c, #bae6fd); color: #fff; }
+        .log-chip b { font-size: 9px; padding: 1px 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.07); color: #d7e3f4; font-variant-numeric: tabular-nums; }
+        .log-chip.on { background: var(--c, #f4f9ff); border-color: var(--c, #f4f9ff); color: #070a10; }
+        .log-chip.on b { background: rgba(0, 0, 0, 0.14); color: #070a10; }
+        .log-day { display: flex; align-items: center; gap: 12px; padding: 16px 4px 6px; }
+        .log-day span { font-size: 10px; font-weight: 900; color: #7f93b0; text-transform: uppercase; letter-spacing: .14em; }
+        .log-day::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, #1b2738, transparent); }
+        .log-row {
+            display: grid; grid-template-columns: 46px 108px minmax(0, 1fr); align-items: center; gap: 12px;
+            padding: 10px 14px 10px 12px; border-radius: 12px; font-size: 12px;
+            background: linear-gradient(90deg, color-mix(in srgb, var(--c) 6%, #0a0f17) 0%, #0a0f17 38%);
+            border: 1px solid #151f2e; border-left: 3px solid var(--c);
+            transition: transform .18s ease, border-color .18s ease, background-color .18s ease;
+        }
+        .log-row:hover { transform: translateX(3px); border-color: color-mix(in srgb, var(--c) 45%, #151f2e); border-left-color: var(--c); }
+        .log-time { font-size: 10px; color: #6d819e; font-variant-numeric: tabular-nums; }
+        .log-badge {
+            display: inline-flex; align-items: center; gap: 5px; justify-self: start; padding: 3px 8px; border-radius: 7px;
+            font-size: 8.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+            color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); border: 1px solid color-mix(in srgb, var(--c) 28%, transparent);
+        }
+        .log-badge i { font-style: normal; font-size: 10px; }
+        .log-text { color: #c3d0e2; line-height: 1.5; overflow-wrap: anywhere; }
+        .log-text strong { color: #fff; font-weight: 900; }
+        @media (max-width: 640px) {
+            .log-row { grid-template-columns: 46px minmax(0, 1fr); row-gap: 6px; }
+            .log-text { grid-column: 1 / -1; }
+        }
 </style>
 </head>
 <body class="bg-dot-matrix min-h-screen text-white relative">
 
+    <canvas id="snow-canvas" aria-hidden="true"></canvas>
     <div id="mouse-ambient-glow"></div>
     <div id="cursor-follower-ring"></div>
     <div id="cursor-follower-dot"></div>
@@ -634,6 +736,7 @@
                 </div>
 
                 <div class="flex items-center gap-2.5 shrink-0">
+                    <button id="snow-toggle" type="button" onclick="toggleSnow()" title="Снегопад вкл/выкл" aria-label="Снегопад">❄</button>
                     <button id="header-logout-btn" onclick="logoutToAuthGate()" class="hidden px-4 py-2 rounded-xl bg-[#14141b] border border-[#272733] hover:border-red-400/60 text-[11px] font-heavy text-red-300 transition-all">Выйти</button>
                     <a href="https://discord.gg/sEJkFaNDJ" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-[#14141b] border border-[#272733] hover:border-white/40 text-[11px] font-heavy text-white transition-all">Discord</a>
                 </div>
@@ -1269,20 +1372,34 @@
                 </section>
 
                 <!-- 19. SENIOR STAFF: LOGS -->
-                <section id="sec-senior-logs" class="page-sec hidden space-y-6">
-                    <div class="bento-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
-                            <h2 class="text-2xl font-heavy text-white mt-2">Логи действий</h2>
+                <section id="sec-senior-logs" class="page-sec hidden space-y-5">
+                    <div class="bento-card frost p-6 sm:p-8 space-y-5">
+                        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                            <div>
+                                <span class="px-2.5 py-1 rounded bg-white text-black text-[10px] font-heavy uppercase">СТАРШИЙ СОСТАВ</span>
+                                <h2 class="text-2xl font-heavy text-white mt-2">Логи действий</h2>
+                                <p class="text-[11px] text-zinc-400 mt-1.5 max-w-xl leading-relaxed">Здесь пишется всё: входы, заявки, ранги, тесты, промокоды и награды, премии, отпуска, откаты, правки разделов и действия с базой. Автора ставит сервер, подделать запись нельзя.</p>
+                            </div>
+                            <div id="log-stats" class="grid grid-cols-3 gap-2 shrink-0"></div>
                         </div>
-                        <div class="flex flex-wrap gap-1.5">
-                            <button id="log-flt-ALL" onclick="setLogFilter('ALL')" class="px-3 py-1.5 rounded-lg text-[10px] font-heavy">Все</button>
-                            <button id="log-flt-AUTH" onclick="setLogFilter('AUTH')" class="px-3 py-1.5 rounded-lg text-[10px] font-heavy">Входы</button>
-                            <button id="log-flt-RANK" onclick="setLogFilter('RANK')" class="px-3 py-1.5 rounded-lg text-[10px] font-heavy">Ранги</button>
-                            <button id="log-flt-TEST" onclick="setLogFilter('TEST')" class="px-3 py-1.5 rounded-lg text-[10px] font-heavy">Тесты</button>
+                        <div class="flex flex-col sm:flex-row gap-2.5">
+                            <div class="relative flex-1 min-w-0">
+                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs pointer-events-none">⌕</span>
+                                <input id="log-search" autocomplete="off" type="text" maxlength="60" placeholder="Поиск по нику, действию, @tg…" oninput="onLogSearch(this.value)" class="w-full pl-9 pr-9 py-2.5 rounded-xl bg-[#080b10] border border-[#222c3a] focus:border-sky-200 text-xs text-white focus:outline-none">
+                                <button id="log-search-x" type="button" onclick="clearLogSearch()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg bg-[#16202c] hover:bg-[#223044] text-zinc-300 text-[10px]">✕</button>
+                            </div>
+                            <div id="log-period" class="flex gap-1.5 shrink-0"></div>
+                        </div>
+                        <div id="log-types" class="flex flex-wrap gap-1.5"></div>
+                        <div class="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
+                            <div id="log-found" class="text-[10px] text-zinc-500 uppercase tracking-wider pt-3"></div>
+                            <div class="flex flex-wrap gap-2 pt-3">
+                                <button type="button" onclick="exportLogs()" class="px-3.5 py-2 rounded-xl bg-[#101722] border border-[#25324a] hover:border-sky-200 text-[10px] font-heavy text-sky-100">⇩ Скачать .txt</button>
+                                <button id="log-clear-btn" type="button" onclick="clearLogs()" class="hidden px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[10px] font-heavy text-red-300">Очистить журнал</button>
+                            </div>
                         </div>
                     </div>
-                    <div id="logs-list-container" class="space-y-2.5"></div>
+                    <div id="logs-list-container" class="space-y-1.5"></div>
                 </section>
 
                 <!-- 19a. SENIOR STAFF: ROLLBACKS / VIDEO -->
@@ -1441,14 +1558,22 @@
                 <p class="text-[10px] text-zinc-500 leading-relaxed">После вопросов участник обязан заполнить столько блоков со ссылками на видео (YouTube, Rutube, Google Drive и любые другие, с https:// или без). Дополнительные блоки он может добавить сам. Всё придёт Старшему составу кнопками «Открыть ссылку».</p>
             </div>
 
-            <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
-                <div class="text-[10px] text-zinc-400 uppercase">Автогенерация вопросов по материалам сайта</div>
-                <div id="gen-sections" class="flex flex-wrap gap-1.5"></div>
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div id="gen-counts" class="flex items-center gap-1.5"></div>
-                    <button type="button" onclick="generateTest()" class="px-4 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">✦ Сгенерировать тест</button>
+            <div class="p-4 rounded-2xl bg-sky-200/[0.035] border border-sky-200/15 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="text-[10px] text-sky-100 uppercase">❄ Автогенерация вопросов по материалам сайта</div>
+                    <button type="button" onclick="genToggleAll()" class="px-2.5 py-1 rounded-lg bg-[#101722] border border-[#25324a] hover:border-sky-200 text-[10px] font-heavy text-sky-100 transition-all">Всё вперемешку</button>
                 </div>
-                <p class="text-[10px] text-zinc-500 leading-relaxed">Вопросы собираются из выбранного раздела (правила, автопарк, недвижимость, дипломатия, новости, ранги). Каждое нажатие даёт новый набор. Проверьте вопросы перед сохранением.</p>
+                <div id="gen-sections" class="flex flex-wrap gap-1.5"></div>
+                <div id="gen-mixinfo" class="text-[10px] text-zinc-500"></div>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div id="gen-counts" class="flex flex-wrap items-center gap-1.5"></div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" onclick="generateTest(false)" class="px-4 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">✦ Сгенерировать</button>
+                    <button type="button" onclick="generateTest(true)" class="px-4 py-2.5 rounded-xl bg-[#101722] border border-[#25324a] hover:border-sky-200 text-xs font-heavy text-sky-100 transition-all">＋ Добавить к текущим</button>
+                    <button type="button" onclick="shuffleBuilder()" class="px-4 py-2.5 rounded-xl bg-[#101722] border border-[#25324a] hover:border-sky-200 text-xs font-heavy text-sky-100 transition-all">🔀 Перемешать</button>
+                </div>
+                <p class="text-[10px] text-zinc-500 leading-relaxed">Выберите один или несколько разделов: вопросы возьмутся из каждого поровну и перемешаются. «Добавить к текущим» дописывает новые вопросы к уже готовым, «Перемешать» меняет порядок вопросов и вариантов ответа. У сгенерированного вопроса есть кнопка «↻ Другой» для замены. Проверьте всё перед сохранением.</p>
             </div>
 
             <div class="space-y-2">
@@ -1997,7 +2122,7 @@
             // Лог создаётся один раз с уникальным cid и уходит на сервер из отдельной очереди:
             // ответ сервера больше не стирает запись, а повторная отправка не создаёт дубль.
             // Автора записи ставит сервер по сессии, подменить его нельзя.
-            var pendingLogs = [];
+            var pendingLogs = [], pendingLogsClear = false;
             function addLog(type, action) {
                 var now = new Date();
                 var e = { id: Date.now() * 1000 + Math.floor(Math.random() * 1000), cid: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), type: type, actor: db.currentUser.nick || 'Гость', action: String(action || '').slice(0, 160), time: now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }), ts: now.toISOString() };
@@ -2098,7 +2223,11 @@
                 SET_KEYS.forEach(function(k) {
                     if (JSON.stringify(db[k] || []) !== JSON.stringify(snap[k] || [])) { patch[k] = db[k] || []; any = true; }
                 });
-                if (pendingLogs.length) { patch.logs = { add: pendingLogs.slice(0, 20).map(function(l) { return { cid: l.cid, type: l.type, action: l.action }; }) }; any = true; }
+                if (pendingLogs.length || pendingLogsClear) {
+                    patch.logs = { add: pendingLogs.slice(0, 20).map(function(l) { return { cid: l.cid, type: l.type, action: l.action }; }) };
+                    if (pendingLogsClear) patch.logs.clear = true;
+                    any = true;
+                }
                 return any ? patch : null;
             }
 
@@ -2143,9 +2272,11 @@
                 var patch = buildPatch();
                 if (!patch) return;
                 var sentCids = patch.logs ? patch.logs.add.map(function(l) { return l.cid; }) : [];
+                var sentClear = !!(patch.logs && patch.logs.clear);
                 pushing = true;
                 api('POST', '/api/sync', { patch: patch }).then(function(res) {
                     pushing = false;
+                    if (sentClear && res._status !== 401 && res._status < 500) pendingLogsClear = false;
                     if (res._status !== 401 && sentCids.length) pendingLogs = pendingLogs.filter(function(l) { return sentCids.indexOf(l.cid) === -1; });
                     if (res._status === 401) { forceLogout('Сессия истекла, войдите снова'); return; }
                     if (res.state) applyServerState(res, false);
@@ -2234,7 +2365,6 @@
                 }, function() {
                     var u = db.currentUser;
                     db.applications.unshift({ id: Date.now(), kind: 'Уже игрок семьи', nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, age: '—', prime: '—', exp: '—', rolls: '—', status: 'PENDING' });
-                    addLog('AUTH', 'Запрос: уже игрок семьи');
                     saveDb();
                     renderJoinState();
                     showToast('Запрос отправлен. Ждите ответа Лидера.');
@@ -2250,7 +2380,6 @@
                 }, function() {
                     var u = db.currentUser;
                     db.promoClaims.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, status: 'PENDING' });
-                    addLog('AUTH', 'Запросил награду за промокод');
                     saveDb();
                     renderJoinState();
                     renderMyPromoClaims();
@@ -2403,7 +2532,6 @@
                 for (var i = 0; i < db.promoClaims.length; i++) {
                     if (db.promoClaims[i].id === id) {
                         db.promoClaims[i].status = ok ? 'APPROVED' : 'REJECTED';
-                        addLog('RANK', (ok ? 'Награда выдана: ' : 'Награда отклонена: ') + db.promoClaims[i].nick);
                         break;
                     }
                 }
@@ -2464,7 +2592,6 @@
                             return api('GET', '/api/state?rev=0').then(function(res) {
                                 if (!res.state) { showToast(res.error || 'Не удалось войти'); resetLocalSession(); return; }
                                 applyServerState(res, false);
-                                addLog('AUTH', 'Вход · ' + db.currentUser.rankTitle);
                                 navigateTo(db.currentUser.role === 'GUEST' ? 'join-family' : 'home');
                                 showToast('Добро пожаловать в DRUGHILL, ' + db.currentUser.nick + '!');
                             });
@@ -2654,7 +2781,7 @@
                 uiConfirm({ title: 'Удалить запись?', text: '«' + title + '» исчезнет у всех участников семьи.', ok: 'Удалить' }, function() {
                     if (!db[sec] || !db[sec][i]) return;
                     db[sec].splice(i, 1);
-                    addLog('RANK', 'Удалено: ' + title);
+                    addLog('CONTENT', 'Удалено: ' + title);
                     saveDb();
                     renderContentSections();
                     showToast('Запись удалена');
@@ -2681,7 +2808,7 @@
                     if (dest === s.from) return;
                     var item = arr.splice(s.from, 1)[0];
                     arr.splice(dest, 0, item);
-                    addLog('RANK', 'Порядок изменён: ' + (item.title || 'запись'));
+                    addLog('CONTENT', 'Порядок изменён: ' + (item.title || 'запись'));
                     saveDb();
                     renderContentSections();
                     showToast('Порядок сохранён');
@@ -2901,7 +3028,7 @@
 
             // ===== Автогенерация теста из материалов сайта (без внешних сервисов) =====
             var GEN_SECTIONS = { rules: 'Правила', fleet: 'Автопарк', estates: 'Недвижимость', diplomacy: 'Дипломатия', news: 'Новости', ranks: 'Ранги' };
-            var genSection = 'rules', genCount = 10;
+            var genSel = { rules: true }, genCount = 10;
             function genShuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
             function genClip(v, n) {
                 v = String(v || '').replace(/\s+/g, ' ').trim();
@@ -2958,38 +3085,111 @@
                 });
                 return out.filter(Boolean);
             }
+            function genSecSize(k) { return k === 'ranks' ? RANKS.length : (db[k] || []).length; }
+            function genSelKeys() { return Object.keys(GEN_SECTIONS).filter(function(k) { return genSel[k]; }); }
             function renderGenUi() {
-                var sBox = document.getElementById('gen-sections'), cBox = document.getElementById('gen-counts');
+                var sBox = document.getElementById('gen-sections'), cBox = document.getElementById('gen-counts'), info = document.getElementById('gen-mixinfo');
                 var on = 'px-3 py-1.5 rounded-lg bg-white text-black text-[10px] font-heavy transition-all';
                 var off = 'px-3 py-1.5 rounded-lg bg-[#16161f] hover:bg-[#20202b] text-zinc-300 text-[10px] font-heavy transition-all';
                 if (sBox) sBox.innerHTML = Object.keys(GEN_SECTIONS).map(function(k) {
-                    var n = k === 'ranks' ? RANKS.length : (db[k] || []).length;
-                    return '<button type="button" onclick="setGenSection(\'' + k + '\')" class="' + (genSection === k ? on : off) + '">' + GEN_SECTIONS[k] + ' · ' + n + '</button>';
+                    return '<button type="button" onclick="toggleGenSection(\'' + k + '\')" class="' + (genSel[k] ? on : off) + '">' + (genSel[k] ? '✓ ' : '') + GEN_SECTIONS[k] + ' · ' + genSecSize(k) + '</button>';
                 }).join('');
-                if (cBox) cBox.innerHTML = '<span class="text-[10px] text-zinc-500 mr-1">Вопросов:</span>' + [5, 10, 15, 20].map(function(n) {
+                if (cBox) cBox.innerHTML = '<span class="text-[10px] text-zinc-500 mr-1">Вопросов:</span>' + [5, 10, 15, 20, 30].map(function(n) {
                     return '<button type="button" onclick="setGenCount(' + n + ')" class="' + (genCount === n ? on : off) + '">' + n + '</button>';
                 }).join('');
+                var keys = genSelKeys();
+                if (info) info.textContent = keys.length > 1 ? 'Микс из ' + keys.length + ' разделов: ' + keys.map(function(k) { return GEN_SECTIONS[k]; }).join(' + ') : 'Один раздел: ' + (keys.length ? GEN_SECTIONS[keys[0]] : '—');
             }
-            window.setGenSection = function(k) { genSection = k; renderGenUi(); };
+            window.toggleGenSection = function(k) {
+                if (genSel[k]) { if (genSelKeys().length > 1) delete genSel[k]; else showToast('Должен остаться хотя бы один раздел'); }
+                else genSel[k] = true;
+                renderGenUi();
+            };
+            window.genToggleAll = function() {
+                var all = Object.keys(GEN_SECTIONS).filter(function(k) { return genSecSize(k) >= 3 || k === 'ranks'; });
+                genSel = {};
+                all.forEach(function(k) { genSel[k] = true; });
+                if (!all.length) genSel = { rules: true };
+                renderGenUi();
+                showToast('Выбраны все разделы с материалом: ' + all.length);
+            };
             window.setGenCount = function(n) { genCount = n; renderGenUi(); };
-            window.generateTest = function() {
-                var cands = genCandidates(genSection);
+
+            // кандидаты раздела: перемешаны, без повторов вопроса, помечены разделом
+            function genPool(sec) {
                 var seenQ = {};
-                cands = genShuffle(cands).filter(function(c) { if (seenQ[c.q]) return false; seenQ[c.q] = 1; return true; });
-                if (cands.length < 2) { showToast('В разделе «' + GEN_SECTIONS[genSection] + '» мало материала. Добавьте записи (нужно хотя бы 3) или выберите другой раздел'); return; }
-                var picked = cands.slice(0, genCount);
-                var hasOwn = tempBuilderQuestions.some(function(q) { return q.q.trim() || q.opts.some(function(o) { return o.trim(); }); });
+                return genShuffle(genCandidates(sec)).filter(function(c) {
+                    if (seenQ[c.q]) return false;
+                    seenQ[c.q] = 1;
+                    c.src = sec;
+                    return true;
+                });
+            }
+            function genQKey(q) { return String(q || '').trim().toLowerCase(); }
+            function genUsedSet() {
+                var u = {};
+                tempBuilderQuestions.forEach(function(q) { if (q.q && q.q.trim()) u[genQKey(q.q)] = 1; });
+                return u;
+            }
+            // поровну из каждого раздела по кругу, потом всё перемешиваем
+            function genMix(keys, count, used) {
+                var pools = keys.map(function(k) { return genPool(k).filter(function(c) { return !used[genQKey(c.q)]; }); });
+                var picked = [], guard = 0;
+                while (picked.length < count && guard++ < 500) {
+                    var progressed = false;
+                    for (var i = 0; i < pools.length && picked.length < count; i++) {
+                        if (pools[i].length) { picked.push(pools[i].shift()); progressed = true; }
+                    }
+                    if (!progressed) break;
+                }
+                return genShuffle(picked);
+            }
+            function genEmptyBuilder() { return !tempBuilderQuestions.some(function(q) { return q.q.trim() || q.opts.some(function(o) { return o.trim(); }); }); }
+            window.generateTest = function(append) {
+                var keys = genSelKeys();
+                var base = [];
+                if (append && !genEmptyBuilder()) base = tempBuilderQuestions.filter(function(q) { return q.q.trim(); });
+                else append = false;
+                var room = Math.max(0, 60 - base.length);
+                if (!room) { showToast('В тесте уже 60 вопросов, это максимум для автогенерации'); return; }
+                var want = Math.min(genCount, room);
+                var used = {};
+                base.forEach(function(q) { used[genQKey(q.q)] = 1; });
+                var picked = genMix(keys, want, used);
+                if (picked.length < 1) { showToast(append ? 'Новых вопросов больше нет: всё из выбранных разделов уже добавлено' : 'В выбранных разделах мало материала. Добавьте записи (нужно хотя бы 3) или выберите другой раздел'); return; }
                 function apply() {
-                    tempBuilderQuestions = picked;
+                    tempBuilderQuestions = append ? base.concat(picked) : picked;
                     var t = document.getElementById('new-test-title');
-                    if (t && !t.value.trim()) t.value = 'Тест: ' + GEN_SECTIONS[genSection];
+                    if (t && !t.value.trim()) t.value = keys.length > 1 ? 'Тест: микс' : 'Тест: ' + GEN_SECTIONS[keys[0]];
                     renderBuilderQuestions();
                     var list = document.getElementById('builder-questions-list');
                     if (list && list.scrollIntoView) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    showToast('Сгенерировано вопросов: ' + picked.length + (picked.length < genCount ? ' (больше не из чего)' : '') + '. Проверьте и сохраните');
+                    showToast((append ? 'Добавлено вопросов: ' : 'Сгенерировано вопросов: ') + picked.length + (picked.length < want ? ' (больше не из чего)' : '') + '. Проверьте и сохраните');
                 }
-                if (hasOwn) uiConfirm({ title: 'Заменить вопросы?', text: 'Текущие вопросы в форме будут заменены сгенерированными.', ok: 'Заменить', tone: 'info' }, apply);
+                if (!append && !genEmptyBuilder()) uiConfirm({ title: 'Заменить вопросы?', text: 'Текущие вопросы в форме будут заменены сгенерированными. Чтобы сохранить их, нажмите «Добавить к текущим».', ok: 'Заменить', tone: 'info' }, apply);
                 else apply();
+            };
+            window.rerollBuilderQuestion = function(qIdx) {
+                var cur = tempBuilderQuestions[qIdx];
+                if (!cur || !cur.src) return;
+                var used = genUsedSet();
+                var fresh = genPool(cur.src).filter(function(c) { return !used[genQKey(c.q)]; })[0];
+                if (!fresh) { showToast('В этом разделе больше нет новых вопросов'); return; }
+                tempBuilderQuestions[qIdx] = fresh;
+                renderBuilderQuestions();
+            };
+            window.shuffleBuilder = function() {
+                var filled = tempBuilderQuestions.filter(function(q) { return q.q.trim() || q.opts.some(function(o) { return o.trim(); }); });
+                if (filled.length < 2) { showToast('Для перемешивания нужно хотя бы 2 вопроса'); return; }
+                filled.forEach(function(q) {
+                    var correctText = q.opts[q.correct];
+                    var order = genShuffle(q.opts.map(function(o, i) { return i; }));
+                    q.opts = order.map(function(i) { return q.opts[i]; });
+                    q.correct = Math.max(0, order.indexOf(q.correct));
+                });
+                tempBuilderQuestions = genShuffle(filled);
+                renderBuilderQuestions();
+                showToast('Вопросы и варианты ответов перемешаны');
             };
 
             window.openCreateTestModal = function() {
@@ -3016,7 +3216,7 @@
                             (item.opts.length > 2 ? '<button type="button" onclick="removeBuilderOption(' + qIdx + ', ' + oIdx + ')" class="w-8 h-8 shrink-0 rounded-lg bg-[#181822] hover:bg-red-500/20 text-zinc-400 hover:text-red-300 text-xs transition-all" title="Убрать вариант">✕</button>' : '') + '</div>';
                     }).join('');
                     return '<div class="p-4 rounded-2xl bg-[#0c0c10] border border-[#252530] space-y-3">' +
-                        '<div class="flex items-center justify-between"><span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">ВОПРОС ' + (qIdx + 1) + '</span>' + (tempBuilderQuestions.length > 1 ? '<button type="button" onclick="removeBuilderQuestion(' + qIdx + ')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[10px] font-heavy transition-all">Убрать</button>' : '') + '</div>' +
+                        '<div class="flex items-center justify-between gap-2"><span class="flex items-center gap-1.5 min-w-0"><span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy shrink-0">ВОПРОС ' + (qIdx + 1) + '</span>' + (item.src && GEN_SECTIONS[item.src] ? '<span class="px-2 py-0.5 rounded bg-sky-200/10 text-sky-200 text-[9px] font-heavy truncate">❄ ' + GEN_SECTIONS[item.src] + '</span>' : '') + '</span><span class="flex items-center gap-1.5 shrink-0">' + (item.src ? '<button type="button" onclick="rerollBuilderQuestion(' + qIdx + ')" class="px-2.5 py-1 rounded-lg bg-[#101722] hover:bg-sky-200 hover:text-black text-sky-100 text-[10px] font-heavy transition-all" title="Заменить на другой вопрос из этого раздела">↻ Другой</button>' : '') + (tempBuilderQuestions.length > 1 ? '<button type="button" onclick="removeBuilderQuestion(' + qIdx + ')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[10px] font-heavy transition-all">Убрать</button>' : '') + '</span></div>' +
                         '<input autocomplete="off" type="text" maxlength="200" value="' + escHtml(item.q) + '" placeholder="Текст вопроса" oninput="updateBuilderQ(' + qIdx + ', this.value)" class="w-full px-3 py-2.5 rounded-xl bg-[#14141c] border border-[#292936] focus:border-white text-xs text-white focus:outline-none">' +
                         '<div class="text-[10px] text-zinc-500">Кружок слева отмечает правильный ответ</div>' +
                         '<div class="space-y-1.5">' + optInputs + '</div>' +
@@ -3059,7 +3259,6 @@
                     test.proofCount = Math.max(1, Math.min(10, parseInt(pcEl && pcEl.value, 10) || 1));
                 }
                 db.tests.push(test);
-                addLog('TEST', (newTestNeedsProof ? 'Тест с докой: ' : 'Тест: ') + title);
                 saveDb();
                 closeModal('modal-create-test');
                 renderAcademyAndTests();
@@ -3073,7 +3272,6 @@
                 uiConfirm({ title: 'Удалить тест «' + t.title + '»?', text: 'Результаты, которые уже сданы, останутся в итогах.', ok: 'Удалить тест' }, function() {
                     db.tests = db.tests.filter(function(x) { return x.id !== id; });
                     if (activeRunnerTest && activeRunnerTest.test.id === id) activeRunnerTest = null;
-                    addLog('TEST', 'Тест удалён: ' + t.title);
                     saveDb();
                     renderAcademyAndTests();
                     showToast('Тест удалён');
@@ -3096,7 +3294,6 @@
                 uiConfirm({ title: 'Удалить ВСЕ тесты Академии?', text: 'Будет удалено тестов: ' + db.tests.length + '. Уже сданные результаты останутся.', ok: 'Удалить все' }, function() {
                     db.tests = [];
                     activeRunnerTest = null;
-                    addLog('TEST', 'Все тесты очищены');
                     saveDb();
                     closeModal('modal-create-test');
                     renderAcademyAndTests();
@@ -3201,7 +3398,6 @@
                 var sub = { id: Date.now(), testTitle: t.title, nick: db.currentUser.nick, staticId: db.currentUser.staticId, tg: db.currentUser.tg, scorePct: pct, passed: passed, time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }), details: details };
                 if (t.needProof) { sub.proofs = proofList; sub.proof = proofList.map(function(x) { return x.link; }).join(' '); sub.proofComment = proofList[0].comment; }
                 db.testSubmissions.unshift(sub);
-                addLog('TEST', 'Сдал «' + t.title + '» — ' + pct + '%');
                 activeRunnerTest = null;
                 saveDb();
                 renderAcademyAndTests();
@@ -3297,7 +3493,7 @@
                     if (!has[PROMO_TARGETS[k]]) { showToast('Добавьте хотя бы одно требование на ' + PROMO_TARGETS[k]); return; }
                 }
                 db.promoRequirements = cleaned;
-                addLog('RANK', 'Изменены требования для повышения');
+                addLog('CONTENT', 'Изменены требования для повышения');
                 saveDb();
                 renderPromoRequirements();
                 closeModal('modal-edit-requirements');
@@ -3317,7 +3513,6 @@
                 if (!tasks.length) { showToast('Отметьте выполненные требования'); return; }
 
                 db.promoReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, fromRank: u.rankTitle, toRank: currentPromoTarget, tasks: tasks.join(' • '), proofs: proofs, status: 'PENDING' });
-                addLog('RANK', 'Рапорт на повышение → ' + currentPromoTarget);
                 promoChecked = {};
                 if (proofsEl) proofsEl.value = '';
                 saveDb();
@@ -3350,7 +3545,6 @@
                     rolls: rolls || '—',
                     status: 'PENDING'
                 });
-                addLog('AUTH', 'Подал заявку в семью');
                 [aEl, pEl, eEl, rEl].forEach(function(el) { if (el) el.value = ''; });
                 saveDb();
                 renderUserBar();
@@ -3456,7 +3650,7 @@
                 }
                 if (cleaned.length === 0) { showToast('Нужен хотя бы один пункт'); return; }
                 db.payoutItems = cleaned;
-                addLog('RANK', 'Изменены пункты премий');
+                addLog('CONTENT', 'Изменены пункты премий');
                 saveDb();
                 renderPayoutRates();
                 closeModal('modal-edit-rates');
@@ -3530,7 +3724,6 @@
                     reason: reasonText,
                     status: 'PENDING'
                 });
-                addLog('RANK', 'Отпуск ' + days + ' дн. (' + startFmt + ' — ' + endFmt + ')');
                 saveDb();
                 renderSeniorPanels();
                 showToast('Заявка на отпуск (' + days + ' дн.) отправлена Старшему составу!');
@@ -3846,31 +4039,147 @@
                     }).join('');
                 }
 
-                var logEl = document.getElementById('logs-list-container');
-                if (logEl) {
-                    var logs = db.logs || [];
-                    if (currentLogFilter !== 'ALL') logs = logs.filter(function(l) { return l.type === currentLogFilter; });
-                    var logTypeRu = { 'AUTH': 'ВХОД', 'RANK': 'РАНГИ', 'TEST': 'ТЕСТЫ' };
-                    var shown = logs.slice(0, logLimit);
-                    var lastDay = '';
-                    var html = shown.map(function(l) {
-                        var d = l.ts ? new Date(l.ts) : null;
-                        var day = d && !isNaN(d) ? d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : '';
-                        var head = day && day !== lastDay ? '<div class="text-[10px] text-zinc-500 uppercase tracking-wider pt-2 pb-0.5 px-1">' + escHtml(day) + '</div>' : '';
-                        if (day) lastDay = day;
-                        return head + '<div class="log-row flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-[#0d0d12] border border-[#1f1f28] text-xs">' +
-                            '<span class="text-zinc-500 text-[10px] w-10 shrink-0 tabular-nums">' + escHtml(l.time || '') + '</span>' +
-                            '<span class="px-1.5 py-0.5 rounded bg-white text-black text-[8px] font-heavy shrink-0">' + (logTypeRu[l.type] || 'СИСТЕМА') + '</span>' +
-                            '<span class="min-w-0 truncate"><strong class="text-white">' + escHtml(l.actor) + '</strong> <span class="text-zinc-300">' + escHtml(l.action) + '</span></span></div>';
-                    }).join('');
-                    if (logs.length > shown.length) html += '<button type="button" onclick="showMoreLogs()" class="w-full py-2.5 rounded-xl bg-[#14141c] border border-[#252530] hover:border-white text-[10px] font-heavy text-zinc-300">Показать ещё (' + (logs.length - shown.length) + ')</button>';
-                    logEl.innerHTML = logs.length === 0 ? emptyState('file', 'Логов пока нет', 'Действия участников и Старшего состава будут записываться сюда.', { cls: 'bento-card' }) : html;
-                    ['ALL', 'AUTH', 'RANK', 'TEST'].forEach(function(f) {
-                        var b = document.getElementById('log-flt-' + f);
-                        if (b) b.className = 'px-3 py-1.5 rounded-lg text-[10px] font-heavy transition-all ' + (f === currentLogFilter ? 'bg-white text-black' : 'bg-[#16161f] text-zinc-300 hover:bg-[#20202b]');
-                    });
-                }
+                renderLogs();
             }
+
+            // ===== Журнал действий =====
+            var LOG_META = {
+                AUTH:    { t: 'Входы',     ic: '🔑' },
+                RANK:    { t: 'Ранги',     ic: '🎖' },
+                TEST:    { t: 'Тесты',     ic: '🧪' },
+                APP:     { t: 'Заявки',    ic: '📝' },
+                PROMO:   { t: 'Промокоды', ic: '🎟' },
+                PAY:     { t: 'Премии',    ic: '💰' },
+                VAC:     { t: 'Отпуска',   ic: '🏖' },
+                VIDEO:   { t: 'Откаты',    ic: '🎬' },
+                CONTENT: { t: 'Разделы',   ic: '📰' },
+                ADMIN:   { t: 'База',      ic: '🛡' }
+            };
+            var logSearch = '', logPeriod = 'ALL', logSearchTimer = null;
+            var LOG_PERIODS = [['ALL', 'Всё время'], ['DAY', 'Сегодня'], ['WEEK', '7 дней']];
+            function logWhen(l) {
+                var d = l.ts ? new Date(l.ts) : null;
+                return d && !isNaN(d) ? d : null;
+            }
+            function logPass(l, skipType) {
+                if (!skipType && currentLogFilter !== 'ALL' && l.type !== currentLogFilter) return false;
+                if (logPeriod !== 'ALL') {
+                    var d = logWhen(l);
+                    if (!d) return false;
+                    var from = new Date(); from.setHours(0, 0, 0, 0);
+                    if (logPeriod === 'WEEK') from.setDate(from.getDate() - 6);
+                    if (d < from) return false;
+                }
+                if (logSearch) {
+                    var hay = ((l.actor || '') + ' ' + (l.actorTg || '') + ' ' + (l.action || '') + ' ' + ((LOG_META[l.type] || {}).t || '')).toLowerCase();
+                    var words = logSearch.split(/\s+/);
+                    for (var i = 0; i < words.length; i++) if (words[i] && hay.indexOf(words[i]) === -1) return false;
+                }
+                return true;
+            }
+            function renderLogs() {
+                var logEl = document.getElementById('logs-list-container');
+                if (!logEl) return;
+                var all = db.logs || [];
+                var logs = all.filter(function(l) { return logPass(l, false); });
+
+                // шапка: цифры
+                var today = new Date(); today.setHours(0, 0, 0, 0);
+                var todayN = 0, actors = {};
+                all.forEach(function(l) { var d = logWhen(l); if (d && d >= today) { todayN++; actors[l.actor] = 1; } });
+                var stat = function(n, t) { return '<div class="px-3.5 py-2.5 rounded-xl bg-[#0a1018] border border-[#1c2838] text-center min-w-[84px]"><div class="text-base font-heavy text-white tabular-nums">' + n + '</div><div class="text-[9px] text-zinc-500 uppercase mt-0.5">' + t + '</div></div>'; };
+                var st = document.getElementById('log-stats');
+                if (st) st.innerHTML = stat(all.length, 'всего') + stat(todayN, 'сегодня') + stat(Object.keys(actors).length, 'активных');
+
+                // чипы типов со счётчиками (с учётом поиска и периода)
+                var counts = { ALL: 0 };
+                all.forEach(function(l) { if (logPass(l, true)) { counts.ALL++; counts[l.type] = (counts[l.type] || 0) + 1; } });
+                var tBox = document.getElementById('log-types');
+                if (tBox) {
+                    var chip = function(k, label, ic) {
+                        var on = currentLogFilter === k;
+                        var n = counts[k] || 0;
+                        return '<button type="button" onclick="setLogFilter(\'' + k + '\')" class="log-chip ' + (on ? 'on ' : '') + (k === 'ALL' ? '' : 'lg-' + k) + '"' + (!on && !n && k !== 'ALL' ? ' style="opacity:.45"' : '') + '>' + (ic ? '<span>' + ic + '</span>' : '') + label + '<b>' + n + '</b></button>';
+                    };
+                    tBox.innerHTML = chip('ALL', 'Все', '') + Object.keys(LOG_META).map(function(k) { return chip(k, LOG_META[k].t, LOG_META[k].ic); }).join('');
+                }
+                var pBox = document.getElementById('log-period');
+                if (pBox) pBox.innerHTML = LOG_PERIODS.map(function(x) {
+                    return '<button type="button" onclick="setLogPeriod(\'' + x[0] + '\')" class="log-chip ' + (logPeriod === x[0] ? 'on' : '') + '">' + x[1] + '</button>';
+                }).join('');
+                var xBtn = document.getElementById('log-search-x');
+                if (xBtn) xBtn.classList.toggle('hidden', !logSearch);
+                var clr = document.getElementById('log-clear-btn');
+                if (clr) clr.classList.toggle('hidden', !isLeaderLevel());
+                var fnd = document.getElementById('log-found');
+                if (fnd) fnd.textContent = logs.length === all.length ? 'Записей: ' + all.length : 'Найдено: ' + logs.length + ' из ' + all.length;
+
+                var shown = logs.slice(0, logLimit);
+                var lastDay = '';
+                var todayKey = new Date().toDateString(), yKey = new Date(Date.now() - 86400000).toDateString();
+                var html = shown.map(function(l) {
+                    var d = logWhen(l);
+                    var head = '';
+                    if (d) {
+                        var key = d.toDateString();
+                        if (key !== lastDay) {
+                            lastDay = key;
+                            var label = key === todayKey ? 'Сегодня' : key === yKey ? 'Вчера' : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+                            head = '<div class="log-day"><span>' + escHtml(label) + '</span></div>';
+                        }
+                    }
+                    var m = LOG_META[l.type];
+                    var time = d ? d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : (l.time || '');
+                    return head + '<div class="log-row lg-' + (m ? l.type : 'SYS') + '">' +
+                        '<span class="log-time">' + escHtml(time) + '</span>' +
+                        '<span class="log-badge"><i>' + (m ? m.ic : '❄') + '</i>' + escHtml(m ? m.t : 'Система') + '</span>' +
+                        '<span class="log-text"><strong>' + escHtml(l.actor || 'Система') + '</strong> ' + escHtml(l.action) + '</span></div>';
+                }).join('');
+                if (logs.length > shown.length) html += '<button type="button" onclick="showMoreLogs()" class="w-full py-2.5 mt-2 rounded-xl bg-[#0e141d] border border-[#1f2b3b] hover:border-sky-200 text-[10px] font-heavy text-sky-100">Показать ещё (' + (logs.length - shown.length) + ')</button>';
+                if (!all.length) logEl.innerHTML = emptyState('file', 'Логов пока нет', 'Действия участников и Старшего состава будут записываться сюда.', { cls: 'bento-card' });
+                else if (!logs.length) logEl.innerHTML = emptyState('file', 'Ничего не найдено', 'Попробуйте другой запрос, тип или период.', { cls: 'bento-card' });
+                else logEl.innerHTML = html;
+            }
+            window.onLogSearch = function(v) {
+                clearTimeout(logSearchTimer);
+                logSearchTimer = setTimeout(function() { logSearch = String(v || '').toLowerCase().trim(); logLimit = 80; renderLogs(); }, 140);
+            };
+            window.clearLogSearch = function() {
+                var i = document.getElementById('log-search'); if (i) i.value = '';
+                logSearch = ''; logLimit = 80; renderLogs();
+            };
+            window.setLogPeriod = function(p) { logPeriod = p; logLimit = 80; renderLogs(); };
+            window.exportLogs = function() {
+                var logs = (db.logs || []).filter(function(l) { return logPass(l, false); });
+                if (!logs.length) { showToast('Нечего скачивать'); return; }
+                var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+                var lines = logs.map(function(l) {
+                    var d = logWhen(l);
+                    var when = d ? pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) : (l.time || '');
+                    var m = LOG_META[l.type];
+                    return when + '  [' + (m ? m.t.toUpperCase() : 'СИСТЕМА') + ']  ' + (l.actor || 'Система') + (l.actorTg ? ' (' + l.actorTg + ')' : '') + ': ' + l.action;
+                });
+                var blob = new Blob(['﻿DRUGHILL — журнал действий\r\n' + lines.length + ' записей\r\n\r\n' + lines.join('\r\n')], { type: 'text/plain;charset=utf-8' });
+                var a = document.createElement('a');
+                var n = new Date();
+                a.href = URL.createObjectURL(blob);
+                a.download = 'drughill-logs-' + n.getFullYear() + '-' + pad(n.getMonth() + 1) + '-' + pad(n.getDate()) + '.txt';
+                document.body.appendChild(a); a.click();
+                setTimeout(function() { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+                showToast('Журнал скачан: ' + logs.length + ' записей');
+            };
+            window.clearLogs = function() {
+                if (!isLeaderLevel()) { showToast('Очищать журнал может только Лидер или Зам. Лидера'); return; }
+                if (!(db.logs || []).length) { showToast('Журнал уже пуст'); return; }
+                uiConfirm({ title: 'Очистить весь журнал?', text: 'Будет удалено записей: ' + db.logs.length + '. Это действие самó попадёт в журнал, но старые записи вернуть нельзя. Сначала можно скачать .txt.', ok: 'Очистить' }, function() {
+                    db.logs = [];
+                    pendingLogs = [];
+                    pendingLogsClear = true;
+                    saveDb();
+                    renderLogs();
+                    showToast('Журнал очищен');
+                });
+            };
 
             window.decideJoinApp = function(id, ok) {
                 for (var i = 0; i < db.applications.length; i++) {
@@ -3886,7 +4195,6 @@
                                 rank: '1. Контракт',
                                 avatar: db.applications[i].avatar
                             });
-                            addLog('RANK', 'Принят в семью: ' + db.applications[i].nick);
                         }
                         break;
                     }
@@ -3912,7 +4220,6 @@
                         if (db.roster[i].nick === db.currentUser.nick) {
                             db.currentUser.rankTitle = newRank;
                         }
-                        addLog('RANK', db.roster[i].nick + ' → «' + newRank + '»');
                         showToast('Ранг ' + db.roster[i].nick + ' изменён на: ' + newRank);
                         break;
                     }
@@ -3996,7 +4303,6 @@
                         if (isHighRank(db.roster[i].rank) && !isLeaderLevel()) { showToast('Старший состав и выше исключает только Лидер или Зам. Лидера'); return; }
                         var removedNick = db.roster[i].nick;
                         db.roster.splice(i, 1);
-                        addLog('RANK', 'Исключён: ' + removedNick);
                         showToast('Участник ' + removedNick + ' исключён из состава');
                         break;
                     }
@@ -4049,7 +4355,6 @@
                     rank: selectedNewMemRank,
                     avatar: '/avatars/ph.svg?w=100&h=100&bg=1c1c24&fg=ffffff&text=' + encodeURIComponent(initials)
                 });
-                addLog('RANK', 'Добавлен: ' + nick + ' (' + selectedNewMemRank + ')');
                 saveDb();
                 renderSeniorPanels();
                 closeModal('modal-add-member');
@@ -4071,9 +4376,6 @@
                                 db.roster[j].rank = pr.toRank;
                             }
                         }
-                        addLog('RANK', 'Повышен: ' + pr.nick + ' → «' + pr.toRank + '»');
-                    } else {
-                        addLog('RANK', 'Рапорт отклонён: ' + pr.nick);
                     }
                     break;
                 }
@@ -4087,7 +4389,6 @@
                 for (var i = 0; i < db.payoutReports.length; i++) {
                     if (db.payoutReports[i].id === id) {
                         db.payoutReports[i].status = ok ? 'APPROVED' : 'REJECTED';
-                        addLog('RANK', (ok ? 'Премия одобрена: ' : 'Премия отклонена: ') + db.payoutReports[i].nick + ' · ' + Number(db.payoutReports[i].total).toLocaleString('ru-RU') + ' ₽');
                         break;
                     }
                 }
@@ -4123,7 +4424,6 @@
                 var title = currentRollbackKind === 'Аттестация' ? ((tEl && tEl.value) || 'Аттестация') : 'Откат';
                 var u = db.currentUser;
                 db.rollbacks.unshift({ id: Date.now(), kind: currentRollbackKind, title: title, link: link, comment: cEl ? cEl.value.trim() : '', nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, status: 'PENDING' });
-                addLog('TEST', (currentRollbackKind === 'Откат' ? 'Добавлен откат' : 'Видео для аттестации «' + title + '»'));
                 if (linkEl) linkEl.value = '';
                 if (cEl) cEl.value = '';
                 saveDb();
@@ -4137,7 +4437,6 @@
                 for (var i = 0; i < db.rollbacks.length; i++) {
                     if (db.rollbacks[i].id === id) {
                         db.rollbacks[i].status = ok ? 'APPROVED' : 'REJECTED';
-                        addLog('TEST', (ok ? 'Принят ' : 'Отклонён ') + (db.rollbacks[i].kind === 'Откат' ? 'откат: ' : 'видео: ') + db.rollbacks[i].nick);
                         break;
                     }
                 }
@@ -4177,8 +4476,8 @@
                 }
             }
 
-            window.showMoreLogs = function() { logLimit += 80; renderSeniorPanels(); };
-            window.setLogFilter = function(flt) { currentLogFilter = flt; logLimit = 80; renderSeniorPanels(); };
+            window.showMoreLogs = function() { logLimit += 80; renderLogs(); };
+            window.setLogFilter = function(flt) { currentLogFilter = flt; logLimit = 80; renderLogs(); };
 
             var CMS_CONFIG = {
                 news: {
@@ -4362,7 +4661,7 @@
                 var ph = { news: '/avatars/ph.svg?w=800&h=420&bg=121217&fg=ffffff&text=DRUGHILL', fleet: '/avatars/ph.svg?w=600&h=360&bg=121217&fg=ffffff&text=АВТОПАРК', estates: '/avatars/ph.svg?w=800&h=450&bg=14141c&fg=ffffff&text=ОСОБНЯК' };
                 if (vals.image) entry.image = vals.image; else if (ph[sec]) entry.image = ph[sec];
                 if (isEdit) db[sec][cmsCur.idx] = entry; else db[sec].unshift(entry);
-                addLog('RANK', (isEdit ? 'Изменено: ' : 'Опубликовано: ') + entry.title + ' (' + entry.badge + ')');
+                addLog('CONTENT', (isEdit ? 'Изменено: ' : 'Опубликовано: ') + entry.title + ' (' + entry.badge + ')');
                 saveDb();
                 renderContentSections();
                 closeModal('modal-add-content');
@@ -4520,6 +4819,53 @@
             startSession();
         })();
     </script>
+<script>
+    // Снегопад: лёгкий canvas, засыпает на скрытой вкладке, учитывает «уменьшение движения», запоминает выбор
+    (function () {
+        var cv = document.getElementById('snow-canvas'), btn = document.getElementById('snow-toggle');
+        if (!cv || !cv.getContext) return;
+        var ctx = cv.getContext('2d'), flakes = [], raf = 0, W = 0, H = 0, dpr = 1, last = 0, t = 0;
+        var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var on = !reduce;
+        try { var v = localStorage.getItem('dh_snow'); if (v === '0') on = false; else if (v === '1') on = true; } catch (e) {}
+        function size() {
+            dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+            W = innerWidth; H = innerHeight;
+            cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            var n = W < 700 ? 38 : W < 1200 ? 62 : 85;
+            while (flakes.length < n) flakes.push(make(true));
+            flakes.length = n;
+        }
+        function make(anywhere) {
+            var z = Math.random();
+            return { x: Math.random() * W, y: anywhere ? Math.random() * H : -10, r: 0.8 + z * 2.4, v: 18 + z * 46, d: (Math.random() - 0.5) * 22, p: Math.random() * 6.28, a: 0.25 + z * 0.55 };
+        }
+        function frame(ts) {
+            raf = requestAnimationFrame(frame);
+            var dt = Math.min(0.05, (ts - (last || ts)) / 1000); last = ts; t += dt;
+            ctx.clearRect(0, 0, W, H);
+            for (var i = 0; i < flakes.length; i++) {
+                var f = flakes[i];
+                f.y += f.v * dt; f.x += (f.d + Math.sin(t * 0.8 + f.p) * 14) * dt;
+                if (f.y > H + 6 || f.x < -10 || f.x > W + 10) { flakes[i] = make(false); flakes[i].x = Math.random() * W; continue; }
+                ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.2832);
+                ctx.fillStyle = 'rgba(226,242,255,' + f.a + ')'; ctx.fill();
+            }
+        }
+        function run() { if (on && !document.hidden && !raf) { last = 0; raf = requestAnimationFrame(frame); } }
+        function stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+        function paint() { cv.style.display = on ? '' : 'none'; if (btn) btn.classList.toggle('off', !on); if (!on) { stop(); ctx.clearRect(0, 0, W, H); } else run(); }
+        window.toggleSnow = function () {
+            on = !on;
+            try { localStorage.setItem('dh_snow', on ? '1' : '0'); } catch (e) {}
+            paint();
+        };
+        size(); paint();
+        addEventListener('resize', size, { passive: true });
+        document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else run(); });
+    })();
+</script>
 <script>
     // История ввода / автозаполнение браузера отключены для всех полей, в том числе для создаваемых позже
     (function () {

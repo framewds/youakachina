@@ -81,6 +81,9 @@ const SPEC = {
   logs: ['id', 'cid', 'type', 'actor', 'actorTg', 'action', 'time', 'ts']
 };
 const KEYS = Object.keys(SPEC);
+// ── журнал действий: типы и серверная запись (автора ставит сервер по сессии) ──
+const LOGS_MAX = 2000;
+const LOG_TYPES = ['AUTH', 'RANK', 'TEST', 'APP', 'PROMO', 'PAY', 'VAC', 'VIDEO', 'CONTENT', 'ADMIN'];
 const ID_COLLS = ['roster', 'applications', 'promoReports', 'payoutReports', 'vacations', 'testSubmissions', 'tests', 'rollbacks', 'promoClaims', 'promoCodes'];
 const SET_COLLS = ['news', 'rules', 'diplomacy', 'fleet', 'estates', 'payoutItems', 'promoRequirements'];
 const CONTENT = ['news', 'rules', 'diplomacy', 'fleet', 'estates'];
@@ -243,7 +246,7 @@ function seedState() {
 }
 function normalizeState(raw) {
   const S = { rev: 1, savedAt: new Date().toISOString() };
-  KEYS.forEach(k => { S[k] = cleanColl(k, raw && raw[k], k === 'logs' ? 500 : 2000); });
+  KEYS.forEach(k => { S[k] = cleanColl(k, raw && raw[k], k === 'logs' ? LOGS_MAX : 2000); });
   if (!S.payoutItems.length) {
     S.payoutItems = [
       { id: 'bizwar', name: 'Бизвар', rate: 25000 }, { id: 'factory', name: 'Цех / ВЗХ', rate: 35000 },
@@ -489,6 +492,52 @@ function buildSubmission(coll, me, rec, W) {
   return out;
 }
 
+
+function slog(S, me, type, action) {
+  const text = String(action == null ? '' : action).replace(/\s+/g, ' ').trim().slice(0, 160);
+  if (!text) return;
+  S.logs.unshift({
+    id: nextId(), cid: '', type: LOG_TYPES.indexOf(type) !== -1 ? type : 'ADMIN',
+    actor: me && me.nick ? me.nick : 'Система', actorTg: me && me.tg ? me.tg : '',
+    action: text, time: timeNow(), ts: new Date().toISOString()
+  });
+  if (S.logs.length > LOGS_MAX) S.logs.length = LOGS_MAX;
+}
+// запись вне /api/sync (вход, выход, профиль, база): сразу в состояние
+function slogNow(me, type, action) {
+  slog(state, me, type, action);
+  state.rev += 1;
+  markDirty('state.json');
+}
+const money = n => Number(n || 0).toLocaleString('ru-RU') + ' ₽';
+const SUB_LOG_TYPE = { applications: 'APP', promoReports: 'RANK', payoutReports: 'PAY', vacations: 'VAC', testSubmissions: 'TEST', rollbacks: 'VIDEO', promoClaims: 'PROMO' };
+const SUB_LOG_LABEL = { applications: 'Заявка в семью', promoReports: 'Рапорт на повышение', payoutReports: 'Заявка на премию', vacations: 'Отпуск', testSubmissions: 'Результат теста', rollbacks: 'Откат / видео', promoClaims: 'Заявка на награду' };
+function subLogNew(coll, it) {
+  switch (coll) {
+    case 'applications': return it.kind === 'Уже игрок семьи' ? 'Запрос доступа: уже игрок семьи' : 'Подал заявку в семью';
+    case 'promoReports': return 'Рапорт на повышение: ' + it.fromRank + ' → ' + it.toRank;
+    case 'payoutReports': return 'Заявка на премию: ' + money(it.total);
+    case 'vacations': return 'Заявка на отпуск: ' + it.daysCount + ' дн. (' + it.startDate + ' — ' + it.endDate + ')';
+    case 'testSubmissions': return 'Сдал «' + it.testTitle + '» — ' + it.scorePct + '% (' + (it.passed ? 'сдан' : 'не сдан') + ')';
+    case 'rollbacks': return it.kind === 'Откат' ? 'Добавил откат' : 'Видео для аттестации «' + it.title + '»';
+    case 'promoClaims': return 'Запросил награду за промокод';
+  }
+  return '';
+}
+function subLogDecided(coll, it) {
+  const ok = it.status === 'APPROVED', back = it.status === 'PENDING', n = it.nick;
+  if (back) return 'Возвращено на рассмотрение: ' + SUB_LOG_LABEL[coll].toLowerCase() + ' — ' + n;
+  switch (coll) {
+    case 'applications': return (ok ? 'Заявка принята: ' : 'Заявка отклонена: ') + n;
+    case 'promoReports': return ok ? 'Рапорт одобрен: ' + n + ' → ' + it.toRank : 'Рапорт отклонён: ' + n;
+    case 'payoutReports': return (ok ? 'Премия одобрена: ' : 'Премия отклонена: ') + n + ' · ' + money(it.total);
+    case 'vacations': return (ok ? 'Отпуск одобрен: ' : 'Отпуск отклонён: ') + n + ' (' + it.daysCount + ' дн.)';
+    case 'rollbacks': return (ok ? 'Принят ' : 'Отклонён ') + (it.kind === 'Откат' ? 'откат: ' : 'видео: ') + n;
+    case 'promoClaims': return (ok ? 'Награда выдана: ' : 'Награда отклонена: ') + n;
+  }
+  return '';
+}
+
 function applyPatch(me, patch, events) {
   const W = {};
   KEYS.forEach(k => { W[k] = state[k].slice(); });
@@ -510,6 +559,7 @@ function applyPatch(me, patch, events) {
         const item = buildSubmission(coll, me, rec, W);
         W[coll].unshift(item);
         events.push({ type: 'new', coll: coll, item: item });
+        slog(W, me, SUB_LOG_TYPE[coll], subLogNew(coll, item));
       } else {
         need(me, cfg.decide, 'Решения принимает только Старший состав');
         const old = W[coll][idx];
@@ -517,6 +567,7 @@ function applyPatch(me, patch, events) {
         if (st !== old.status) {
           W[coll][idx] = Object.assign({}, old, { status: st, decidedBy: me.nick });
           events.push({ type: 'decided', coll: coll, item: W[coll][idx], by: me });
+          slog(W, me, SUB_LOG_TYPE[coll], subLogDecided(coll, W[coll][idx]));
         }
       }
     });
@@ -524,7 +575,9 @@ function applyPatch(me, patch, events) {
       const idx = W[coll].findIndex(r => r.id === id);
       if (idx === -1) return;
       need(me, cfg.del, 'Удалять может только ' + (cfg.del >= LEVELS.LEADER ? 'Лидер или Зам. Лидера' : 'Старший состав'));
+      const gone = W[coll][idx];
       W[coll].splice(idx, 1);
+      slog(W, me, SUB_LOG_TYPE[coll], 'Удалено: ' + SUB_LOG_LABEL[coll].toLowerCase() + ' — ' + (gone.nick || gone.testTitle || '—'));
     });
   });
 
@@ -546,6 +599,7 @@ function applyPatch(me, patch, events) {
         clean.staticId = clean.staticId || '#0';
         clean.avatar = clean.avatar || PLACEHOLDER;
         W.roster.push(clean);
+        slog(W, me, 'RANK', 'Добавлен в состав: ' + clean.nick + ' (' + clean.rank + ')');
       } else {
         const old = W.roster[idx];
         clean.tg = old.tg; // Telegram у существующего участника менять нельзя
@@ -556,7 +610,10 @@ function applyPatch(me, patch, events) {
         }
         if (sameTg(old.tg, OWNER_TG)) clean.rank = 'Лидер';
         W.roster[idx] = Object.assign({}, old, clean, { id: old.id });
-        if (clean.rank !== old.rank) events.push({ type: 'rank', coll: 'roster', item: W.roster[idx], from: old.rank, to: W.roster[idx].rank, by: me });
+        if (clean.rank !== old.rank) {
+          events.push({ type: 'rank', coll: 'roster', item: W.roster[idx], from: old.rank, to: W.roster[idx].rank, by: me });
+          slog(W, me, 'RANK', old.nick + ': «' + old.rank + '» → «' + W.roster[idx].rank + '»');
+        }
       }
     });
     (Array.isArray(p.del) ? p.del : []).slice(0, 50).forEach(id => {
@@ -569,6 +626,7 @@ function applyPatch(me, patch, events) {
       if (isHighRank(old.rank)) need(me, LEVELS.LEADER, 'Старший состав, замов и Лидера исключает только Лидер или Зам. Лидера');
       W.roster.splice(idx, 1);
       events.push({ type: 'kick', coll: 'roster', item: old, from: old.rank, by: me });
+      slog(W, me, 'RANK', 'Исключён: ' + old.nick + ' (был: ' + old.rank + ')');
     });
   }
 
@@ -585,14 +643,23 @@ function applyPatch(me, patch, events) {
       clean.proofHint = clean.needProof ? cleanStr(clean.proofHint || 'Приложите ссылку на доки (скрин, видео, отчёт)', 200) : '';
       clean.proofCount = clean.needProof ? Math.max(1, Math.min(10, Math.round(Number(clean.proofCount) || 1))) : 0;
       const idx = W.tests.findIndex(r => r.id === (rec && rec.id));
-      if (idx === -1) { clean.id = nextId(new Set(W.tests.map(r => r.id))); W.tests.push(clean); }
-      else W.tests[idx] = Object.assign({}, clean, { id: W.tests[idx].id });
+      const kindTxt = clean.needProof ? 'Тест с докой' : 'Тест';
+      if (idx === -1) {
+        clean.id = nextId(new Set(W.tests.map(r => r.id)));
+        W.tests.push(clean);
+        slog(W, me, 'TEST', kindTxt + ' создан: ' + clean.title + ' (' + clean.questions.length + ' вопр., проходной ' + clean.passScore + '%)');
+      } else {
+        W.tests[idx] = Object.assign({}, clean, { id: W.tests[idx].id });
+        slog(W, me, 'TEST', kindTxt + ' изменён: ' + clean.title);
+      }
     });
     (Array.isArray(p.del) ? p.del : []).slice(0, 100).forEach(id => {
       const idx = W.tests.findIndex(r => r.id === id);
       if (idx === -1) return;
       need(me, LEVELS.SENIOR, 'Тесты удаляет только Старший состав');
+      const goneT = W.tests[idx];
       W.tests.splice(idx, 1);
+      slog(W, me, 'TEST', 'Тест удалён: ' + goneT.title);
     });
   }
 
@@ -631,6 +698,12 @@ function applyPatch(me, patch, events) {
   });
 
   // журнал действий
+  if (patch.logs && patch.logs.clear === true) {
+    need(me, LEVELS.LEADER, 'Очищать журнал может только Лидер или Зам. Лидера');
+    const n = W.logs.length;
+    W.logs = [];
+    slog(W, me, 'ADMIN', 'Журнал очищен (удалено записей: ' + n + ')');
+  }
   if (patch.logs && Array.isArray(patch.logs.add)) {
     // автора записи ставит сервер по сессии (клиент подменить его не может); cid защищает от дублей при повторной отправке
     const known = new Set(W.logs.slice(0, 200).map(x => x.cid).filter(Boolean));
@@ -639,15 +712,15 @@ function applyPatch(me, patch, events) {
       const cid = cleanStr(l.cid || '', 24);
       if (cid && known.has(cid)) return;
       if (cid) known.add(cid);
-      const type = cleanStr(l.type || 'RANK', 12).toUpperCase();
+      const type = cleanStr(l.type || 'CONTENT', 12).toUpperCase();
       const action = cleanStr(l.action, 160);
       if (!action) return;
       W.logs.unshift({
-        id: nextId(), cid: cid, type: ['AUTH', 'RANK', 'TEST'].indexOf(type) !== -1 ? type : 'RANK', actor: me.nick, actorTg: me.tg,
+        id: nextId(), cid: cid, type: LOG_TYPES.indexOf(type) !== -1 ? type : 'CONTENT', actor: me.nick, actorTg: me.tg,
         action: action, time: timeNow(), ts: new Date().toISOString()
       });
     });
-    W.logs = W.logs.slice(0, 500);
+    W.logs = W.logs.slice(0, LOGS_MAX);
   }
 
   // если одобрили заявку / рапорт, а клиент не прислал roster, ничего не делаем автоматически:
@@ -863,6 +936,7 @@ async function finalizeLogin(code, from) {
   L.token = token;
   L.status = 'ok';
   markDirty('users.json'); markDirty('sessions.json');
+  slogNow({ nick: users[uid].nick, tg: handle }, 'AUTH', 'Вход через Telegram · ' + (entry ? entry.rank : 'гость'));
 }
 
 async function handleUpdate(u) {
@@ -1017,6 +1091,7 @@ async function handleApi(req, res, url) {
   if (!me) throw new HttpError(401, 'Нужно войти');
 
   if (p === '/api/logout' && req.method === 'POST') {
+      slogNow(me, 'AUTH', 'Выход с сайта');
       delete sessions[me.token];
       meta.revoked = (meta.revoked || []).concat(tokenId(me.token)).slice(-500);
       markDirty('sessions.json'); markDirty('meta.json');
@@ -1046,6 +1121,7 @@ async function handleApi(req, res, url) {
     if (!ext) throw new HttpError(400, 'Нужна картинка JPG, PNG, WEBP или GIF');
     const name = crypto.createHash('sha1').update(buf).digest('hex').slice(0, 24) + ext;
     fs.writeFileSync(path.join(DATA_DIR, 'uploads', name), buf);
+    slogNow(me, 'CONTENT', 'Загружено фото с устройства (' + Math.round(buf.length / 1024) + ' КБ)');
     return json(res, 200, { url: '/uploads/' + name });
   }
 
@@ -1093,6 +1169,11 @@ async function handleApi(req, res, url) {
     if (sid) u.staticId = '#' + sid;
     if (dsc) u.discord = dsc;
     markDirty('users.json');
+    const changed = [];
+    if (nick && nick !== me.nick) changed.push('ник');
+    if (sid && '#' + sid !== me.staticId) changed.push('Static ID');
+    if (dsc && dsc !== me.discord) changed.push('Discord');
+    if (changed.length) slogNow(me, 'AUTH', 'Обновил профиль: ' + changed.join(', '));
     const entry = findRoster(state, me.tg);
     if (entry) { if (nick) entry.nick = nick; if (sid) entry.staticId = '#' + sid; if (dsc) entry.discord = dsc; state.rev += 1; markDirty('state.json'); }
     return json(res, 200, stateResponse(resolveMe(me.uid), true));
@@ -1105,6 +1186,7 @@ async function handleApi(req, res, url) {
       KEYS.forEach(k => { out[k] = state[k]; });
       out.savedAt = new Date().toISOString();
       out.savedBy = me.nick;
+      slogNow(me, 'ADMIN', 'Скачал резервную копию базы');
       return json(res, 200, out);
     }
     if (p === '/api/admin/import' && req.method === 'POST') {
@@ -1114,6 +1196,7 @@ async function handleApi(req, res, url) {
       S.rev = state.rev + 1;
       state = S;
       markDirty('state.json');
+      slogNow(me, 'ADMIN', 'Загрузил базу из файла');
       return json(res, 200, stateResponse(resolveMe(me.uid), true));
     }
     if (p === '/api/admin/reset' && req.method === 'POST') {
@@ -1121,6 +1204,7 @@ async function handleApi(req, res, url) {
       S.rev = state.rev + 1;
       state = S;
       markDirty('state.json');
+      slogNow(me, 'ADMIN', 'Сбросил базу к начальным данным');
       return json(res, 200, stateResponse(resolveMe(me.uid), true));
     }
   }
