@@ -409,100 +409,64 @@
         .drop-bx { box-shadow: -4px 0 0 0 #fff; }
         .drop-ax { box-shadow: 4px 0 0 0 #fff; }
 
-        /* ═══════════ ЗИМНЯЯ ТЕМА: лёд, иней, снег ═══════════ */
-        :root { --ice: #bae6fd; --ice-2: #e0f2fe; --frost-line: rgba(186, 230, 253, 0.22); }
-        body { background-color: #070a10; }
-        body::before {
-            content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background:
-                radial-gradient(900px 420px at 12% -8%, rgba(125, 190, 255, 0.10), transparent 70%),
-                radial-gradient(760px 380px at 92% 4%, rgba(160, 140, 255, 0.07), transparent 70%),
-                radial-gradient(700px 300px at 50% 112%, rgba(110, 200, 255, 0.06), transparent 70%);
-        }
-        .bg-dot-matrix { background-color: #070a10; background-image: radial-gradient(rgba(186, 230, 253, 0.06) 1px, transparent 1px); }
-        #auth-gate { background-color: #070a10 !important; }
-        #mouse-ambient-glow { background: radial-gradient(circle, rgba(150, 210, 255, 0.075) 0%, transparent 65%); }
-        #cursor-follower-ring::before { border-color: rgba(186, 230, 253, 0.45); background: rgba(186, 230, 253, 0.05); }
-        #cursor-follower-ring.cursor-hover::before { border-color: rgba(224, 242, 254, 0.9); background: rgba(186, 230, 253, 0.09); }
-        #cursor-follower-dot { background: #e0f2fe; box-shadow: 0 0 10px rgba(186, 230, 253, 0.8); }
-        #sidebar { background: rgba(8, 12, 19, 0.94) !important; border-color: #162131 !important; }
-        header.sticky { background: rgba(7, 10, 16, 0.82) !important; border-color: #162131 !important; }
+        /* ═══════════ ЗИМНЯЯ ТЕМА: чёрная база, иней, снег ═══════════ */
+        :root { --frost: rgba(255, 255, 255, 0.5); }
+        body { background-color: #050506; }
+        .bg-dot-matrix { background-color: #050506; background-image: radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px); }
+        #auth-gate { background-color: #050506 !important; }
+        #sidebar { background: rgba(8, 8, 10, 0.95) !important; border-color: #1a1a21 !important; }
+        header.sticky { background: rgba(5, 5, 6, 0.85) !important; border-color: #1a1a21 !important; }
         .bento-card {
-            background: linear-gradient(155deg, rgba(17, 24, 36, 0.93) 0%, rgba(9, 13, 20, 0.97) 100%);
-            border-color: #1c2738;
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(224, 242, 254, 0.05);
+            background: linear-gradient(155deg, rgba(18, 18, 23, 0.93) 0%, rgba(9, 9, 12, 0.97) 100%);
+            border-color: #1f1f27;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
+        /* иней по верхней кромке карточки */
         .bento-card::before {
             content: ''; position: absolute; left: 12%; right: 12%; top: 0; height: 1px; z-index: 1; pointer-events: none;
-            background: linear-gradient(90deg, transparent, rgba(224, 242, 254, 0.5), transparent); opacity: .55;
+            background: linear-gradient(90deg, transparent, var(--frost), transparent); opacity: .4;
             transition: opacity .3s ease, left .3s ease, right .3s ease;
         }
-        .bento-card:hover::before { opacity: 1; left: 4%; right: 4%; }
-        .bento-card::after { background: radial-gradient(380px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(150, 210, 255, 0.085), transparent 60%); }
-        .bento-card:hover { border-color: rgba(186, 230, 253, 0.4); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.85), 0 0 28px rgba(125, 190, 255, 0.08); }
-        .bento-card:hover .icon-badge { background: linear-gradient(145deg, #ffffff, #cfe9ff); box-shadow: 0 0 24px rgba(150, 210, 255, 0.45); border-color: #e0f2fe; }
-        .icon-badge { background: linear-gradient(145deg, #1a2433 0%, #0f1520 100%); border-color: #26344a; }
-        .icon-badge-invert { background: linear-gradient(145deg, #ffffff, #cfe9ff); border-color: #e0f2fe; box-shadow: 0 0 25px rgba(150, 210, 255, 0.3); }
-        .hero-banner-glow {
-            background: linear-gradient(150deg, #121b2a 0%, #0a0f18 60%, #0c1220 100%);
-            border-color: #1f2c42;
-            box-shadow: 0 30px 70px -30px rgba(80, 150, 255, 0.22), inset 0 1px 0 rgba(224, 242, 254, 0.06);
-        }
-        /* иней по верхнему краю главного баннера */
-        .hero-banner-glow::before {
-            content: ''; position: absolute; left: 0; right: 0; top: 0; height: 70px; pointer-events: none; z-index: 0;
-            background: linear-gradient(180deg, rgba(186, 230, 253, 0.11), transparent);
-        }
+        .bento-card:hover::before { opacity: .9; left: 4%; right: 4%; }
+        .hero-banner-glow { background: linear-gradient(150deg, #101015 0%, #09090c 100%); border-color: #202029; box-shadow: 0 30px 70px -35px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+        .hero-banner-glow::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 60px; pointer-events: none; z-index: 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent); }
         .hero-banner-glow > * { position: relative; z-index: 1; }
-        .nav-btn:hover { background-color: #101927; }
-        .nav-btn.active { background: linear-gradient(135deg, #ffffff, #cfe9ff); box-shadow: 0 6px 22px rgba(150, 210, 255, 0.25); }
-        .custom-check-card { background: #0d131d; border-color: #1e2a3c; }
-        .custom-check-card.checked { border-color: var(--ice); background: #111b2a; box-shadow: 0 0 20px rgba(150, 210, 255, 0.1); }
-        .custom-check-card.checked .custom-check-box { background: var(--ice); border-color: var(--ice); }
-        input:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(150, 210, 255, 0.12); }
-        ::-webkit-scrollbar-track { background: #070a10; }
-        ::-webkit-scrollbar-thumb { background: #223046; }
-        ::selection { background: rgba(150, 210, 255, 0.35); color: #fff; }
-        .drop-by { box-shadow: 0 -4px 0 0 var(--ice); } .drop-ay { box-shadow: 0 4px 0 0 var(--ice); }
-        .drop-bx { box-shadow: -4px 0 0 0 var(--ice); } .drop-ax { box-shadow: 4px 0 0 0 var(--ice); }
+        ::-webkit-scrollbar-track { background: #050506; }
+        ::-webkit-scrollbar-thumb { background: #25252d; }
 
         #snow-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 55; pointer-events: none; }
-        #snow-toggle { width: 38px; height: 38px; border-radius: 12px; background: #0d131d; border: 1px solid #1f2b3d; color: #cfe9ff; font-size: 15px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
-        #snow-toggle:hover { border-color: rgba(186, 230, 253, 0.6); box-shadow: 0 0 16px rgba(150, 210, 255, 0.2); }
-        #snow-toggle.off { opacity: .5; filter: grayscale(1); }
+        #snow-toggle { width: 38px; height: 38px; border-radius: 12px; background: #101015; border: 1px solid #25252e; color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+        #snow-toggle:hover { border-color: rgba(255, 255, 255, 0.5); }
+        #snow-toggle.off { opacity: .45; }
 
         /* ═══════════ ЖУРНАЛ ДЕЙСТВИЙ ═══════════ */
-        .lg-AUTH { --c: #7dd3fc; } .lg-RANK { --c: #c4b5fd; } .lg-TEST { --c: #6ee7b7; } .lg-APP { --c: #fcd34d; }
-        .lg-PROMO { --c: #f9a8d4; } .lg-PAY { --c: #bef264; } .lg-VAC { --c: #67e8f9; } .lg-VIDEO { --c: #f0abfc; }
-        .lg-CONTENT { --c: #93c5fd; } .lg-ADMIN { --c: #fca5a5; } .lg-SYS { --c: #cbd5e1; }
+        .ic { display: inline-block; flex-shrink: 0; }
         .log-chip {
             display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 10px;
-            font-size: 10px; font-weight: 900; color: #b4c3d8; background: #0e151f; border: 1px solid #1b2636;
-            transition: background-color .18s, color .18s, border-color .18s, transform .18s, opacity .18s;
+            font-size: 10px; font-weight: 900; color: #d4d4d8; background: #16161f; border: 1px solid transparent;
+            transition: background-color .18s, color .18s, border-color .18s, opacity .18s;
         }
-        .log-chip:hover { border-color: var(--c, #bae6fd); color: #fff; }
-        .log-chip b { font-size: 9px; padding: 1px 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.07); color: #d7e3f4; font-variant-numeric: tabular-nums; }
-        .log-chip.on { background: var(--c, #f4f9ff); border-color: var(--c, #f4f9ff); color: #070a10; }
-        .log-chip.on b { background: rgba(0, 0, 0, 0.14); color: #070a10; }
+        .log-chip:hover { background: #20202b; color: #fff; }
+        .log-chip b { font-size: 9px; padding: 1px 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); color: #d4d4d8; font-variant-numeric: tabular-nums; }
+        .log-chip.on { background: #fff; color: #09090b; }
+        .log-chip.on b { background: rgba(0, 0, 0, 0.12); color: #09090b; }
         .log-day { display: flex; align-items: center; gap: 12px; padding: 16px 4px 6px; }
-        .log-day span { font-size: 10px; font-weight: 900; color: #7f93b0; text-transform: uppercase; letter-spacing: .14em; }
-        .log-day::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, #1b2738, transparent); }
+        .log-day span { font-size: 10px; font-weight: 900; color: #71717a; text-transform: uppercase; letter-spacing: .14em; }
+        .log-day::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, #26262e, transparent); }
         .log-row {
-            display: grid; grid-template-columns: 46px 108px minmax(0, 1fr); align-items: center; gap: 12px;
-            padding: 10px 14px 10px 12px; border-radius: 12px; font-size: 12px;
-            background: linear-gradient(90deg, color-mix(in srgb, var(--c) 6%, #0a0f17) 0%, #0a0f17 38%);
-            border: 1px solid #151f2e; border-left: 3px solid var(--c);
-            transition: transform .18s ease, border-color .18s ease, background-color .18s ease;
+            display: grid; grid-template-columns: 46px 112px minmax(0, 1fr); align-items: center; gap: 12px;
+            padding: 10px 14px; border-radius: 12px; font-size: 12px;
+            background: #0d0d12; border: 1px solid #1f1f28;
+            transition: transform .18s ease, border-color .18s ease;
         }
-        .log-row:hover { transform: translateX(3px); border-color: color-mix(in srgb, var(--c) 45%, #151f2e); border-left-color: var(--c); }
-        .log-time { font-size: 10px; color: #6d819e; font-variant-numeric: tabular-nums; }
+        .log-row:hover { transform: translateX(3px); border-color: #3a3a46; }
+        .log-time { font-size: 10px; color: #71717a; font-variant-numeric: tabular-nums; }
         .log-badge {
-            display: inline-flex; align-items: center; gap: 5px; justify-self: start; padding: 3px 8px; border-radius: 7px;
-            font-size: 8.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
-            color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); border: 1px solid color-mix(in srgb, var(--c) 28%, transparent);
+            display: inline-flex; align-items: center; gap: 5px; justify-self: start; padding: 3px 8px; border-radius: 6px;
+            font-size: 8.5px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap;
+            color: #09090b; background: #fff;
         }
-        .log-badge i { font-style: normal; font-size: 10px; }
-        .log-text { color: #c3d0e2; line-height: 1.5; overflow-wrap: anywhere; }
+        .log-text { color: #d4d4d8; line-height: 1.5; overflow-wrap: anywhere; }
         .log-text strong { color: #fff; font-weight: 900; }
         @media (max-width: 640px) {
             .log-row { grid-template-columns: 46px minmax(0, 1fr); row-gap: 6px; }
@@ -736,7 +700,7 @@
                 </div>
 
                 <div class="flex items-center gap-2.5 shrink-0">
-                    <button id="snow-toggle" type="button" onclick="toggleSnow()" title="Снегопад вкл/выкл" aria-label="Снегопад">❄</button>
+                    <button id="snow-toggle" type="button" onclick="toggleSnow()" title="Снегопад вкл/выкл" aria-label="Снегопад"><span data-ic="snow" data-cls="w-[18px] h-[18px]"></span></button>
                     <button id="header-logout-btn" onclick="logoutToAuthGate()" class="hidden px-4 py-2 rounded-xl bg-[#14141b] border border-[#272733] hover:border-red-400/60 text-[11px] font-heavy text-red-300 transition-all">Выйти</button>
                     <a href="https://discord.gg/sEJkFaNDJ" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-[#14141b] border border-[#272733] hover:border-white/40 text-[11px] font-heavy text-white transition-all">Discord</a>
                 </div>
@@ -1384,9 +1348,9 @@
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2.5">
                             <div class="relative flex-1 min-w-0">
-                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs pointer-events-none">⌕</span>
-                                <input id="log-search" autocomplete="off" type="text" maxlength="60" placeholder="Поиск по нику, действию, @tg…" oninput="onLogSearch(this.value)" class="w-full pl-9 pr-9 py-2.5 rounded-xl bg-[#080b10] border border-[#222c3a] focus:border-sky-200 text-xs text-white focus:outline-none">
-                                <button id="log-search-x" type="button" onclick="clearLogSearch()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg bg-[#16202c] hover:bg-[#223044] text-zinc-300 text-[10px]">✕</button>
+                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"><span data-ic="search" data-cls="w-3.5 h-3.5"></span></span>
+                                <input id="log-search" autocomplete="off" type="text" maxlength="60" placeholder="Поиск по нику, действию, @tg…" oninput="onLogSearch(this.value)" class="w-full pl-9 pr-9 py-2.5 rounded-xl bg-[#0a0a0e] border border-[#272733] focus:border-white text-xs text-white focus:outline-none">
+                                <button id="log-search-x" type="button" onclick="clearLogSearch()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg bg-[#1c1c26] hover:bg-[#2a2a36] text-zinc-300 flex items-center justify-center"><span data-ic="x" data-cls="w-3 h-3"></span></button>
                             </div>
                             <div id="log-period" class="flex gap-1.5 shrink-0"></div>
                         </div>
@@ -1394,7 +1358,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-white/5">
                             <div id="log-found" class="text-[10px] text-zinc-500 uppercase tracking-wider pt-3"></div>
                             <div class="flex flex-wrap gap-2 pt-3">
-                                <button type="button" onclick="exportLogs()" class="px-3.5 py-2 rounded-xl bg-[#101722] border border-[#25324a] hover:border-sky-200 text-[10px] font-heavy text-sky-100">⇩ Скачать .txt</button>
+                                <button type="button" onclick="exportLogs()" class="px-3.5 py-2 rounded-xl bg-[#16161f] border border-[#2a2a35] hover:border-white text-[10px] font-heavy text-zinc-200"><span class="inline-flex items-center gap-1.5"><span data-ic="download" data-cls="w-3.5 h-3.5"></span>Скачать .txt</span></button>
                                 <button id="log-clear-btn" type="button" onclick="clearLogs()" class="hidden px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[10px] font-heavy text-red-300">Очистить журнал</button>
                             </div>
                         </div>
@@ -1558,10 +1522,10 @@
                 <p class="text-[10px] text-zinc-500 leading-relaxed">После вопросов участник обязан заполнить столько блоков со ссылками на видео (YouTube, Rutube, Google Drive и любые другие, с https:// или без). Дополнительные блоки он может добавить сам. Всё придёт Старшему составу кнопками «Открыть ссылку».</p>
             </div>
 
-            <div class="p-4 rounded-2xl bg-sky-200/[0.035] border border-sky-200/15 space-y-3">
+            <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
                 <div class="flex items-center justify-between gap-2">
-                    <div class="text-[10px] text-sky-100 uppercase">❄ Автогенерация вопросов по материалам сайта</div>
-                    <button type="button" onclick="genToggleAll()" class="px-2.5 py-1 rounded-lg bg-[#101722] border border-[#25324a] hover:border-sky-200 text-[10px] font-heavy text-sky-100 transition-all">Всё вперемешку</button>
+                    <div class="text-[10px] text-zinc-200 uppercase inline-flex items-center gap-1.5"><span data-ic="snow" data-cls="w-3.5 h-3.5"></span>Автогенерация вопросов по материалам сайта</div>
+                    <button type="button" onclick="genToggleAll()" class="px-2.5 py-1 rounded-lg bg-[#16161f] border border-[#2a2a35] hover:border-white text-[10px] font-heavy text-zinc-200 transition-all">Всё вперемешку</button>
                 </div>
                 <div id="gen-sections" class="flex flex-wrap gap-1.5"></div>
                 <div id="gen-mixinfo" class="text-[10px] text-zinc-500"></div>
@@ -1569,11 +1533,11 @@
                     <div id="gen-counts" class="flex flex-wrap items-center gap-1.5"></div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button type="button" onclick="generateTest(false)" class="px-4 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all">✦ Сгенерировать</button>
-                    <button type="button" onclick="generateTest(true)" class="px-4 py-2.5 rounded-xl bg-[#101722] border border-[#25324a] hover:border-sky-200 text-xs font-heavy text-sky-100 transition-all">＋ Добавить к текущим</button>
-                    <button type="button" onclick="shuffleBuilder()" class="px-4 py-2.5 rounded-xl bg-[#101722] border border-[#25324a] hover:border-sky-200 text-xs font-heavy text-sky-100 transition-all">🔀 Перемешать</button>
+                    <button type="button" onclick="generateTest(false)" class="px-4 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-heavy transition-all"><span class="inline-flex items-center gap-1.5"><span data-ic="sparkles" data-cls="w-3.5 h-3.5"></span>Сгенерировать</span></button>
+                    <button type="button" onclick="generateTest(true)" class="px-4 py-2.5 rounded-xl bg-[#16161f] border border-[#2a2a35] hover:border-white text-xs font-heavy text-zinc-200 transition-all"><span class="inline-flex items-center gap-1.5"><span data-ic="plus" data-cls="w-3.5 h-3.5"></span>Добавить к текущим</span></button>
+                    <button type="button" onclick="shuffleBuilder()" class="px-4 py-2.5 rounded-xl bg-[#16161f] border border-[#2a2a35] hover:border-white text-xs font-heavy text-zinc-200 transition-all"><span class="inline-flex items-center gap-1.5"><span data-ic="shuffle" data-cls="w-3.5 h-3.5"></span>Перемешать</span></button>
                 </div>
-                <p class="text-[10px] text-zinc-500 leading-relaxed">Выберите один или несколько разделов: вопросы возьмутся из каждого поровну и перемешаются. «Добавить к текущим» дописывает новые вопросы к уже готовым, «Перемешать» меняет порядок вопросов и вариантов ответа. У сгенерированного вопроса есть кнопка «↻ Другой» для замены. Проверьте всё перед сохранением.</p>
+                <p class="text-[10px] text-zinc-500 leading-relaxed">Выберите один или несколько разделов: вопросы возьмутся из каждого поровну и перемешаются. «Добавить к текущим» дописывает новые вопросы к уже готовым, «Перемешать» меняет порядок вопросов и вариантов ответа. У сгенерированного вопроса есть кнопка «Другой» для замены. Проверьте всё перед сохранением.</p>
             </div>
 
             <div class="space-y-2">
@@ -1819,6 +1783,18 @@
                 db: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
                 hourglass: '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
                 inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+                key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>',
+                award: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+                flask: '<path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>',
+                clipboard: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+                ticket: '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/>',
+                snow: '<path d="M2 12h20M12 2v20"/><path d="m4.9 4.9 14.2 14.2M19.1 4.9 4.9 19.1"/><path d="m9 3.5 3 2.5 3-2.5M9 20.5l3-2.5 3 2.5"/>',
+                search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+                download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+                shuffle: '<path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/>',
+                refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+                sparkles: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/>',
+                x: '<path d="M18 6 6 18M6 6l12 12"/>',
                 check: '<path d="M20 6 9 17l-5-5"/>',
                 plus: '<path d="M12 5v14M5 12h14"/>'
             };
@@ -3092,7 +3068,7 @@
                 var on = 'px-3 py-1.5 rounded-lg bg-white text-black text-[10px] font-heavy transition-all';
                 var off = 'px-3 py-1.5 rounded-lg bg-[#16161f] hover:bg-[#20202b] text-zinc-300 text-[10px] font-heavy transition-all';
                 if (sBox) sBox.innerHTML = Object.keys(GEN_SECTIONS).map(function(k) {
-                    return '<button type="button" onclick="toggleGenSection(\'' + k + '\')" class="' + (genSel[k] ? on : off) + '">' + (genSel[k] ? '✓ ' : '') + GEN_SECTIONS[k] + ' · ' + genSecSize(k) + '</button>';
+                    return '<button type="button" onclick="toggleGenSection(\'' + k + '\')" class="' + (genSel[k] ? on : off) + '">' + (genSel[k] ? icon('check', 'ic w-3 h-3 inline-block mr-1 -mt-0.5') : '') + GEN_SECTIONS[k] + ' · ' + genSecSize(k) + '</button>';
                 }).join('');
                 if (cBox) cBox.innerHTML = '<span class="text-[10px] text-zinc-500 mr-1">Вопросов:</span>' + [5, 10, 15, 20, 30].map(function(n) {
                     return '<button type="button" onclick="setGenCount(' + n + ')" class="' + (genCount === n ? on : off) + '">' + n + '</button>';
@@ -3216,7 +3192,7 @@
                             (item.opts.length > 2 ? '<button type="button" onclick="removeBuilderOption(' + qIdx + ', ' + oIdx + ')" class="w-8 h-8 shrink-0 rounded-lg bg-[#181822] hover:bg-red-500/20 text-zinc-400 hover:text-red-300 text-xs transition-all" title="Убрать вариант">✕</button>' : '') + '</div>';
                     }).join('');
                     return '<div class="p-4 rounded-2xl bg-[#0c0c10] border border-[#252530] space-y-3">' +
-                        '<div class="flex items-center justify-between gap-2"><span class="flex items-center gap-1.5 min-w-0"><span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy shrink-0">ВОПРОС ' + (qIdx + 1) + '</span>' + (item.src && GEN_SECTIONS[item.src] ? '<span class="px-2 py-0.5 rounded bg-sky-200/10 text-sky-200 text-[9px] font-heavy truncate">❄ ' + GEN_SECTIONS[item.src] + '</span>' : '') + '</span><span class="flex items-center gap-1.5 shrink-0">' + (item.src ? '<button type="button" onclick="rerollBuilderQuestion(' + qIdx + ')" class="px-2.5 py-1 rounded-lg bg-[#101722] hover:bg-sky-200 hover:text-black text-sky-100 text-[10px] font-heavy transition-all" title="Заменить на другой вопрос из этого раздела">↻ Другой</button>' : '') + (tempBuilderQuestions.length > 1 ? '<button type="button" onclick="removeBuilderQuestion(' + qIdx + ')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[10px] font-heavy transition-all">Убрать</button>' : '') + '</span></div>' +
+                        '<div class="flex items-center justify-between gap-2"><span class="flex items-center gap-1.5 min-w-0"><span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy shrink-0">ВОПРОС ' + (qIdx + 1) + '</span>' + (item.src && GEN_SECTIONS[item.src] ? '<span class="px-2 py-0.5 rounded bg-white/10 text-zinc-300 text-[9px] font-heavy truncate">' + GEN_SECTIONS[item.src] + '</span>' : '') + '</span><span class="flex items-center gap-1.5 shrink-0">' + (item.src ? '<button type="button" onclick="rerollBuilderQuestion(' + qIdx + ')" class="px-2.5 py-1 rounded-lg bg-[#16161f] hover:bg-white hover:text-black text-zinc-200 text-[10px] font-heavy transition-all inline-flex items-center gap-1" title="Заменить на другой вопрос из этого раздела">' + icon('refresh', 'ic w-3 h-3') + 'Другой</button>' : '') + (tempBuilderQuestions.length > 1 ? '<button type="button" onclick="removeBuilderQuestion(' + qIdx + ')" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[10px] font-heavy transition-all">Убрать</button>' : '') + '</span></div>' +
                         '<input autocomplete="off" type="text" maxlength="200" value="' + escHtml(item.q) + '" placeholder="Текст вопроса" oninput="updateBuilderQ(' + qIdx + ', this.value)" class="w-full px-3 py-2.5 rounded-xl bg-[#14141c] border border-[#292936] focus:border-white text-xs text-white focus:outline-none">' +
                         '<div class="text-[10px] text-zinc-500">Кружок слева отмечает правильный ответ</div>' +
                         '<div class="space-y-1.5">' + optInputs + '</div>' +
@@ -4044,16 +4020,16 @@
 
             // ===== Журнал действий =====
             var LOG_META = {
-                AUTH:    { t: 'Входы',     ic: '🔑' },
-                RANK:    { t: 'Ранги',     ic: '🎖' },
-                TEST:    { t: 'Тесты',     ic: '🧪' },
-                APP:     { t: 'Заявки',    ic: '📝' },
-                PROMO:   { t: 'Промокоды', ic: '🎟' },
-                PAY:     { t: 'Премии',    ic: '💰' },
-                VAC:     { t: 'Отпуска',   ic: '🏖' },
-                VIDEO:   { t: 'Откаты',    ic: '🎬' },
-                CONTENT: { t: 'Разделы',   ic: '📰' },
-                ADMIN:   { t: 'База',      ic: '🛡' }
+                AUTH:    { t: 'Входы',     ic: 'key' },
+                RANK:    { t: 'Ранги',     ic: 'award' },
+                TEST:    { t: 'Тесты',     ic: 'flask' },
+                APP:     { t: 'Заявки',    ic: 'clipboard' },
+                PROMO:   { t: 'Промокоды', ic: 'ticket' },
+                PAY:     { t: 'Премии',    ic: 'banknote' },
+                VAC:     { t: 'Отпуска',   ic: 'calendar' },
+                VIDEO:   { t: 'Откаты',    ic: 'video' },
+                CONTENT: { t: 'Разделы',   ic: 'news' },
+                ADMIN:   { t: 'База',      ic: 'shield' }
             };
             var logSearch = '', logPeriod = 'ALL', logSearchTimer = null;
             var LOG_PERIODS = [['ALL', 'Всё время'], ['DAY', 'Сегодня'], ['WEEK', '7 дней']];
@@ -4087,7 +4063,7 @@
                 var today = new Date(); today.setHours(0, 0, 0, 0);
                 var todayN = 0, actors = {};
                 all.forEach(function(l) { var d = logWhen(l); if (d && d >= today) { todayN++; actors[l.actor] = 1; } });
-                var stat = function(n, t) { return '<div class="px-3.5 py-2.5 rounded-xl bg-[#0a1018] border border-[#1c2838] text-center min-w-[84px]"><div class="text-base font-heavy text-white tabular-nums">' + n + '</div><div class="text-[9px] text-zinc-500 uppercase mt-0.5">' + t + '</div></div>'; };
+                var stat = function(n, t) { return '<div class="px-3.5 py-2.5 rounded-xl bg-[#0d0d12] border border-[#1f1f28] text-center min-w-[84px]"><div class="text-base font-heavy text-white tabular-nums">' + n + '</div><div class="text-[9px] text-zinc-500 uppercase mt-0.5">' + t + '</div></div>'; };
                 var st = document.getElementById('log-stats');
                 if (st) st.innerHTML = stat(all.length, 'всего') + stat(todayN, 'сегодня') + stat(Object.keys(actors).length, 'активных');
 
@@ -4099,7 +4075,7 @@
                     var chip = function(k, label, ic) {
                         var on = currentLogFilter === k;
                         var n = counts[k] || 0;
-                        return '<button type="button" onclick="setLogFilter(\'' + k + '\')" class="log-chip ' + (on ? 'on ' : '') + (k === 'ALL' ? '' : 'lg-' + k) + '"' + (!on && !n && k !== 'ALL' ? ' style="opacity:.45"' : '') + '>' + (ic ? '<span>' + ic + '</span>' : '') + label + '<b>' + n + '</b></button>';
+                        return '<button type="button" onclick="setLogFilter(\'' + k + '\')" class="log-chip ' + (on ? 'on ' : '') + (k === 'ALL' ? '' : 'lg-' + k) + '"' + (!on && !n && k !== 'ALL' ? ' style="opacity:.45"' : '') + '>' + (ic ? icon(ic, 'ic w-3.5 h-3.5') : '') + label + '<b>' + n + '</b></button>';
                     };
                     tBox.innerHTML = chip('ALL', 'Все', '') + Object.keys(LOG_META).map(function(k) { return chip(k, LOG_META[k].t, LOG_META[k].ic); }).join('');
                 }
@@ -4132,10 +4108,10 @@
                     var time = d ? d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : (l.time || '');
                     return head + '<div class="log-row lg-' + (m ? l.type : 'SYS') + '">' +
                         '<span class="log-time">' + escHtml(time) + '</span>' +
-                        '<span class="log-badge"><i>' + (m ? m.ic : '❄') + '</i>' + escHtml(m ? m.t : 'Система') + '</span>' +
+                        '<span class="log-badge">' + icon(m ? m.ic : 'snow', 'ic w-3 h-3') + escHtml(m ? m.t : 'Система') + '</span>' +
                         '<span class="log-text"><strong>' + escHtml(l.actor || 'Система') + '</strong> ' + escHtml(l.action) + '</span></div>';
                 }).join('');
-                if (logs.length > shown.length) html += '<button type="button" onclick="showMoreLogs()" class="w-full py-2.5 mt-2 rounded-xl bg-[#0e141d] border border-[#1f2b3b] hover:border-sky-200 text-[10px] font-heavy text-sky-100">Показать ещё (' + (logs.length - shown.length) + ')</button>';
+                if (logs.length > shown.length) html += '<button type="button" onclick="showMoreLogs()" class="w-full py-2.5 mt-2 rounded-xl bg-[#14141c] border border-[#252530] hover:border-white text-[10px] font-heavy text-zinc-200">Показать ещё (' + (logs.length - shown.length) + ')</button>';
                 if (!all.length) logEl.innerHTML = emptyState('file', 'Логов пока нет', 'Действия участников и Старшего состава будут записываться сюда.', { cls: 'bento-card' });
                 else if (!logs.length) logEl.innerHTML = emptyState('file', 'Ничего не найдено', 'Попробуйте другой запрос, тип или период.', { cls: 'bento-card' });
                 else logEl.innerHTML = html;
@@ -4814,6 +4790,7 @@
                 document.addEventListener('mouseenter', function() { ring.style.opacity = '1'; dot.style.opacity = '1'; });
             })();
 
+            document.querySelectorAll('[data-ic]').forEach(function(el) { el.outerHTML = icon(el.getAttribute('data-ic'), 'ic ' + (el.getAttribute('data-cls') || 'w-4 h-4')); });
             renderAll();
             renderDbPanel();
             startSession();
@@ -4850,7 +4827,7 @@
                 f.y += f.v * dt; f.x += (f.d + Math.sin(t * 0.8 + f.p) * 14) * dt;
                 if (f.y > H + 6 || f.x < -10 || f.x > W + 10) { flakes[i] = make(false); flakes[i].x = Math.random() * W; continue; }
                 ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.2832);
-                ctx.fillStyle = 'rgba(226,242,255,' + f.a + ')'; ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,' + f.a + ')'; ctx.fill();
             }
         }
         function run() { if (on && !document.hidden && !raf) { last = 0; raf = requestAnimationFrame(frame); } }
