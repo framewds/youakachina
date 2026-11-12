@@ -35,7 +35,7 @@ const SESSION_SECRET = process.env.SESSION_SECRET || crypto.createHash('sha256')
 function b64u(buf) { return Buffer.from(buf).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
 function macOf(body) { return b64u(crypto.createHmac('sha256', SESSION_SECRET).update(body).digest()); }
 function signToken(u) {
-  const body = b64u(JSON.stringify({ uid: String(u.id), tg: u.tg, chatId: u.chatId || null, nick: u.nick, staticId: u.staticId, iat: Date.now() }));
+  const body = b64u(JSON.stringify({ uid: String(u.id), tg: u.tg, chatId: u.chatId || null, nick: u.nick, staticId: u.staticId, discord: u.discord || '', iat: Date.now() }));
   return 's1.' + body + '.' + macOf('s1.' + body);
 }
 function verifyToken(token) {
@@ -61,12 +61,12 @@ const LEADER_RANKS = ['Лидер', 'Зам. Лидера'];
 const PLACEHOLDER = '/avatars/ph.svg?w=100&h=100&bg=1c1c24&fg=ffffff&text=DH';
 
 const SPEC = {
-  roster: ['id', 'nick', 'staticId', 'tg', 'rank', 'avatar'],
-  applications: ['id', 'nick', 'staticId', 'tg', 'avatar', 'age', 'prime', 'exp', 'rolls', 'kind', 'status', 'createdAt'],
-  promoReports: ['id', 'nick', 'staticId', 'tg', 'avatar', 'fromRank', 'toRank', 'tasks', 'proofs', 'status', 'createdAt'],
-  payoutReports: ['id', 'nick', 'staticId', 'tg', 'avatar', 'total', 'items', 'proofs', 'status', 'createdAt'],
-  vacations: ['id', 'nick', 'staticId', 'tg', 'avatar', 'rank', 'startDate', 'endDate', 'daysCount', 'reason', 'status', 'createdAt'],
-  testSubmissions: ['id', 'testTitle', 'nick', 'staticId', 'tg', 'scorePct', 'passed', 'time', 'details', 'proof', 'proofComment', 'proofs', 'createdAt'],
+  roster: ['id', 'nick', 'staticId', 'tg', 'discord', 'rank', 'avatar'],
+  applications: ['id', 'nick', 'staticId', 'tg', 'discord', 'avatar', 'age', 'prime', 'exp', 'rolls', 'kind', 'status', 'createdAt'],
+  promoReports: ['id', 'nick', 'staticId', 'tg', 'discord', 'avatar', 'fromRank', 'toRank', 'tasks', 'proofs', 'status', 'createdAt'],
+  payoutReports: ['id', 'nick', 'staticId', 'tg', 'discord', 'avatar', 'total', 'items', 'proofs', 'status', 'createdAt'],
+  vacations: ['id', 'nick', 'staticId', 'tg', 'discord', 'avatar', 'rank', 'startDate', 'endDate', 'daysCount', 'reason', 'status', 'createdAt'],
+  testSubmissions: ['id', 'testTitle', 'nick', 'staticId', 'tg', 'discord', 'scorePct', 'passed', 'time', 'details', 'proof', 'proofComment', 'proofs', 'createdAt'],
   tests: ['id', 'title', 'passScore', 'questions', 'needProof', 'proofHint', 'proofCount'],
   news: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
   rules: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
@@ -74,9 +74,9 @@ const SPEC = {
   fleet: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
   estates: ['badge', 'date', 'title', 'desc', 'image', 'meta'],
   payoutItems: ['id', 'name', 'rate'],
-  rollbacks: ['id', 'nick', 'staticId', 'tg', 'avatar', 'kind', 'title', 'link', 'comment', 'status', 'decidedBy', 'createdAt'],
+  rollbacks: ['id', 'nick', 'staticId', 'tg', 'discord', 'avatar', 'kind', 'title', 'link', 'comment', 'status', 'decidedBy', 'createdAt'],
   promoRequirements: ['id', 'rank', 'text'],
-  promoClaims: ['id', 'nick', 'staticId', 'tg', 'avatar', 'status', 'decidedBy', 'createdAt'],
+  promoClaims: ['id', 'nick', 'staticId', 'tg', 'discord', 'avatar', 'status', 'decidedBy', 'createdAt'],
   promoCodes: ['id', 'code', 'type', 'uses', 'used', 'reward', 'active', 'createdBy', 'createdAt', 'usedBy'],
   logs: ['id', 'type', 'actor', 'action', 'time', 'ts']
 };
@@ -205,6 +205,16 @@ function cleanVal(v, depth) {
   }
   return null;
 }
+// Discord: ник (2–32 символа: буквы, цифры, точка, подчёркивание, дефис) или числовой ID (17–20 цифр).
+// По нику Discord профиль открыть нельзя, а по ID — можно (discord.com/users/<id>).
+function cleanDiscord(v) {
+  let d = String(v === undefined || v === null ? '' : v).trim().replace(/^@+/, '').replace(/\s+/g, '');
+  d = d.replace(/#0$/, '');
+  if (!/^[A-Za-z0-9_.\-]{2,32}$/.test(d)) return '';
+  return d;
+}
+const DISCORD_ERR = 'Укажите ник в Discord (например: nickname или nickname_12). Можно и числовой ID профиля';
+function discordLink(d) { return /^\d{17,20}$/.test(String(d || '')) ? 'https://discord.com/users/' + d : ''; }
 function cleanRecord(coll, rec) {
   const out = {};
   if (!rec || typeof rec !== 'object') return out;
@@ -214,6 +224,7 @@ function cleanRecord(coll, rec) {
     else if (f === 'status') out[f] = STATUSES.indexOf(rec[f]) !== -1 ? rec[f] : 'PENDING';
     else if (f === 'id') out[f] = Number.isSafeInteger(rec[f]) && rec[f] > 0 ? rec[f] : (typeof rec[f] === 'string' ? cleanStr(rec[f], 40) : 0);
     else if (f === 'tg') out[f] = cleanStr(rec[f], 40);
+    else if (f === 'discord') out[f] = cleanDiscord(rec[f]);
     else if (f === 'rank' || f === 'fromRank' || f === 'toRank') out[f] = mapRank(cleanStr(rec[f], 60));
     else if (f === 'nick') out[f] = cleanStr(rec[f], 40);
     else out[f] = cleanVal(rec[f], 0);
@@ -320,18 +331,19 @@ function resolveMe(uid) {
   if (!u) return null;
   const tgl = u.tg.toLowerCase();
   const entry = findRoster(state, u.tg);
-  let level, rank, nick, staticId, avatar;
+  let level, rank, nick, staticId, avatar, discord;
   if (tgl === OWNER_L) { level = LEVELS.LEADER; rank = 'Лидер'; }
   else if (entry) { level = rankLevel(entry.rank); rank = entry.rank; }
   else { level = LEVELS.GUEST; rank = 'Гость'; }
   if (entry) { nick = entry.nick; staticId = entry.staticId; } else { nick = u.nick; staticId = u.staticId; }
+  discord = u.discord || (entry && entry.discord) || '';
   maybeRefreshAvatar(uid);
   avatar = u.avatar || (entry && entry.avatar) || PLACEHOLDER;
-  return { uid, tg: u.tg, nick, staticId, avatar, rank, level };
+  return { uid, tg: u.tg, nick, staticId, discord, avatar, rank, level };
 }
 function meView(me) {
   return {
-    loggedIn: true, nick: me.nick, staticId: me.staticId, tg: me.tg, avatar: me.avatar,
+    loggedIn: true, nick: me.nick, staticId: me.staticId, tg: me.tg, discord: me.discord || '', avatar: me.avatar,
     role: me.level >= LEVELS.SENIOR ? 'SENIOR' : me.level === LEVELS.MEMBER ? 'MEMBER' : 'GUEST',
     rankTitle: me.rank
   };
@@ -396,7 +408,7 @@ function buildSubmission(coll, me, rec, W) {
   const cfg = SUBS[coll];
   const clean = cleanRecord(coll, rec);
   const out = {
-    id: 0, nick: me.nick, staticId: me.staticId, tg: me.tg, avatar: me.avatar,
+    id: 0, nick: me.nick, staticId: me.staticId, tg: me.tg, discord: me.discord || '', avatar: me.avatar,
     status: 'PENDING', createdAt: new Date().toISOString()
   };
   cfg.fields.forEach(f => { if (clean[f] !== undefined) out[f] = clean[f]; });
@@ -537,6 +549,7 @@ function applyPatch(me, patch, events) {
       } else {
         const old = W.roster[idx];
         clean.tg = old.tg; // Telegram у существующего участника менять нельзя
+        if (!clean.discord) clean.discord = old.discord || '';
         if (clean.rank !== old.rank) {
           if (sameTg(old.tg, me.tg)) throw new HttpError(403, 'Свой ранг менять нельзя');
           if (isHighRank(old.rank) || isHighRank(clean.rank)) need(me, LEVELS.LEADER, 'Ранги Старшего состава, замов и Лидера меняет только Лидер или Зам. Лидера');
@@ -688,6 +701,7 @@ function siteProfile(it) {
     nick: entry ? entry.nick : it.nick,
     staticId: entry ? entry.staticId : it.staticId,
     tg: it.tg,
+    discord: it.discord || (entry && entry.discord) || '',
     rank: entry ? entry.rank : 'Гость (не в составе)',
     inRoster: !!entry,
     tests: tests.length,
@@ -696,13 +710,14 @@ function siteProfile(it) {
 }
 // ── оформление сообщений бота: тексты прежние, меняется только начертание ──
 function head(emoji, title) { return emoji + ' <b><u>' + title + '</u></b>'; }
-function who(it) { return '<b>' + esc(it.nick) + '</b> (<code>' + esc(it.staticId) + '</code>, ' + esc(it.tg) + ')'; }
+function who(it) { return '<b>' + esc(it.nick) + '</b> (<code>' + esc(it.staticId) + '</code>, ' + esc(it.tg) + (it.discord ? ', Discord: <code>' + esc(it.discord) + '</code>' : '') + ')'; }
 function fld(label, val) { return '\n<b>' + label + ':</b> ' + val; }
 function profileLine(it, ev) {
   const p = siteProfile(it);
   if (ev && ev.type === 'kick') p.rank = 'исключён (был: ' + ev.from + ')';
   return '\n\n🌐 <b><u>Профиль на сайте</u></b>\n<b>Ник:</b> ' + esc(p.nick) + ' · <b>Static ID:</b> <code>' + esc(p.staticId) +
     '</code>\n<b>Ранг на сайте:</b> <u>' + esc(p.rank) + '</u>\n<b>Telegram:</b> ' + esc(p.tg) +
+    (p.discord ? '\n<b>Discord:</b> <code>' + esc(p.discord) + '</code>' : '') +
     (p.tests ? '\n<b>Тесты:</b> ' + p.tests + ' (сдано ' + p.passed + ')' : '');
 }
 function profileButtons(it, site) {
@@ -711,6 +726,8 @@ function profileButtons(it, site) {
   const row = [{ text: '🌐 Профиль на сайте', url: base + '#profile/' + encodeURIComponent(String(it.tg || '').replace(/^@/, '')) }];
   const h = String(it.tg || '').replace(/^@/, '');
   if (/^[A-Za-z0-9_]{4,32}$/.test(h) && !/^id\d+$/.test(h)) row.push({ text: '✈️ Telegram', url: 'https://t.me/' + h });
+  const dl = discordLink(it.discord);
+  if (dl) row.push({ text: '💬 Discord', url: dl });
   return { inline_keyboard: [row] };
 }
 function chatOf(tgHandle) {
@@ -821,6 +838,7 @@ async function finalizeLogin(code, from) {
     id: uid, tg: handle, chatId: prev.chatId || from.id,
     nick: L.nick || prev.nick || cleanStr(from.first_name || handle, 40),
     staticId: L.staticId || prev.staticId || '—',
+    discord: L.discord || prev.discord || '',
     avatar: prev.avatar || null
   };
   const ap = fetchAvatar(from.id);
@@ -830,6 +848,7 @@ async function finalizeLogin(code, from) {
   // аватар и актуальный ник/static в составе
   const entry = findRoster(state, handle);
   if (entry && av && entry.avatar !== av) { entry.avatar = av; state.rev += 1; markDirty('state.json'); }
+  if (entry && users[uid].discord && entry.discord !== users[uid].discord) { entry.discord = users[uid].discord; state.rev += 1; markDirty('state.json'); }
   if (sameTg(handle, OWNER_TG)) { ensureOwner(state); markDirty('state.json'); }
   const token = signToken(users[uid]);
   sessions[token] = { uid: uid, created: Date.now() };
@@ -850,7 +869,7 @@ async function handleUpdate(u) {
       const L = logins[mm[1]];
       if (!L || L.status !== 'pending') return send(m.chat.id, 'Ссылка для входа устарела. Вернитесь на сайт и нажмите <b>«Войти через Telegram»</b> ещё раз.');
       L.from = from;
-      if (!users[uid]) { users[uid] = { id: uid, tg: tgHandleOf(from), chatId: m.chat.id, nick: L.nick || cleanStr(from.first_name || '', 40), staticId: L.staticId || '—', avatar: null }; markDirty('users.json'); }
+      if (!users[uid]) { users[uid] = { id: uid, tg: tgHandleOf(from), chatId: m.chat.id, nick: L.nick || cleanStr(from.first_name || '', 40), staticId: L.staticId || '—', discord: L.discord || '', avatar: null }; markDirty('users.json'); }
       else if (users[uid].chatId !== m.chat.id) { users[uid].chatId = m.chat.id; markDirty('users.json'); }
       return send(m.chat.id,
         '🔐 <b><u>Вход на портал DRUGHILL</u></b>\nЗапрос от имени: <b>' + esc(L.nick || tgHandleOf(from)) + '</b>\n<b>Это вы?</b>',
@@ -929,7 +948,7 @@ function authMe(req) {
     const p = verifyToken(token);
     if (p && (meta.revoked || []).indexOf(tokenId(token)) === -1) {
       s = sessions[token] = { uid: p.uid, created: p.iat };
-      if (!users[p.uid]) users[p.uid] = { id: p.uid, tg: p.tg, chatId: p.chatId, nick: p.nick, staticId: p.staticId, avatar: null };
+      if (!users[p.uid]) users[p.uid] = { id: p.uid, tg: p.tg, chatId: p.chatId, nick: p.nick, staticId: p.staticId, discord: cleanDiscord(p.discord), avatar: null };
       markDirty('users.json'); markDirty('sessions.json');
     }
   }
@@ -973,7 +992,9 @@ async function handleApi(req, res, url) {
     const fullName = normalizeFullName(b.nick);
     if (!fullName) throw new HttpError(400, FULLNAME_ERR);
     if (!sid) throw new HttpError(400, 'Укажите Static ID (цифры)');
-    logins[code] = { created: Date.now(), status: 'pending', nick: fullName, staticId: '#' + sid };
+    const dsc = cleanDiscord(b.discord);
+    if (!dsc) throw new HttpError(400, DISCORD_ERR);
+    logins[code] = { created: Date.now(), status: 'pending', nick: fullName, staticId: '#' + sid, discord: dsc };
     return json(res, 200, { code: code, link: 'https://t.me/' + BOT_USERNAME + '?start=' + code });
   }
   if (p === '/api/auth/status' && req.method === 'GET') {
@@ -1050,6 +1071,9 @@ async function handleApi(req, res, url) {
     const b = await readBody(req, 4096);
     let nick = cleanStr(b.nick, 32);
     const sid = cleanStr(b.staticId, 12).replace(/[^\d]/g, '');
+    const hasDiscord = b.discord !== undefined && String(b.discord).trim() !== '';
+    const dsc = hasDiscord ? cleanDiscord(b.discord) : '';
+    if (hasDiscord && !dsc) throw new HttpError(400, DISCORD_ERR);
     const u = users[me.uid];
     // имя менять можно только на корректное «Имя Фамилия»; старый ник без изменений пропускаем
     if (nick && nick !== me.nick) {
@@ -1059,9 +1083,10 @@ async function handleApi(req, res, url) {
     }
     if (nick) u.nick = nick;
     if (sid) u.staticId = '#' + sid;
+    if (dsc) u.discord = dsc;
     markDirty('users.json');
     const entry = findRoster(state, me.tg);
-    if (entry) { if (nick) entry.nick = nick; if (sid) entry.staticId = '#' + sid; state.rev += 1; markDirty('state.json'); }
+    if (entry) { if (nick) entry.nick = nick; if (sid) entry.staticId = '#' + sid; if (dsc) entry.discord = dsc; state.rev += 1; markDirty('state.json'); }
     return json(res, 200, stateResponse(resolveMe(me.uid), true));
   }
 

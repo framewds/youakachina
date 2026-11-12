@@ -415,6 +415,11 @@
                         <label class="block text-[10px] text-zinc-400 uppercase mb-1.5 whitespace-nowrap">Ваш Static ID</label>
                         <input autocomplete="off" id="auth-static-input" type="text" placeholder="#15440" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
                     </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-[10px] text-zinc-400 uppercase mb-1.5">Ваш ник в Discord</label>
+                        <input autocomplete="off" id="auth-discord-input" type="text" placeholder="nickname" maxlength="40" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0d] border border-[#262632] text-xs text-white focus:outline-none focus:border-white">
+                        <div class="text-[10px] text-zinc-500 mt-1.5 leading-relaxed">Ник, а не отображаемое имя: он виден в профиле Discord под именем. Если указать числовой ID профиля, Лидер сможет открыть ваш Discord одной кнопкой.</div>
+                    </div>
                 </div>
 
                 <button onclick="startTelegramAuth()" class="w-full py-3.5 px-5 rounded-xl bg-white text-black hover:bg-zinc-200 font-heavy text-xs flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(255,255,255,0.2)] transition-all">
@@ -1461,6 +1466,10 @@
                     <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваш Static ID</label>
                     <input autocomplete="off" id="edit-prof-static" type="text" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
                 </div>
+                <div>
+                    <label class="block text-[10px] text-zinc-400 uppercase mb-1">Ваш ник в Discord</label>
+                    <input autocomplete="off" id="edit-prof-discord" type="text" maxlength="40" placeholder="nickname" class="w-full px-3.5 py-3 rounded-xl bg-[#0a0a0e] border border-[#272733] text-xs text-white focus:outline-none focus:border-white">
+                </div>
             </div>
             <button onclick="saveProfileEdit()" class="w-full py-3.5 rounded-xl bg-white text-black font-heavy text-xs">Сохранить данные профиля</button>
         </div>
@@ -1905,6 +1914,8 @@
                 var sEl = document.getElementById('edit-prof-static');
                 if (nEl) nEl.value = db.currentUser.nick;
                 if (sEl) sEl.value = db.currentUser.staticId;
+                var dEl = document.getElementById('edit-prof-discord');
+                if (dEl) dEl.value = db.currentUser.discord || '';
                 var m = document.getElementById('modal-edit-profile');
                 if (m) m.classList.remove('hidden');
             };
@@ -1918,7 +1929,9 @@
                     if (!nick) { showToast(FULLNAME_HINT); return; }
                 }
                 var stat = sEl && sEl.value.trim() ? sEl.value.trim() : db.currentUser.staticId;
-                api('POST', '/api/profile', { nick: nick, staticId: stat }).then(function(res) {
+                var dEl2 = document.getElementById('edit-prof-discord');
+                var dsc = dEl2 ? dEl2.value.trim() : '';
+                api('POST', '/api/profile', { nick: nick, staticId: stat, discord: dsc }).then(function(res) {
                     if (res.state) applyServerState(res, false);
                     closeModal('modal-edit-profile');
                     showToast(res.error || ('Профиль обновлён: ' + db.currentUser.nick + ' (' + db.currentUser.staticId + ')'));
@@ -2154,7 +2167,7 @@
                     ok: 'Да, я игрок семьи', tone: 'info'
                 }, function() {
                     var u = db.currentUser;
-                    db.applications.unshift({ id: Date.now(), kind: 'Уже игрок семьи', nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, age: '—', prime: '—', exp: '—', rolls: '—', status: 'PENDING' });
+                    db.applications.unshift({ id: Date.now(), kind: 'Уже игрок семьи', nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, age: '—', prime: '—', exp: '—', rolls: '—', status: 'PENDING' });
                     addLog('AUTH', 'Запрос доступа: уже игрок семьи (' + u.nick + ')');
                     saveDb();
                     renderJoinState();
@@ -2170,7 +2183,7 @@
                     ok: 'Отправить Лидеру', tone: 'info'
                 }, function() {
                     var u = db.currentUser;
-                    db.promoClaims.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, status: 'PENDING' });
+                    db.promoClaims.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, status: 'PENDING' });
                     addLog('AUTH', 'Запрошена награда за промокод (' + u.nick + ')');
                     saveDb();
                     renderJoinState();
@@ -2258,6 +2271,21 @@
                 if (!/^[A-Za-z0-9_]{4,32}$/.test(h) || /^id\d+$/.test(h)) return '';
                 return '<a href="https://t.me/' + h + '" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-[#181822] border border-[#2c2c3a] hover:border-white text-[10px] font-heavy text-white transition-all">Открыть Telegram ↗</a>';
             }
+            function discordLinkBtn(d) {
+                d = String(d || '');
+                if (!/^\d{17,20}$/.test(d)) return '';
+                return '<a href="https://discord.com/users/' + d + '" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-[#181822] border border-[#2c2c3a] hover:border-white text-[10px] font-heavy text-white transition-all">Открыть Discord ↗</a>';
+            }
+            function discordChip(d) {
+                return d ? '<span class="px-2 py-0.5 rounded-md bg-[#5865F2]/20 border border-[#5865F2]/40 text-[10px] font-heavy text-indigo-200">Discord: ' + escHtml(d) + '</span>' : '';
+            }
+            function discordOfTg(tg) {
+                var t = String(tg || '').replace(/^@/, '').toLowerCase();
+                var same = function(r) { return r && r.discord && String(r.tg || '').replace(/^@/, '').toLowerCase() === t; };
+                var hit = (db.roster || []).filter(same)[0] || (db.applications || []).filter(same)[0] || (db.promoClaims || []).filter(same)[0];
+                if (hit) return hit.discord;
+                return String(db.currentUser.tg || '').replace(/^@/, '').toLowerCase() === t ? (db.currentUser.discord || '') : '';
+            }
             function copyBtn(label, value) {
                 return '<button type="button" data-copy="' + escHtml(value) + '" onclick="copyText(this.getAttribute(\'data-copy\'))" class="px-3 py-1.5 rounded-lg bg-[#181822] border border-[#2c2c3a] hover:border-white text-[10px] font-heavy text-white transition-all">' + label + '</button>';
             }
@@ -2275,13 +2303,14 @@
                 if (pEl) {
                     pEl.innerHTML = pend.length === 0 ? emptyState('gift', 'Новых заявок на награду нет', 'Когда игрок запросит награду за промокод, заявка появится здесь.', { compact: true }) : pend.map(function(c) {
                         var av = escHtml(c.avatar || '/avatars/ph.svg?w=100&h=100&bg=1c1c24&fg=ffffff&text=DH');
-                        var all3 = c.nick + ' | ' + c.staticId + ' | ' + c.tg;
+                        var dsc = c.discord || discordOfTg(c.tg);
+                        var all3 = c.nick + ' | ' + c.staticId + ' | ' + c.tg + (dsc ? ' | Discord: ' + dsc : '');
                         return '<div class="p-4 rounded-2xl bg-[#0b0b0f] border border-[#252530] space-y-3.5 text-xs">' +
                             '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">' +
                                 '<div class="flex items-center gap-3.5 min-w-0">' +
                                     '<img src="' + av + '" alt="" class="w-14 h-14 rounded-full object-cover border-2 border-white/20 shrink-0">' +
                                     '<div class="min-w-0">' +
-                                        '<div class="flex flex-wrap items-center gap-2"><span class="text-sm font-heavy text-white">' + escHtml(c.nick) + '</span><span class="px-2 py-0.5 rounded-md bg-white text-black text-[10px] font-heavy">' + escHtml(c.staticId) + '</span><span class="px-2 py-0.5 rounded-md bg-white/10 text-[11px] text-zinc-200">' + escHtml(c.tg) + '</span><span class="px-2 py-0.5 rounded-md bg-[#181822] border border-[#2c2c3a] text-[10px] text-zinc-300">' + escHtml(rankOfTg(c.tg)) + '</span></div>' +
+                                        '<div class="flex flex-wrap items-center gap-2"><span class="text-sm font-heavy text-white">' + escHtml(c.nick) + '</span><span class="px-2 py-0.5 rounded-md bg-white text-black text-[10px] font-heavy">' + escHtml(c.staticId) + '</span><span class="px-2 py-0.5 rounded-md bg-white/10 text-[11px] text-zinc-200">' + escHtml(c.tg) + '</span>' + discordChip(c.discord || discordOfTg(c.tg)) + '<span class="px-2 py-0.5 rounded-md bg-[#181822] border border-[#2c2c3a] text-[10px] text-zinc-300">' + escHtml(rankOfTg(c.tg)) + '</span></div>' +
                                         '<div class="text-[10px] text-zinc-500 mt-1">Просит награду за промокод · ' + escHtml(fmtWhen(c.createdAt)) + '</div>' +
                                     '</div>' +
                                 '</div>' +
@@ -2290,7 +2319,7 @@
                                     '<button onclick="decidePromoClaim(' + c.id + ', false)" class="px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 text-[11px] font-heavy transition-all">Отклонить</button>' +
                                 '</div>' +
                             '</div>' +
-                            '<div class="flex flex-wrap gap-1.5">' + copyBtn('Скопировать ник', c.nick) + copyBtn('Скопировать Static', c.staticId) + copyBtn('Скопировать @юз', c.tg) + copyBtn('Скопировать всё', all3) + tgLinkBtn(c.tg) + '</div>' +
+                            '<div class="flex flex-wrap gap-1.5">' + copyBtn('Скопировать ник', c.nick) + copyBtn('Скопировать Static', c.staticId) + copyBtn('Скопировать @юз', c.tg) + (dsc ? copyBtn('Скопировать Discord', dsc) : '') + copyBtn('Скопировать всё', all3) + tgLinkBtn(c.tg) + discordLinkBtn(dsc) + '</div>' +
                         '</div>';
                     }).join('');
                 }
@@ -2337,7 +2366,11 @@
                 if (!nick) { showToast(FULLNAME_HINT); return; }
                 if (nickInput) nickInput.value = nick;
                 if (!/\d/.test(stat)) { showToast('Укажите Static ID (цифры)'); return; }
-                fetch('/api/auth/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick: nick, staticId: stat }) })
+                var discordInput = document.getElementById('auth-discord-input');
+                var discord = discordInput ? discordInput.value.trim().replace(/^@+/, '').replace(/\s+/g, '') : '';
+                if (!/^[A-Za-z0-9_.\-]{2,32}$/.test(discord)) { if (discordInput) { discordInput.focus(); discordInput.classList.add('border-red-400'); setTimeout(function() { discordInput.classList.remove('border-red-400'); }, 1600); } showToast('Укажите ник в Discord (латиницей, без пробелов)'); return; }
+                if (discordInput) discordInput.value = discord;
+                fetch('/api/auth/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nick: nick, staticId: stat, discord: discord }) })
                     .then(function(r) { return r.json(); })
                     .then(function(j) {
                         if (!j.code) { showToast(j.error || 'Не удалось начать вход'); return; }
@@ -3123,7 +3156,7 @@
                 for (var i = 0; i < checkedEls.length; i++) tasks.push(checkedEls[i].getAttribute('data-label'));
                 if (!tasks.length) { showToast('Отметьте выполненные требования'); return; }
 
-                db.promoReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, fromRank: u.rankTitle, toRank: currentPromoTarget, tasks: tasks.join(' • '), proofs: proofs, status: 'PENDING' });
+                db.promoReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, fromRank: u.rankTitle, toRank: currentPromoTarget, tasks: tasks.join(' • '), proofs: proofs, status: 'PENDING' });
                 addLog('RANK', 'Рапорт на повышение до: ' + currentPromoTarget);
                 promoChecked = {};
                 if (proofsEl) proofsEl.value = '';
@@ -3276,7 +3309,7 @@
                 if (sum <= 0) { showToast('Укажите активность'); return; }
                 var u = db.currentUser;
                 var pEl = document.getElementById('payout-proofs');
-                db.payoutReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, total: sum, items: lines, proofs: pEl ? pEl.value : 'Док-ва', status: 'PENDING' });
+                db.payoutReports.unshift({ id: Date.now(), nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, total: sum, items: lines, proofs: pEl ? pEl.value : 'Док-ва', status: 'PENDING' });
                 saveDb();
                 (db.payoutItems || []).forEach(function(it) {
                     var el = document.getElementById('qty-' + it.id);
@@ -3564,9 +3597,11 @@
                                         '<div class="flex flex-wrap items-center gap-2">' +
                                             '<span class="font-heavy text-white">' + a.nick + '</span>' +
                                             '<span class="text-zinc-300">' + (a.tg || '@drughill') + '</span>' +
+                                            discordChip(a.discord) +
                                             '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">' + a.staticId + '</span>' +
                                         '</div>' +
                                         (a.kind === 'Уже игрок семьи' ? '<div class="text-[11px] text-amber-300 mt-1 font-heavy">Утверждает, что уже игрок семьи. Проверьте и примите.</div>' : '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + escHtml(a.age) + ' · Прайм: ' + escHtml(a.prime) + ' · Опыт: ' + escHtml(a.exp) + '</div><div class="text-[10px] text-zinc-500 mt-1.5">Откаты:</div>' + linkButtons(a.rolls)) +
+                                    (a.discord ? '<div class="flex flex-wrap gap-1.5 mt-2">' + copyBtn('Скопировать Discord', a.discord) + discordLinkBtn(a.discord) + '</div>' : '') +
                                     '</div>' +
                                 '</div>' +
                                 '<div class="flex items-center gap-2 shrink-0">' +
@@ -3588,9 +3623,11 @@
                                     '<div class="flex flex-wrap items-center gap-2">' +
                                         '<span class="font-heavy text-white">' + a.nick + '</span>' +
                                         '<span class="text-zinc-300">' + (a.tg || '@drughill') + '</span>' +
+                                            discordChip(a.discord) +
                                         '<span class="px-2 py-0.5 rounded bg-white text-black text-[10px] font-heavy">' + a.staticId + '</span>' +
                                     '</div>' +
                                     (a.kind === 'Уже игрок семьи' ? '<div class="text-[11px] text-amber-300 mt-1 font-heavy">Утверждает, что уже игрок семьи. Проверьте и примите.</div>' : '<div class="text-[11px] text-zinc-400 mt-1">Возраст: ' + escHtml(a.age) + ' · Прайм: ' + escHtml(a.prime) + ' · Опыт: ' + escHtml(a.exp) + '</div><div class="text-[10px] text-zinc-500 mt-1.5">Откаты:</div>' + linkButtons(a.rolls)) +
+                                    (a.discord ? '<div class="flex flex-wrap gap-1.5 mt-2">' + copyBtn('Скопировать Discord', a.discord) + discordLinkBtn(a.discord) + '</div>' : '') +
                                 '</div>' +
                             '</div>' +
                             '<div class="flex items-center gap-2 shrink-0">' +
@@ -3670,6 +3707,7 @@
                                 nick: db.applications[i].nick,
                                 staticId: db.applications[i].staticId,
                                 tg: db.applications[i].tg,
+                                discord: db.applications[i].discord || '',
                                 rank: '1. Контракт',
                                 avatar: db.applications[i].avatar
                             });
@@ -3742,7 +3780,8 @@
                 var cell = function(label, val) {
                     return '<div class="p-3.5 rounded-2xl bg-[#14141a] border border-[#23232e]"><div class="text-[10px] text-zinc-400">' + label + '</div><div class="text-lg font-heavy text-white mt-1">' + val + '</div></div>';
                 };
-                var all3 = nick + ' | ' + staticId + ' | ' + tg;
+                var dsc = discordOfTg(tg);
+                var all3 = nick + ' | ' + staticId + ' | ' + tg + (dsc ? ' | Discord: ' + dsc : '');
                 document.getElementById('site-profile-body').innerHTML =
                     '<div class="flex items-center gap-4">' +
                         '<img src="' + escHtml(avatar || '/avatars/ph.svg?w=100&h=100&bg=1c1c24&fg=ffffff&text=DH') + '" alt="" class="w-16 h-16 rounded-full object-cover border-2 border-white/30 shrink-0">' +
@@ -3751,6 +3790,7 @@
                             '<span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-xs font-heavy text-zinc-200">' + escHtml(tg) + '</span>' +
                             '<span class="px-3 py-1 rounded-lg bg-white text-black text-[10px] font-heavy uppercase">' + escHtml(rank) + '</span></div>' +
                             '<div class="text-xs text-zinc-400">Static ID: <strong class="text-white">' + escHtml(staticId) + '</strong></div>' +
+                            '<div class="text-xs text-zinc-400">Discord: ' + (dsc ? '<strong class="text-white">' + escHtml(dsc) + '</strong>' : '<span class="text-zinc-500">не указан</span>') + '</div>' +
                         '</div>' +
                     '</div>' +
                     '<div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">' +
@@ -3758,7 +3798,7 @@
                         cell('Средний результат', st.avg === null ? '—' : st.avg + '%') + cell('Лучший результат', st.best === null ? '—' : st.best + '%') +
                         cell('Отпусков', st.vacations) + cell('Откатов / видео', st.rollbacks) +
                     '</div>' +
-                    '<div class="flex flex-wrap gap-1.5">' + copyBtn('Скопировать ник', nick) + copyBtn('Скопировать Static', staticId) + copyBtn('Скопировать @юз', tg) + copyBtn('Скопировать всё', all3) + tgLinkBtn(tg) + '</div>';
+                    '<div class="flex flex-wrap gap-1.5">' + copyBtn('Скопировать ник', nick) + copyBtn('Скопировать Static', staticId) + copyBtn('Скопировать @юз', tg) + (dsc ? copyBtn('Скопировать Discord', dsc) : '') + copyBtn('Скопировать всё', all3) + tgLinkBtn(tg) + discordLinkBtn(dsc) + '</div>';
                 document.getElementById('modal-site-profile').classList.remove('hidden');
             }
             // ссылка из Telegram-уведомления: https://сайт/#profile/<telegram>
@@ -3907,7 +3947,7 @@
                 var tEl = document.getElementById('rb-test');
                 var title = currentRollbackKind === 'Аттестация' ? ((tEl && tEl.value) || 'Аттестация') : 'Откат';
                 var u = db.currentUser;
-                db.rollbacks.unshift({ id: Date.now(), kind: currentRollbackKind, title: title, link: link, comment: cEl ? cEl.value.trim() : '', nick: u.nick, staticId: u.staticId, tg: u.tg, avatar: u.avatar, status: 'PENDING' });
+                db.rollbacks.unshift({ id: Date.now(), kind: currentRollbackKind, title: title, link: link, comment: cEl ? cEl.value.trim() : '', nick: u.nick, staticId: u.staticId, tg: u.tg, discord: u.discord || '', avatar: u.avatar, status: 'PENDING' });
                 addLog('TEST', (currentRollbackKind === 'Откат' ? 'Добавлен откат' : 'Видео для аттестации «' + title + '»'));
                 if (linkEl) linkEl.value = '';
                 if (cEl) cEl.value = '';
